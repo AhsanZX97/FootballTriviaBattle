@@ -8,3 +8,10 @@
   gap: 0.5rem;
   padding: 1rem;
 }
+
+.menu-buttons {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  margin-top: 1.5rem;
+}

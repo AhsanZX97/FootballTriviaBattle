@@ -1,0 +1,46 @@
+.pixel-btn {
+  font-family: 'Press Start 2P', ui-monospace, Consolas, monospace;
+  font-size: 14px;
+  line-height: 1;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  cursor: pointer;
+  border: none;
+  border-radius: 0;
+  padding: 20px 32px;
+  image-rendering: pixelated;
+  transition: none;
+  /* hard outline + chunky drop base + inner bevel highlight/shadow */
+  box-shadow:
+    0 0 0 4px #06120d,
+    0 8px 0 0 #06120d,
+    inset 4px 4px 0 0 var(--pb-light),
+    inset -4px -4px 0 0 var(--pb-dark);
+}
+
+.pixel-btn:active {
+  transform: translateY(8px);
+  box-shadow:
+    0 0 0 4px #06120d,
+    inset 4px 4px 0 0 var(--pb-light),
+    inset -4px -4px 0 0 var(--pb-dark);
+}
+
+.pixel-btn:focus-visible {
+  outline: 4px solid #f4d35e;
+  outline-offset: 4px;
+}
+
+.pixel-btn--primary {
+  --pb-light: #a7f3c4;
+  --pb-dark: #2f8f57;
+  background: #5ee08a;
+  color: #06231a;
+}
+
+.pixel-btn--secondary {
+  --pb-light: #b8c9e8;
+  --pb-dark: #3d5580;
+  background: #6f8fc4;
+  color: #0a1830;
+}
