@@ -44,6 +44,8 @@ describe('MatchScreen', () => {
     render(<MatchScreen />)
     fireEvent.click(screen.getByRole('button', { name: 'Right' }))
     expect(screen.getByText(/goal!/i)).toBeDefined()
+    // keeper picks a random reaction to being beaten
+    expect(document.querySelector('.scene')?.className).toMatch(/scene--goal-(wrong-way|frozen|late)/)
     expect(matchStore.getState().shootout.userScore).toBe(0) // not resolved yet
     act(() => vi.advanceTimersByTime(FEEDBACK_MS))
     expect(matchStore.getState().shootout.userScore).toBe(1)

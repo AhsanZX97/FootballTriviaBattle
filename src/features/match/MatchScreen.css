@@ -6,22 +6,28 @@
   align-items: center;
   gap: clamp(16px, 3vh, 32px);
   padding: clamp(16px, 4vw, 40px);
-  background: #04140b url('../../assets/bg.jpg') center / cover no-repeat fixed;
+  background: #04140b url('../../assets/bg.jpg') center / cover no-repeat;
   color: #fff;
   font-family: 'Press Start 2P', ui-monospace, Consolas, monospace;
   image-rendering: pixelated;
   animation: match-fade-in 0.25s steps(4) both;
 }
 
-/* darken the pitch so the UI pops; the PitchScene shows it clean */
+/* darken the pitch so the UI pops; lifts to full brightness on the animation screen */
 .match::before {
   content: '';
   position: absolute;
   inset: 0;
   background: rgba(2, 10, 6, 0.72);
+  transition: opacity 0.3s steps(3);
 }
 
-.match > * {
+.match--scene::before {
+  opacity: 0;
+}
+
+/* lift the UI above the ::before overlay; the .scene positions itself */
+.match > :not(.scene) {
   position: relative;
 }
 

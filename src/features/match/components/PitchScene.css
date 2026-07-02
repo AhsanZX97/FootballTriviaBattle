@@ -1,12 +1,21 @@
+/* full-screen transparent layer — the trivia screen's own bg.jpg shows through */
 .scene {
-  position: relative;
-  width: min(100%, 640px);
-  /* bg.jpg is 1280x720 — keep its aspect so the % positions track the goal */
-  aspect-ratio: 16 / 9;
+  position: fixed;
+  inset: 0;
   overflow: hidden;
-  background: url('../../../assets/bg.jpg') center / cover no-repeat;
-  box-shadow: 0 0 0 4px #0a0a0a, 6px 6px 0 4px rgba(0, 0, 0, 0.85);
+  pointer-events: none;
   image-rendering: pixelated;
+}
+
+/* sized exactly like `center / cover` sizes bg.jpg (1280x720), so the
+   actors' image-relative % positions land on the photo's goal at any viewport */
+.scene__stage {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  aspect-ratio: 16 / 9;
+  width: max(100vw, 177.78vh);
 }
 
 /* actors are centered on their top/left point so keyframes can move that point */
@@ -31,15 +40,17 @@
   font-size: clamp(18px, 3.4vw, 30px);
 }
 
+/* outcome text sits on the grass below the goal; `both` keeps it hidden
+   (scale 0) through the suspense delay, revealing as the ball lands */
 .scene__label {
   position: absolute;
-  top: 8%;
+  top: 58%;
   left: 50%;
-  transform: translateX(-50%);
+  transform: translateX(-50%) scale(0);
   font-size: clamp(14px, 2.4vw, 24px);
   color: #ffcf1a;
   text-shadow: 3px 3px 0 #000;
-  animation: scene-label-pop 0.3s steps(3) both;
+  animation: scene-label-pop 0.3s steps(3) 1.6s both;
 }
 
 @keyframes scene-label-pop {
@@ -52,11 +63,12 @@
 }
 
 /* --- feedback animations: move the actors' anchor points over the photo's
-   goal (posts ~35%..66%, bar ~34%, line ~51%), steps() for the pixel feel --- */
+   goal (posts ~35%..66%, bar ~34%, line ~51%), steps() for the pixel feel.
+   Every animation waits 1s — actors idle on the pitch for suspense first --- */
 
 /* user scores: ball into the top-left corner of the net */
 .scene--goal .scene__ball {
-  animation: scene-ball-goal 0.7s steps(7) forwards;
+  animation: scene-ball-goal 0.7s steps(7) 1s forwards;
 }
 
 @keyframes scene-ball-goal {
@@ -67,9 +79,40 @@
   }
 }
 
+/* ...while the beaten keeper reacts one of three random ways
+   (ball flies to the LEFT corner in all of them) */
+
+/* dives the wrong way */
+.scene--goal-wrong-way .scene__keeper {
+  animation: scene-keeper-wrong-way 0.7s steps(7) 1s forwards;
+}
+
+@keyframes scene-keeper-wrong-way {
+  to {
+    left: 60%;
+    top: 44%;
+    transform: translate(-50%, -50%) rotate(55deg);
+  }
+}
+
+/* guesses right but gets there too late, lands short of the ball */
+.scene--goal-late .scene__keeper {
+  animation: scene-keeper-late 0.6s steps(6) 1.2s forwards;
+}
+
+@keyframes scene-keeper-late {
+  to {
+    left: 44%;
+    top: 45%;
+    transform: translate(-50%, -50%) rotate(-40deg);
+  }
+}
+
+/* frozen: keeper doesn't move — no rule needed */
+
 /* user misses: ball sails over the bar into the crowd */
 .scene--miss .scene__ball {
-  animation: scene-ball-miss 0.7s steps(7) forwards;
+  animation: scene-ball-miss 0.7s steps(7) 1s forwards;
 }
 
 @keyframes scene-ball-miss {
@@ -83,7 +126,7 @@
 
 /* user saves: keeper dives left onto the shot */
 .scene--save .scene__ball {
-  animation: scene-ball-save 0.5s steps(5) forwards;
+  animation: scene-ball-save 0.5s steps(5) 1s forwards;
 }
 
 @keyframes scene-ball-save {
@@ -94,7 +137,7 @@
 }
 
 .scene--save .scene__keeper {
-  animation: scene-keeper-save 0.5s steps(5) forwards;
+  animation: scene-keeper-save 0.5s steps(5) 1s forwards;
 }
 
 @keyframes scene-keeper-save {
@@ -107,7 +150,7 @@
 
 /* cpu scores: ball into the right corner, keeper dives the wrong way */
 .scene--concede .scene__ball {
-  animation: scene-ball-concede 0.7s steps(7) forwards;
+  animation: scene-ball-concede 0.7s steps(7) 1s forwards;
 }
 
 @keyframes scene-ball-concede {
@@ -119,7 +162,7 @@
 }
 
 .scene--concede .scene__keeper {
-  animation: scene-keeper-concede 0.7s steps(7) forwards;
+  animation: scene-keeper-concede 0.7s steps(7) 1s forwards;
 }
 
 @keyframes scene-keeper-concede {

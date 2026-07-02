@@ -5,8 +5,8 @@ import { matchStore, QUESTION_TIME_SECONDS } from './store'
 import { PitchScene, type SceneFeedback } from './components/PitchScene'
 import './MatchScreen.css'
 
-/** How long the goal/save/miss animation plays before the next question. */
-export const FEEDBACK_MS = 1400
+/** Animation screen duration: 1s suspense delay + 0.7s animation + a beat to read the outcome. */
+export const FEEDBACK_MS = 2600
 
 function feedbackOf(stage: Stage, correct: boolean): SceneFeedback {
   if (stage === 'shoot') return correct ? 'goal' : 'miss'
@@ -105,7 +105,7 @@ export function MatchScreen({ onExit }: Props) {
   const shooting = shootout.stage === 'shoot'
 
   return (
-    <main className="match">
+    <main className={`match${feedback ? ' match--scene' : ''}`}>
       <section className="match__scoreboard" aria-label="scoreboard">
         <div className="match__team">
           <span className="match__team-name">YOU</span>
