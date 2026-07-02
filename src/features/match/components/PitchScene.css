@@ -1,56 +1,34 @@
 .scene {
   position: relative;
   width: min(100%, 640px);
-  aspect-ratio: 16 / 7;
+  /* bg.jpg is 1280x720 — keep its aspect so the % positions track the goal */
+  aspect-ratio: 16 / 9;
   overflow: hidden;
-  background: linear-gradient(180deg, #123c21 0%, #0f5c2e 45%, #1a7a3d 100%);
+  background: url('../../../assets/bg.jpg') center / cover no-repeat;
   box-shadow: 0 0 0 4px #0a0a0a, 6px 6px 0 4px rgba(0, 0, 0, 0.85);
   image-rendering: pixelated;
 }
 
-/* pitch stripes */
-.scene::before {
-  content: '';
-  position: absolute;
-  inset: 0;
-  background: repeating-linear-gradient(180deg, transparent 0 12%, rgba(255, 255, 255, 0.04) 12% 24%);
-}
-
-.scene__goal {
-  position: absolute;
-  top: 12%;
-  left: 50%;
-  transform: translateX(-50%);
-  width: 64%;
-  height: 52%;
-  border: 5px solid #f2f2f2;
-  border-bottom: none;
-}
-
-.scene__net {
-  position: absolute;
-  inset: 0;
-  background:
-    repeating-linear-gradient(90deg, rgba(255, 255, 255, 0.28) 0 1px, transparent 1px 9px),
-    repeating-linear-gradient(0deg, rgba(255, 255, 255, 0.28) 0 1px, transparent 1px 9px);
-}
-
-.scene__keeper {
-  position: absolute;
-  bottom: 2%;
-  left: 50%;
-  transform: translateX(-50%);
-  font-size: clamp(22px, 4vw, 36px);
-  filter: drop-shadow(2px 2px 0 rgba(0, 0, 0, 0.6));
-}
-
+/* actors are centered on their top/left point so keyframes can move that point */
+.scene__keeper,
 .scene__ball {
   position: absolute;
-  bottom: 6%;
-  left: 50%;
-  transform: translateX(-50%);
-  font-size: clamp(18px, 3.4vw, 30px);
+  transform: translate(-50%, -50%);
   filter: drop-shadow(2px 2px 0 rgba(0, 0, 0, 0.6));
+}
+
+/* keeper on the goal line, middle of the goal mouth */
+.scene__keeper {
+  left: 50%;
+  top: 43%;
+  font-size: clamp(22px, 4vw, 36px);
+}
+
+/* ball on the penalty spot */
+.scene__ball {
+  left: 50%;
+  top: 80%;
+  font-size: clamp(18px, 3.4vw, 30px);
 }
 
 .scene__label {
@@ -73,27 +51,32 @@
   }
 }
 
-/* --- feedback animations (steps() for the pixel feel) --- */
+/* --- feedback animations: move the actors' anchor points over the photo's
+   goal (posts ~35%..66%, bar ~34%, line ~51%), steps() for the pixel feel --- */
 
-/* user scores: ball flies to the top-left corner of the net */
+/* user scores: ball into the top-left corner of the net */
 .scene--goal .scene__ball {
   animation: scene-ball-goal 0.7s steps(7) forwards;
 }
 
 @keyframes scene-ball-goal {
   to {
-    transform: translateX(-50%) translate(-160%, -320%) scale(0.7);
+    left: 39%;
+    top: 38%;
+    transform: translate(-50%, -50%) scale(0.75);
   }
 }
 
-/* user misses: ball sails over the bar */
+/* user misses: ball sails over the bar into the crowd */
 .scene--miss .scene__ball {
   animation: scene-ball-miss 0.7s steps(7) forwards;
 }
 
 @keyframes scene-ball-miss {
   to {
-    transform: translateX(-50%) translate(120%, -560%) scale(0.5);
+    left: 57%;
+    top: 8%;
+    transform: translate(-50%, -50%) scale(0.5);
     opacity: 0;
   }
 }
@@ -105,7 +88,8 @@
 
 @keyframes scene-ball-save {
   to {
-    transform: translateX(-50%) translate(-200%, -220%);
+    left: 41%;
+    top: 43%;
   }
 }
 
@@ -115,7 +99,9 @@
 
 @keyframes scene-keeper-save {
   to {
-    transform: translateX(-50%) translate(-140%, -120%) rotate(-45deg);
+    left: 40%;
+    top: 41%;
+    transform: translate(-50%, -50%) rotate(-50deg);
   }
 }
 
@@ -126,7 +112,9 @@
 
 @keyframes scene-ball-concede {
   to {
-    transform: translateX(-50%) translate(210%, -300%) scale(0.7);
+    left: 61%;
+    top: 39%;
+    transform: translate(-50%, -50%) scale(0.75);
   }
 }
 
@@ -136,7 +124,9 @@
 
 @keyframes scene-keeper-concede {
   to {
-    transform: translateX(-50%) translate(-140%, -60%) rotate(-60deg);
+    left: 42%;
+    top: 44%;
+    transform: translate(-50%, -50%) rotate(-60deg);
   }
 }
 
