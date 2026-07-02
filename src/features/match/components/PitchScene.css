@@ -1,5 +1,8 @@
 /* full-screen transparent layer — the trivia screen's own bg.jpg shows through */
 .scene {
+  /* the one timing knob: the moment the ball leaves the foot. Everything
+     else (kick wind-up, dives, label) offsets from this via calc() */
+  --suspense: 1s;
   position: fixed;
   inset: 0;
   overflow: hidden;
@@ -20,7 +23,8 @@
 
 /* actors are centered on their top/left point so keyframes can move that point */
 .scene__keeper,
-.scene__ball {
+.scene__ball,
+.scene__striker {
   position: absolute;
   transform: translate(-50%, -50%);
   filter: drop-shadow(2px 2px 0 rgba(0, 0, 0, 0.6));
@@ -66,6 +70,32 @@
   font-size: clamp(18px, 3.4vw, 30px);
 }
 
+/* striker just left of and behind the ball (back view, right-footed), in the
+   foreground so bigger than the keeper. Holds the sheet's standing frame
+   through the suspense; only mounted for the shoot stage. */
+.scene__striker {
+  left: 47.5%;
+  top: 82%;
+  transform: translate(-50%, -100%); /* feet anchor, like the keeper */
+  width: clamp(56px, 9vw, 96px);
+  aspect-ratio: 1;
+  background: url(../../../assets/striker_kick_64.png) 0 0 / 600% 100% no-repeat;
+}
+
+/* 6-frame kick swing; steps(5) shows all 6 frames, forwards holds the follow-through */
+@keyframes scene-striker-kick {
+  to {
+    background-position-x: 100%;
+  }
+}
+
+/* wind-up starts early so the strike frame (5 of 6, four 0.12s steps into
+   the swing = 0.48s) lands exactly when the ball launches */
+.scene--goal .scene__striker,
+.scene--miss .scene__striker {
+  animation: scene-striker-kick 0.6s steps(5) calc(var(--suspense) - 0.48s) forwards;
+}
+
 /* outcome text sits on the grass below the goal; `both` keeps it hidden
    (scale 0) through the suspense delay, revealing as the ball lands */
 .scene__label {
@@ -76,7 +106,7 @@
   font-size: clamp(14px, 2.4vw, 24px);
   color: #ffcf1a;
   text-shadow: 3px 3px 0 #000;
-  animation: scene-label-pop 0.3s steps(3) 1.6s both;
+  animation: scene-label-pop 0.3s steps(3) calc(var(--suspense) + 0.6s) both;
 }
 
 @keyframes scene-label-pop {
@@ -90,11 +120,11 @@
 
 /* --- feedback animations: move the actors' anchor points over the photo's
    goal (posts ~35%..66%, bar ~34%, line ~51%), steps() for the pixel feel.
-   Every animation waits 1s — actors idle on the pitch for suspense first --- */
+   Every animation waits out --suspense — actors idle on the pitch first --- */
 
 /* user scores: ball into the top-left corner of the net */
 .scene--goal .scene__ball {
-  animation: scene-ball-goal 0.7s steps(7) 1s forwards;
+  animation: scene-ball-goal 0.7s steps(7) var(--suspense) forwards;
 }
 
 @keyframes scene-ball-goal {
@@ -113,8 +143,8 @@
   transform: translate(-50%, -100%) scaleX(-1);
   animation:
     scene-keeper-idle 0.8s steps(4) infinite,
-    scene-keeper-dive-frames 0.6s steps(5) 1s forwards,
-    scene-keeper-wrong-way 0.7s steps(7) 1s forwards;
+    scene-keeper-dive-frames 0.6s steps(5) var(--suspense) forwards,
+    scene-keeper-wrong-way 0.7s steps(7) var(--suspense) forwards;
 }
 
 @keyframes scene-keeper-wrong-way {
@@ -128,8 +158,8 @@
 .scene--goal-late .scene__keeper {
   animation:
     scene-keeper-idle 0.8s steps(4) infinite,
-    scene-keeper-dive-frames 0.6s steps(5) 1.2s forwards,
-    scene-keeper-late 0.6s steps(6) 1.2s forwards;
+    scene-keeper-dive-frames 0.6s steps(5) calc(var(--suspense) + 0.2s) forwards,
+    scene-keeper-late 0.6s steps(6) calc(var(--suspense) + 0.2s) forwards;
 }
 
 @keyframes scene-keeper-late {
@@ -143,7 +173,7 @@
 
 /* user misses: ball sails over the bar into the crowd */
 .scene--miss .scene__ball {
-  animation: scene-ball-miss 0.7s steps(7) 1s forwards;
+  animation: scene-ball-miss 0.7s steps(7) var(--suspense) forwards;
 }
 
 @keyframes scene-ball-miss {
@@ -157,7 +187,7 @@
 
 /* user saves: keeper dives left onto the shot */
 .scene--save .scene__ball {
-  animation: scene-ball-save 0.5s steps(5) 1s forwards;
+  animation: scene-ball-save 0.5s steps(5) var(--suspense) forwards;
 }
 
 @keyframes scene-ball-save {
@@ -170,8 +200,8 @@
 .scene--save .scene__keeper {
   animation:
     scene-keeper-idle 0.8s steps(4) infinite,
-    scene-keeper-dive-frames 0.6s steps(5) 1s forwards,
-    scene-keeper-save 0.5s steps(5) 1s forwards;
+    scene-keeper-dive-frames 0.6s steps(5) var(--suspense) forwards,
+    scene-keeper-save 0.5s steps(5) var(--suspense) forwards;
 }
 
 @keyframes scene-keeper-save {
@@ -183,7 +213,7 @@
 
 /* cpu scores: ball into the right corner, keeper dives the wrong way */
 .scene--concede .scene__ball {
-  animation: scene-ball-concede 0.7s steps(7) 1s forwards;
+  animation: scene-ball-concede 0.7s steps(7) var(--suspense) forwards;
 }
 
 @keyframes scene-ball-concede {
@@ -197,8 +227,8 @@
 .scene--concede .scene__keeper {
   animation:
     scene-keeper-idle 0.8s steps(4) infinite,
-    scene-keeper-dive-frames 0.6s steps(5) 1s forwards,
-    scene-keeper-concede 0.7s steps(7) 1s forwards;
+    scene-keeper-dive-frames 0.6s steps(5) var(--suspense) forwards,
+    scene-keeper-concede 0.7s steps(7) var(--suspense) forwards;
 }
 
 @keyframes scene-keeper-concede {
@@ -211,6 +241,7 @@
 @media (prefers-reduced-motion: reduce) {
   .scene__ball,
   .scene__keeper,
+  .scene__striker,
   .scene__label {
     animation: none;
   }
