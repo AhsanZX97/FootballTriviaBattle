@@ -26,11 +26,37 @@
   filter: drop-shadow(2px 2px 0 rgba(0, 0, 0, 0.6));
 }
 
-/* keeper on the goal line, middle of the goal mouth */
+/* keeper on the goal line, middle of the goal mouth.
+   4-frame 64px idle strip; background-size 400% + % positions keep the
+   frame math correct at any responsive width */
 .scene__keeper {
   left: 50%;
-  top: 43%;
-  font-size: clamp(22px, 4vw, 36px);
+  top: 51%; /* goal line */
+  transform: translate(-50%, -100%); /* anchored at the feet, so he stands on the line at any size */
+  width: clamp(40px, 7vw, 64px);
+  aspect-ratio: 1;
+  background: url(../../../assets/goalkeeper_idle_64.png) 0 0 / 400% 100% no-repeat;
+  animation: scene-keeper-idle 0.8s steps(4) infinite;
+}
+
+/* 133.334% + steps(4) lands exactly on frames 0/33.3/66.7/100% */
+@keyframes scene-keeper-idle {
+  to {
+    background-position-x: 133.334%;
+  }
+}
+
+/* 6-frame dive strip (dives to screen-left; scaleX(-1) on the element mirrors
+   it right). Swaps the sheet in when the delay expires, steps(5) shows all
+   6 frames, `forwards` holds the last one. Listed after the idle loop in each
+   animation list so it wins once it starts. */
+@keyframes scene-keeper-dive-frames {
+  from {
+    background: url(../../../assets/goalkeeper_dive_left_64.png) 0% 0 / 600% 100% no-repeat;
+  }
+  to {
+    background: url(../../../assets/goalkeeper_dive_left_64.png) 100% 0 / 600% 100% no-repeat;
+  }
 }
 
 /* ball on the penalty spot */
@@ -82,29 +108,34 @@
 /* ...while the beaten keeper reacts one of three random ways
    (ball flies to the LEFT corner in all of them) */
 
-/* dives the wrong way */
+/* dives the wrong way — mirrored so he dives right while the ball goes left */
 .scene--goal-wrong-way .scene__keeper {
-  animation: scene-keeper-wrong-way 0.7s steps(7) 1s forwards;
+  transform: translate(-50%, -100%) scaleX(-1);
+  animation:
+    scene-keeper-idle 0.8s steps(4) infinite,
+    scene-keeper-dive-frames 0.6s steps(5) 1s forwards,
+    scene-keeper-wrong-way 0.7s steps(7) 1s forwards;
 }
 
 @keyframes scene-keeper-wrong-way {
   to {
     left: 60%;
-    top: 44%;
-    transform: translate(-50%, -50%) rotate(55deg);
+    top: 52%;
   }
 }
 
 /* guesses right but gets there too late, lands short of the ball */
 .scene--goal-late .scene__keeper {
-  animation: scene-keeper-late 0.6s steps(6) 1.2s forwards;
+  animation:
+    scene-keeper-idle 0.8s steps(4) infinite,
+    scene-keeper-dive-frames 0.6s steps(5) 1.2s forwards,
+    scene-keeper-late 0.6s steps(6) 1.2s forwards;
 }
 
 @keyframes scene-keeper-late {
   to {
     left: 44%;
-    top: 45%;
-    transform: translate(-50%, -50%) rotate(-40deg);
+    top: 53%;
   }
 }
 
@@ -137,14 +168,16 @@
 }
 
 .scene--save .scene__keeper {
-  animation: scene-keeper-save 0.5s steps(5) 1s forwards;
+  animation:
+    scene-keeper-idle 0.8s steps(4) infinite,
+    scene-keeper-dive-frames 0.6s steps(5) 1s forwards,
+    scene-keeper-save 0.5s steps(5) 1s forwards;
 }
 
 @keyframes scene-keeper-save {
   to {
     left: 40%;
-    top: 41%;
-    transform: translate(-50%, -50%) rotate(-50deg);
+    top: 49%;
   }
 }
 
@@ -162,14 +195,16 @@
 }
 
 .scene--concede .scene__keeper {
-  animation: scene-keeper-concede 0.7s steps(7) 1s forwards;
+  animation:
+    scene-keeper-idle 0.8s steps(4) infinite,
+    scene-keeper-dive-frames 0.6s steps(5) 1s forwards,
+    scene-keeper-concede 0.7s steps(7) 1s forwards;
 }
 
 @keyframes scene-keeper-concede {
   to {
     left: 42%;
-    top: 44%;
-    transform: translate(-50%, -50%) rotate(-60deg);
+    top: 52%;
   }
 }
 

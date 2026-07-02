@@ -36,7 +36,7 @@ export function PitchScene({ stage, feedback }: Props) {
     >
       {/* stage mirrors the background's center/cover sizing so % positions land on the bg.jpg goal */}
       <div className="scene__stage">
-        <span className="scene__keeper">🧤</span>
+        <span className="scene__keeper" />
         <span className="scene__ball">⚽</span>
         {feedback && <span className="scene__label">{LABELS[feedback]}</span>}
       </div>
