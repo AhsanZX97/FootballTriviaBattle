@@ -9,6 +9,16 @@
   color: #fff;
   font-family: 'Press Start 2P', ui-monospace, Consolas, monospace;
   image-rendering: pixelated;
+  animation: match-fade-in 0.25s steps(4) both;
+}
+
+@keyframes match-fade-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
 }
 
 .match--message {
@@ -19,6 +29,21 @@
   font-size: clamp(11px, 1.6vw, 16px);
   letter-spacing: 0.12em;
   text-shadow: 2px 2px 0 #000;
+}
+
+/* Result screen */
+.match__result {
+  margin: 0;
+  font-size: clamp(18px, 3vw, 30px);
+  letter-spacing: 0.1em;
+  color: #ffcf1a;
+  text-shadow: 3px 3px 0 #000;
+}
+
+.match__final-score {
+  margin: 0;
+  font-size: clamp(24px, 4vw, 42px);
+  text-shadow: 3px 3px 0 #000;
 }
 
 /* Scoreboard */
@@ -46,6 +71,14 @@
 .match__score {
   font-size: clamp(20px, 3.4vw, 34px);
   text-shadow: 3px 3px 0 #000;
+  animation: match-score-pop 0.3s steps(3);
+}
+
+@keyframes match-score-pop {
+  50% {
+    transform: scale(1.5);
+    color: #ffcf1a;
+  }
 }
 
 .match__vs {
@@ -71,6 +104,67 @@
   color: #ffcf1a;
   text-shadow: 2px 2px 0 #000;
   margin: 0;
+}
+
+/* Timer */
+.match__timer {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: min(100%, 640px);
+}
+
+.match__timer-count {
+  min-width: 2ch;
+  text-align: right;
+  font-size: clamp(12px, 1.8vw, 18px);
+  text-shadow: 2px 2px 0 #000;
+}
+
+.match__timer-bar {
+  flex: 1;
+  height: 14px;
+  appearance: none;
+  border: none;
+  background: #0a2416;
+  box-shadow: 0 0 0 3px #0a0a0a;
+}
+
+.match__timer-bar::-webkit-progress-bar {
+  background: #0a2416;
+}
+
+.match__timer-bar::-webkit-progress-value {
+  background: #ffcf1a;
+  transition: width 0.9s linear;
+}
+
+.match__timer-bar::-moz-progress-bar {
+  background: #ffcf1a;
+}
+
+.match__timer--low .match__timer-count {
+  color: #ff4a4a;
+  animation: match-blink 0.5s steps(1) infinite;
+}
+
+.match__timer--low .match__timer-bar::-webkit-progress-value {
+  background: #ff4a4a;
+}
+
+.match__timer--low .match__timer-bar::-moz-progress-bar {
+  background: #ff4a4a;
+}
+
+@keyframes match-blink {
+  0%,
+  55% {
+    opacity: 1;
+  }
+  56%,
+  100% {
+    opacity: 0;
+  }
 }
 
 /* Question card */
@@ -136,4 +230,12 @@
 .match__answer:focus-visible {
   outline: 3px solid #fff;
   outline-offset: 6px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .match,
+  .match__score,
+  .match__timer--low .match__timer-count {
+    animation: none;
+  }
 }

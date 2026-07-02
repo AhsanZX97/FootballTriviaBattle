@@ -1,0 +1,149 @@
+.scene {
+  position: relative;
+  width: min(100%, 640px);
+  aspect-ratio: 16 / 7;
+  overflow: hidden;
+  background: linear-gradient(180deg, #123c21 0%, #0f5c2e 45%, #1a7a3d 100%);
+  box-shadow: 0 0 0 4px #0a0a0a, 6px 6px 0 4px rgba(0, 0, 0, 0.85);
+  image-rendering: pixelated;
+}
+
+/* pitch stripes */
+.scene::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: repeating-linear-gradient(180deg, transparent 0 12%, rgba(255, 255, 255, 0.04) 12% 24%);
+}
+
+.scene__goal {
+  position: absolute;
+  top: 12%;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 64%;
+  height: 52%;
+  border: 5px solid #f2f2f2;
+  border-bottom: none;
+}
+
+.scene__net {
+  position: absolute;
+  inset: 0;
+  background:
+    repeating-linear-gradient(90deg, rgba(255, 255, 255, 0.28) 0 1px, transparent 1px 9px),
+    repeating-linear-gradient(0deg, rgba(255, 255, 255, 0.28) 0 1px, transparent 1px 9px);
+}
+
+.scene__keeper {
+  position: absolute;
+  bottom: 2%;
+  left: 50%;
+  transform: translateX(-50%);
+  font-size: clamp(22px, 4vw, 36px);
+  filter: drop-shadow(2px 2px 0 rgba(0, 0, 0, 0.6));
+}
+
+.scene__ball {
+  position: absolute;
+  bottom: 6%;
+  left: 50%;
+  transform: translateX(-50%);
+  font-size: clamp(18px, 3.4vw, 30px);
+  filter: drop-shadow(2px 2px 0 rgba(0, 0, 0, 0.6));
+}
+
+.scene__label {
+  position: absolute;
+  top: 8%;
+  left: 50%;
+  transform: translateX(-50%);
+  font-size: clamp(14px, 2.4vw, 24px);
+  color: #ffcf1a;
+  text-shadow: 3px 3px 0 #000;
+  animation: scene-label-pop 0.3s steps(3) both;
+}
+
+@keyframes scene-label-pop {
+  from {
+    transform: translateX(-50%) scale(0);
+  }
+  to {
+    transform: translateX(-50%) scale(1);
+  }
+}
+
+/* --- feedback animations (steps() for the pixel feel) --- */
+
+/* user scores: ball flies to the top-left corner of the net */
+.scene--goal .scene__ball {
+  animation: scene-ball-goal 0.7s steps(7) forwards;
+}
+
+@keyframes scene-ball-goal {
+  to {
+    transform: translateX(-50%) translate(-160%, -320%) scale(0.7);
+  }
+}
+
+/* user misses: ball sails over the bar */
+.scene--miss .scene__ball {
+  animation: scene-ball-miss 0.7s steps(7) forwards;
+}
+
+@keyframes scene-ball-miss {
+  to {
+    transform: translateX(-50%) translate(120%, -560%) scale(0.5);
+    opacity: 0;
+  }
+}
+
+/* user saves: keeper dives left onto the shot */
+.scene--save .scene__ball {
+  animation: scene-ball-save 0.5s steps(5) forwards;
+}
+
+@keyframes scene-ball-save {
+  to {
+    transform: translateX(-50%) translate(-200%, -220%);
+  }
+}
+
+.scene--save .scene__keeper {
+  animation: scene-keeper-save 0.5s steps(5) forwards;
+}
+
+@keyframes scene-keeper-save {
+  to {
+    transform: translateX(-50%) translate(-140%, -120%) rotate(-45deg);
+  }
+}
+
+/* cpu scores: ball into the right corner, keeper dives the wrong way */
+.scene--concede .scene__ball {
+  animation: scene-ball-concede 0.7s steps(7) forwards;
+}
+
+@keyframes scene-ball-concede {
+  to {
+    transform: translateX(-50%) translate(210%, -300%) scale(0.7);
+  }
+}
+
+.scene--concede .scene__keeper {
+  animation: scene-keeper-concede 0.7s steps(7) forwards;
+}
+
+@keyframes scene-keeper-concede {
+  to {
+    transform: translateX(-50%) translate(-140%, -60%) rotate(-60deg);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .scene__ball,
+  .scene__keeper,
+  .scene__label {
+    animation: none;
+  }
+}

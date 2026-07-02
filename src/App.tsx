@@ -6,7 +6,7 @@ import { matchStore } from './features/match/store'
 function App() {
   const [screen, setScreen] = useState<'intro' | 'match'>('intro')
 
-  if (screen === 'match') return <MatchScreen />
+  if (screen === 'match') return <MatchScreen onExit={() => setScreen('intro')} />
   return (
     <IntroScreen
       onPlay={() => {
