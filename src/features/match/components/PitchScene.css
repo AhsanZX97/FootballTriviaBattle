@@ -50,13 +50,16 @@
   width: var(--keeper-w);
   aspect-ratio: 134 / 127;
   background: url(../../../assets/gk-idle-strip.png) 0 0 / 1600% 100% no-repeat;
-  animation: scene-keeper-idle 1.6s steps(16) infinite;
+  animation: scene-keeper-idle 1.6s steps(15) infinite;
 }
 
-/* looping N-frame strip steps to N/(N-1)*100%: 16 frames -> 106.667% */
+/* looping N-frame strip: 'to' is always 100% regardless of N (it aligns the
+   image's right edge with the container's right edge, landing on the last
+   frame), paired with steps(N-1) so every intermediate step also lands
+   exactly on a frame boundary. 16 frames -> steps(15). */
 @keyframes scene-keeper-idle {
   to {
-    background-position-x: 106.667%;
+    background-position-x: 100%;
   }
 }
 
@@ -82,11 +85,37 @@
   }
 }
 
-/* ball on the penalty spot */
+/* ball on the penalty spot. Width derives from --keeper-w (not its own flat
+   %) so it can't drift out of proportion the next time the keeper is resized
+   — that drift is what made the ball look oversized after --keeper-w was
+   halved but the ball's size wasn't. 0.35 keeps it looking right against the
+   keeper's standing idle pose. */
 .scene__ball {
   left: 50%;
   top: 80%;
-  font-size: clamp(18px, 3.4vw, 30px);
+  width: calc(var(--keeper-w) * 0.35);
+  aspect-ratio: 1;
+  background: url(../../../assets/ball.png) center / contain no-repeat;
+}
+
+/* 4-frame spin (ball-spin-strip.png, 492x498/frame). Starts at the same
+   var(--suspense) moment the ball launches — it sits still on the base
+   ball.png until then. Iteration count (not `infinite`) is set per outcome
+   below to match that outcome's flight duration exactly, so the spin stops
+   the instant the ball does, then reverts to the plain ball.png. Frame order
+   is Ludo's authored spin direction: the top-surface pattern drifts right-to-
+   left across the 4 frames, matching a ball rolling LEFT (a wheel's topmost
+   point always moves the same way as its travel). Goal/save already send the
+   ball left, so they use this as-is; miss/concede send it right, so they
+   mirror the ball with scaleX(-1), which flips the apparent spin along with
+   the position. */
+@keyframes scene-ball-spin {
+  from {
+    background: url(../../../assets/ball-spin-strip.png) 0% 0 / 400% 100% no-repeat;
+  }
+  to {
+    background: url(../../../assets/ball-spin-strip.png) 100% 0 / 400% 100% no-repeat;
+  }
 }
 
 /* striker just left of and behind the ball (back view, right-footed), in the
@@ -143,14 +172,15 @@
 
 /* user scores: ball into the top-left corner of the net */
 .scene--goal .scene__ball {
-  animation: scene-ball-goal 0.7s steps(7) var(--suspense) forwards;
+  animation:
+    scene-ball-spin 0.2s steps(3) var(--suspense) 3.5,
+    scene-ball-goal 0.7s steps(7) var(--suspense) forwards;
 }
 
 @keyframes scene-ball-goal {
   to {
     left: 39%;
     top: 38%;
-    transform: translate(-50%, -50%) scale(0.75);
   }
 }
 
@@ -160,7 +190,7 @@
 /* dives the wrong way — sheet's natural rightward dive while the ball goes left */
 .scene--goal-wrong-way .scene__keeper {
   animation:
-    scene-keeper-idle var(--suspense) steps(16),
+    scene-keeper-idle var(--suspense) steps(15),
     scene-keeper-dive-frames 0.6s steps(5) var(--suspense) forwards,
     scene-keeper-wrong-way 0.7s steps(7) var(--suspense) forwards;
 }
@@ -176,7 +206,7 @@
 .scene--goal-late .scene__keeper {
   transform: translate(-50%, -100%) scaleX(-1); /* mirror: dive travels screen-left */
   animation:
-    scene-keeper-idle var(--suspense) steps(16),
+    scene-keeper-idle var(--suspense) steps(15),
     scene-keeper-dive-frames 0.6s steps(5) calc(var(--suspense) + 0.2s) forwards,
     scene-keeper-late 0.6s steps(6) calc(var(--suspense) + 0.2s) forwards;
 }
@@ -192,21 +222,35 @@
 
 /* user misses: ball sails over the bar into the crowd */
 .scene--miss .scene__ball {
-  animation: scene-ball-miss 0.7s steps(7) var(--suspense) forwards;
+  animation:
+    scene-ball-spin 0.2s steps(3) var(--suspense) 3.5,
+    scene-ball-miss 0.7s steps(7) var(--suspense) forwards;
+}
+
+/* travels right, so mirrored — see scene-ball-spin comment above. The mirror
+   is a plain (non-animated) transform, same pattern as the keeper's mirror:
+   animating `transform` between mismatched function lists (e.g. adding
+   scale() only at the end) makes the browser fall back to matrix
+   decomposition, which can visibly collapse the ball toward zero mid-flight
+   before popping back — looks like it vanishing and un-shrinking. Keeping
+   transform constant and only animating left/top/opacity avoids that. */
+.scene--miss .scene__ball {
+  transform: translate(-50%, -50%) scaleX(-1);
 }
 
 @keyframes scene-ball-miss {
   to {
     left: 57%;
     top: 8%;
-    transform: translate(-50%, -50%) scale(0.5);
     opacity: 0;
   }
 }
 
 /* user saves: keeper dives left onto the shot */
 .scene--save .scene__ball {
-  animation: scene-ball-save 0.5s steps(5) var(--suspense) forwards;
+  animation:
+    scene-ball-spin 0.2s steps(3) var(--suspense) 2.5,
+    scene-ball-save 0.5s steps(5) var(--suspense) forwards;
 }
 
 @keyframes scene-ball-save {
@@ -219,7 +263,7 @@
 .scene--save .scene__keeper {
   transform: translate(-50%, -100%) scaleX(-1); /* mirror: dive travels screen-left */
   animation:
-    scene-keeper-idle var(--suspense) steps(16),
+    scene-keeper-idle var(--suspense) steps(15),
     scene-keeper-dive-frames 0.6s steps(5) var(--suspense) forwards,
     scene-keeper-save 0.5s steps(5) var(--suspense) forwards;
 }
@@ -233,21 +277,23 @@
 
 /* cpu scores: ball into the right corner, keeper dives the wrong way */
 .scene--concede .scene__ball {
-  animation: scene-ball-concede 0.7s steps(7) var(--suspense) forwards;
+  transform: translate(-50%, -50%) scaleX(-1); /* travels right, so mirrored — see scene-ball-miss comment above */
+  animation:
+    scene-ball-spin 0.2s steps(3) var(--suspense) 3.5,
+    scene-ball-concede 0.7s steps(7) var(--suspense) forwards;
 }
 
 @keyframes scene-ball-concede {
   to {
     left: 61%;
     top: 39%;
-    transform: translate(-50%, -50%) scale(0.75);
   }
 }
 
 .scene--concede .scene__keeper {
   transform: translate(-50%, -100%) scaleX(-1); /* mirror: dive travels screen-left */
   animation:
-    scene-keeper-idle var(--suspense) steps(16),
+    scene-keeper-idle var(--suspense) steps(15),
     scene-keeper-dive-frames 0.6s steps(5) var(--suspense) forwards,
     scene-keeper-concede 0.7s steps(7) var(--suspense) forwards;
 }
