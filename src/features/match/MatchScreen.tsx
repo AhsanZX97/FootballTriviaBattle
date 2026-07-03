@@ -1,8 +1,9 @@
-import { useEffect, useState, useSyncExternalStore } from 'react'
+import { useEffect, useRef, useState, useSyncExternalStore } from 'react'
 import type { Kick, Stage } from '../../types/match'
 import { getResult, KICKS_PER_SIDE } from '../../game/shootout'
 import { matchStore, QUESTION_TIME_SECONDS } from './store'
 import { PitchScene, type SceneFeedback } from './components/PitchScene'
+import { PreMatchCountdown } from '../lobby/components/PreMatchCountdown'
 import './MatchScreen.css'
 
 /** Animation screen duration: 1s suspense delay + 0.7s animation + a beat to read the outcome. */
@@ -14,7 +15,7 @@ function feedbackOf(stage: Stage, correct: boolean): SceneFeedback {
 }
 
 type Props = {
-  /** Called from the result screen's Play Again — App switches back to the intro. */
+  /** Called from the result screen's Play Again (cpu) or Lobby (1v1) button. */
   onExit?: () => void
 }
 
@@ -41,34 +42,113 @@ function KickDots({ kicks, side }: { kicks: Kick[]; side: 'user' | 'cpu' }) {
 export function MatchScreen({ onExit }: Props) {
   const state = useSyncExternalStore(matchStore.subscribe, matchStore.getState)
   const [feedback, setFeedback] = useState<SceneFeedback | null>(null)
+  const [feedbackIsMine, setFeedbackIsMine] = useState(false)
   const [timeLeft, setTimeLeft] = useState(QUESTION_TIME_SECONDS)
+  const kicksSeenRef = useRef(0)
 
   const question = matchStore.getCurrentQuestion()
   const result = getResult(state.shootout)
+  const myTurn = state.shootout.stage === 'shoot'
+  const is1v1 = state.mode === '1v1'
+  const opponentLabel = is1v1 ? (state.opponentName ?? 'OPPONENT') : 'CPU'
 
-  // countdown — paused while feedback plays and once the match is over
+  // countdown — paused while feedback plays and once the match is over. During
+  // an opponent's turn it just ticks cosmetically: the server owns their real timeout.
   useEffect(() => {
     if (state.phase !== 'active' || feedback || result) return
     if (timeLeft <= 0) {
-      setFeedback(feedbackOf(state.shootout.stage, false)) // timeout = miss/concede
+      if (!is1v1 || myTurn) {
+        setFeedbackIsMine(true)
+        setFeedback(feedbackOf(state.shootout.stage, false)) // timeout = miss/concede
+      }
       return
     }
     const t = setTimeout(() => setTimeLeft((s) => s - 1), 1000)
     return () => clearTimeout(t)
-  }, [state.phase, state.shootout.stage, timeLeft, feedback, result])
+  }, [state.phase, state.shootout.stage, timeLeft, feedback, result, is1v1, myTurn])
 
-  // let the animation play, then resolve the kick and reset the clock
+  // let the animation play, then resolve the kick and reset the clock. In 1v1
+  // mode a spectate-side animation (the opponent's kick) already had its
+  // outcome applied via kickResolved — only my own kick needs sending on.
   useEffect(() => {
     if (!feedback) return
     const t = setTimeout(() => {
-      matchStore.submitAnswer(feedback === 'goal' || feedback === 'save')
+      if (is1v1) {
+        if (feedbackIsMine) matchStore.submitAnswer1v1(feedback === 'goal' || feedback === 'save')
+      } else {
+        matchStore.submitAnswer(feedback === 'goal' || feedback === 'save')
+      }
       setFeedback(null)
       setTimeLeft(QUESTION_TIME_SECONDS)
     }, FEEDBACK_MS)
     return () => clearTimeout(t)
-  }, [feedback])
+  }, [feedback, is1v1, feedbackIsMine])
+
+  // 1v1 only: replay the opponent's resolved kick as a feedback animation —
+  // their side of the match store already applied it via kickResolved.
+  useEffect(() => {
+    const kicks = state.shootout.kicks
+    const prevSeen = kicksSeenRef.current
+    kicksSeenRef.current = kicks.length
+    if (!is1v1 || kicks.length <= prevSeen || state.lastKickBy !== 'opponent') return
+    const kick = kicks[kicks.length - 1]
+    setFeedbackIsMine(false)
+    setFeedback(feedbackOf(kick.stage, kick.correct))
+  }, [state.shootout.kicks, is1v1, state.lastKickBy])
+
+  // Server or our own link dropped mid-match (opponent-initiated drops arrive
+  // as opponentLeft instead). Takes priority so the screen never just freezes.
+  if (state.connectionLost) {
+    return (
+      <main className="match match--message">
+        <p className="match__result">📡 CONNECTION LOST</p>
+        <button
+          type="button"
+          className="match__answer"
+          onClick={() => {
+            matchStore.reset()
+            onExit?.()
+          }}
+        >
+          LOBBY
+        </button>
+      </main>
+    )
+  }
 
   if (result) {
+    if (is1v1) {
+      return (
+        <main className="match match--message">
+          <p className="match__result">{result.outcome === 'win' ? '🏆 YOU WIN' : '💀 YOU LOSE'}</p>
+          <p className="match__final-score">
+            {result.userScore} – {result.cpuScore}
+          </p>
+          {state.opponentLeft ? (
+            <p className="match__status">{opponentLabel} LEFT</p>
+          ) : (
+            <button
+              type="button"
+              className="match__answer"
+              disabled={state.rematchIVoted}
+              onClick={() => matchStore.voteRematch1v1()}
+            >
+              REMATCH ({state.rematchVotes}/2)
+            </button>
+          )}
+          <button
+            type="button"
+            className="match__answer"
+            onClick={() => {
+              matchStore.leaveMatch1v1()
+              onExit?.()
+            }}
+          >
+            LOBBY
+          </button>
+        </main>
+      )
+    }
     return (
       <main className="match match--message">
         <p className="match__result">{result.outcome === 'win' ? '🏆 YOU WIN' : '💀 YOU LOSE'}</p>
@@ -78,6 +158,19 @@ export function MatchScreen({ onExit }: Props) {
         <button type="button" className="match__answer" onClick={onExit}>
           PLAY AGAIN
         </button>
+      </main>
+    )
+  }
+
+  if (state.phase === 'rematchStarting') {
+    return (
+      <main className="match match--message">
+        <PreMatchCountdown
+          opponentName={opponentLabel}
+          youGoFirst={state.shootout.stage === 'shoot'}
+          skipFoundBeat
+          onDone={() => matchStore.finishRematchStart()}
+        />
       </main>
     )
   }
@@ -102,7 +195,7 @@ export function MatchScreen({ onExit }: Props) {
   }
 
   const { shootout } = state
-  const shooting = shootout.stage === 'shoot'
+  const showQuestion = !is1v1 || (myTurn && !state.pendingKick)
 
   return (
     <main className={`match${feedback ? ' match--scene' : ''}`}>
@@ -117,7 +210,7 @@ export function MatchScreen({ onExit }: Props) {
         </div>
         <span className="match__vs">–</span>
         <div className="match__team">
-          <span className="match__team-name">CPU</span>
+          <span className="match__team-name">{opponentLabel}</span>
           <span key={shootout.cpuScore} className="match__score">
             {shootout.cpuScore}
           </span>
@@ -125,12 +218,20 @@ export function MatchScreen({ onExit }: Props) {
         </div>
       </section>
 
-      <p className="match__stage">{shooting ? "⚽ YOU'RE SHOOTING" : "🧤 YOU'RE IN GOAL"}</p>
+      <p className="match__stage">
+        {is1v1
+          ? myTurn
+            ? '⚽ YOUR KICK'
+            : `⏳ ${opponentLabel}'S KICK…`
+          : myTurn
+            ? "⚽ YOU'RE SHOOTING"
+            : "🧤 YOU'RE IN GOAL"}
+      </p>
 
       {feedback ? (
         // animation screen: scene replaces the question until the kick resolves
         <PitchScene stage={shootout.stage} feedback={feedback} />
-      ) : (
+      ) : showQuestion ? (
         <>
           <div className={`match__timer${timeLeft <= 3 ? ' match__timer--low' : ''}`}>
             <span className="match__timer-count">{timeLeft}</span>
@@ -145,13 +246,22 @@ export function MatchScreen({ onExit }: Props) {
                   key={answer}
                   type="button"
                   className="match__answer"
-                  onClick={() => setFeedback(feedbackOf(shootout.stage, answer === question.correctAnswer))}
+                  onClick={() => {
+                    setFeedbackIsMine(true)
+                    setFeedback(feedbackOf(shootout.stage, answer === question.correctAnswer))
+                  }}
                 >
                   {answer}
                 </button>
               ))}
             </div>
           </section>
+        </>
+      ) : (
+        // 1v1 spectating (or the brief gap while my own kick is in flight to the server)
+        <>
+          <PitchScene stage={shootout.stage} feedback={null} />
+          {!myTurn && <p className="match__waiting">WAITING FOR {opponentLabel}…</p>}
         </>
       )}
     </main>

@@ -77,13 +77,14 @@ Straight alternation, as specced: **P1 shoots → P2 shoots → P1 → …**
 
 - On your turn you get a trivia question with the 10s timer.
   Correct → goal. Wrong / timeout → miss.
-- On the opponent's turn you **spectate**: you see "waiting for <NAME>…",
-  their timer ticking, and then the same goal/miss pitch animation.
-  You do **not** see their question or answer (keeps it simple and prevents
-  screen-peeking complaints later).
-- **No keeper questions in 1v1.** The CPU mode's "you're in goal" stage exists
-  because there's no second human; here the other human *is* the opposition.
-  (Flagged in §7 in case you want dueling keeper answers instead.)
+- On the opponent's turn you **spectate**: the pitch scene stays on screen in
+  an **idle state** — ball on the spot, goalie waiting — with a
+  "waiting for <NAME>…" banner and a cosmetic mirrored timer, then plays the
+  goal/miss animation when their result arrives. You never see their
+  question or answers. **(Decided.)**
+- **No keeper questions in 1v1 — shooter-only answers. (Decided.)** The CPU
+  mode's "you're in goal" stage exists because there's no second human; here
+  the other human *is* the opposition.
 
 ### Rules & engine reuse
 
@@ -166,8 +167,10 @@ Same layout as the CPU match, with:
 - Scoreboard: `YOU  n – n  <OPPONENT NAME>`, same kick dots.
 - Turn banner: "⚽ YOUR KICK" / "⏳ <NAME>'S KICK…".
 - Your turn: timer + question card exactly as today.
-- Their turn: waiting panel (their name + cosmetic timer), then the existing
-  `PitchScene` goal/miss animation when their result arrives.
+- Their turn: the `PitchScene` shown in a new **idle mode** (ball on the
+  spot, keeper doing his idle animation) with "waiting for <NAME>…" and a
+  cosmetic timer, transitioning into the existing goal/miss animation when
+  their result arrives. No question card is rendered at all on their turn.
 - Result: "🏆 YOU WIN" / "💀 YOU LOSE" + score + two buttons:
   - **REMATCH (0/2)** — see below.
   - **LOBBY** — leave the room, back to the lobby (name kept).
@@ -219,7 +222,8 @@ src/
     match/
       store.ts                 # EDIT — add multiplayer mode: outcomes come
                                #   from server events instead of local submit
-      MatchScreen.tsx          # EDIT — names, turn banner, spectate panel
+      MatchScreen.tsx          # EDIT — names, turn banner, spectate view
+      components/PitchScene.*  # EDIT — add idle mode (ball + waiting keeper)
   App.tsx                      # EDIT — 'intro' | 'lobby' | 'match' switch
 ```
 
@@ -261,6 +265,27 @@ stay in lockstep off the same authoritative event stream.
 
 ### Build order (atomic milestones)
 
+Milestones group into four demoable phases + deploy. Each phase ends with
+the repo green (typecheck + tests) and something you can actually see work,
+so the work can pause/resume at any phase boundary.
+
+- **Phase A — Foundations (1–5): ✅ done.** types, name generator, server logic +
+  runnable WS server. *Verified: tests pass; server pairs two raw socket clients.*
+- **Phase B — Lobby (6–9): ✅ done.** socket client, lobby screen, intro button,
+  routing. *Verified: two browser tabs enter names, queue, get matched, see the
+  3-2-1 countdown.*
+- **Phase C — The match (10–11): ✅ done.** 1v1 match store mode + match screen UI.
+  *Verified in-browser: pairing, names, turn banner, spectate view, kick relay,
+  animations. Playing a match to its result is the user's to confirm.*
+- **Phase D — Rematch & hardening (12–13): ✅ code done.** Rematch shipped in
+  Phase C. Hardening added: server `send()` guards closed sockets; client
+  surfaces `CONNECTION LOST` on an unexpected socket drop (server/own-network,
+  distinct from the opponent leaving); fixed the LOBBY button routing to intro.
+  The end-to-end *play* pass (milestone 13 — full match, both endings, rematch
+  loop, disconnect, timeout) is the user's, per `CLAUDE.md`.
+- **Deploy:** client → Vercel, server → Render/Railway, `VITE_WS_URL`, origin
+  check. Needs your hosting account (§6) — everything before this is local.
+
 1. `types/multiplayer.ts` — protocol + lobby types.
 2. `randomName.ts` + tests.
 3. Server: matchmaking pure logic + tests.
@@ -271,7 +296,8 @@ stay in lockstep off the same authoritative event stream.
 8. Lobby screen UI (form, validation warning, states, countdown).
 9. Intro screen: add 1 V 1 button; App routing.
 10. Match store 1v1 mode + tests.
-11. Match screen 1v1 UI (names, turn banner, spectate panel, disconnect state).
+11. Match screen 1v1 UI (names, turn banner, PitchScene idle spectate view,
+    disconnect state).
     The "who goes first" + 3-2-1 countdown becomes a small shared component
     (lobby uses it for the first match, match screen for rematches).
 12. Rematch: server vote handling + result-screen button (0/2 → 1/2 → restart).
@@ -294,18 +320,14 @@ stay in lockstep off the same authoritative event stream.
 
 ## 7. Things YOU still need to decide / address
 
-1. **Spectator view:** plan says the waiting player sees a "waiting" panel +
-   the result animation, **not** the opponent's question. Confirm, or say if
-   you want them to see the opponent's question/answer live.
-2. **Keeper role in 1v1:** plan drops the "you're in goal" trivia stage —
-   only the shooter answers. Alternative (fun but bigger): *both* answer each
-   kick — shooter needs correct to score, keeper's correct answer saves it.
-   Confirm the simple version or ask for the duel version.
-3. **First-turn choice:** server coin flip — OK, or should it be something
+> Resolved: shooter-only answers (no keeper questions); spectator sees the
+> idle pitch scene (ball + waiting goalie), never the opponent's question.
+
+1. **First-turn choice:** server coin flip — OK, or should it be something
    else (e.g. joiner always second)?
-4. **Name rules:** any profanity filtering needed, or is anything-goes fine
+2. **Name rules:** any profanity filtering needed, or is anything-goes fine
    for now? (Plan: anything non-empty goes, 16-char cap.)
-5. **Match abandonment stakes:** disconnect = instant win for the other
+3. **Match abandonment stakes:** disconnect = instant win for the other
    player. Fine while there's no ranking; revisit if stats ever land.
 
 ---

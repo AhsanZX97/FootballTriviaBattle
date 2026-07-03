@@ -117,6 +117,17 @@
   background: #fff04a;
 }
 
+.intro__play--secondary {
+  --accent: #6f8fc4;
+  color: #eaf0fc;
+  padding: 16px 36px;
+  font-size: clamp(11px, 1.6vw, 17px);
+}
+
+.intro__play--secondary:hover {
+  background: #8fb0e6;
+}
+
 .intro__play:active {
   transform: translate(6px, 6px);
   box-shadow:

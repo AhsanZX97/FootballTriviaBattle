@@ -1,0 +1,46 @@
+.pmc {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 14px;
+}
+
+.pmc__status {
+  margin: 0;
+  font-size: clamp(12px, 1.8vw, 17px);
+  color: #fff;
+  text-shadow: 3px 3px 0 #000;
+  text-align: center;
+}
+
+.pmc__opponent {
+  margin: 0;
+  font-size: clamp(11px, 1.6vw, 15px);
+  color: #ffcf1a;
+  text-shadow: 2px 2px 0 #000;
+}
+
+.pmc__countdown {
+  margin: 0;
+  font-size: clamp(48px, 10vw, 96px);
+  color: #ffcf1a;
+  text-shadow: 4px 4px 0 #000;
+  animation: pmc-countdown-pop 0.3s steps(3) both;
+}
+
+@keyframes pmc-countdown-pop {
+  from {
+    transform: scale(0.6);
+    opacity: 0;
+  }
+  to {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .pmc__countdown {
+    animation: none;
+  }
+}

@@ -125,6 +125,16 @@
   margin: 0;
 }
 
+/* 1v1 spectating: sits above the idle pitch scene while it's the opponent's kick
+   (position: relative comes from the generic ".match > :not(.scene)" rule above) */
+.match__waiting {
+  margin: 0;
+  font-size: clamp(10px, 1.5vw, 14px);
+  letter-spacing: 0.08em;
+  color: #fff;
+  text-shadow: 2px 2px 0 #000;
+}
+
 /* Timer */
 .match__timer {
   display: flex;
