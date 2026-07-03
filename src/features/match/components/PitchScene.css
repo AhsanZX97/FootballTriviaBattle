@@ -3,6 +3,16 @@
   /* the one timing knob: the moment the ball leaves the foot. Everything
      else (kick wind-up, dives, label) offsets from this via calc() */
   --suspense: 1s;
+  /* keeper idle-frame width, as a % of .scene__stage (not the viewport) so
+     he scales in lockstep with the goal at every aspect ratio — .scene__stage
+     itself already zooms via max(100vw, 177.78vh) to cover non-16:9 screens,
+     and vw/vh units don't track that zoom the way % of the stage does.
+     no px clamp: a min/max here would cap the % past some stage width and
+     silently decouple him from the goal again on very wide or very tall
+     screens — exactly the bug this replaced.
+     the dive box derives from this so the character stays the same size when
+     the sheet swaps */
+  --keeper-w: 4.9%;
   position: fixed;
   inset: 0;
   overflow: hidden;
@@ -31,35 +41,44 @@
 }
 
 /* keeper on the goal line, middle of the goal mouth.
-   4-frame 64px idle strip; background-size 400% + % positions keep the
+   16-frame strip (gk-idle-strip.png, 134x127/frame); % positions keep the
    frame math correct at any responsive width */
 .scene__keeper {
   left: 50%;
   top: 51%; /* goal line */
   transform: translate(-50%, -100%); /* anchored at the feet, so he stands on the line at any size */
-  width: clamp(40px, 7vw, 64px);
-  aspect-ratio: 1;
-  background: url(../../../assets/goalkeeper_idle_64.png) 0 0 / 400% 100% no-repeat;
-  animation: scene-keeper-idle 0.8s steps(4) infinite;
+  width: var(--keeper-w);
+  aspect-ratio: 134 / 127;
+  background: url(../../../assets/gk-idle-strip.png) 0 0 / 1600% 100% no-repeat;
+  animation: scene-keeper-idle 1.6s steps(16) infinite;
 }
 
-/* 133.334% + steps(4) lands exactly on frames 0/33.3/66.7/100% */
+/* looping N-frame strip steps to N/(N-1)*100%: 16 frames -> 106.667% */
 @keyframes scene-keeper-idle {
   to {
-    background-position-x: 133.334%;
+    background-position-x: 106.667%;
   }
 }
 
-/* 6-frame dive strip (dives to screen-left; scaleX(-1) on the element mirrors
-   it right). Swaps the sheet in when the delay expires, steps(5) shows all
-   6 frames, `forwards` holds the last one. Listed after the idle loop in each
-   animation list so it wins once it starts. */
+/* 6-frame dive strip (gk-dive-strip.png, 94x83/frame, feet bottom-aligned;
+   crouch -> flying extension -> landing. Sliced from the spaced source by
+   connected-component detection (each keeper is its own island), so no even
+   grid needed. This sheet dives to screen-RIGHT; leftward dives mirror with
+   scaleX(-1)). Box + sheet swap in inside the keyframes so the character keeps
+   its on-screen size. 0.701 = 94/134: renders the dive at the same native
+   pixel scale as the idle sheet (keeper-w / idle-frame-width), so the same
+   keeper stays the same size across sheets. steps(5) shows all 6 frames,
+   `forwards` holds the landing. */
 @keyframes scene-keeper-dive-frames {
   from {
-    background: url(../../../assets/goalkeeper_dive_left_64.png) 0% 0 / 600% 100% no-repeat;
+    width: calc(var(--keeper-w) * 1.184);
+    aspect-ratio: 94 / 83;
+    background: url(../../../assets/gk-dive-strip.png) 0% 0 / 600% 100% no-repeat;
   }
   to {
-    background: url(../../../assets/goalkeeper_dive_left_64.png) 100% 0 / 600% 100% no-repeat;
+    width: calc(var(--keeper-w) * 1.184);
+    aspect-ratio: 94 / 83;
+    background: url(../../../assets/gk-dive-strip.png) 100% 0 / 600% 100% no-repeat;
   }
 }
 
@@ -138,11 +157,10 @@
 /* ...while the beaten keeper reacts one of three random ways
    (ball flies to the LEFT corner in all of them) */
 
-/* dives the wrong way — mirrored so he dives right while the ball goes left */
+/* dives the wrong way — sheet's natural rightward dive while the ball goes left */
 .scene--goal-wrong-way .scene__keeper {
-  transform: translate(-50%, -100%) scaleX(-1);
   animation:
-    scene-keeper-idle 0.8s steps(4) infinite,
+    scene-keeper-idle var(--suspense) steps(16),
     scene-keeper-dive-frames 0.6s steps(5) var(--suspense) forwards,
     scene-keeper-wrong-way 0.7s steps(7) var(--suspense) forwards;
 }
@@ -156,8 +174,9 @@
 
 /* guesses right but gets there too late, lands short of the ball */
 .scene--goal-late .scene__keeper {
+  transform: translate(-50%, -100%) scaleX(-1); /* mirror: dive travels screen-left */
   animation:
-    scene-keeper-idle 0.8s steps(4) infinite,
+    scene-keeper-idle var(--suspense) steps(16),
     scene-keeper-dive-frames 0.6s steps(5) calc(var(--suspense) + 0.2s) forwards,
     scene-keeper-late 0.6s steps(6) calc(var(--suspense) + 0.2s) forwards;
 }
@@ -192,14 +211,15 @@
 
 @keyframes scene-ball-save {
   to {
-    left: 41%;
-    top: 43%;
+    left: 39%;
+    top: 47%;
   }
 }
 
 .scene--save .scene__keeper {
+  transform: translate(-50%, -100%) scaleX(-1); /* mirror: dive travels screen-left */
   animation:
-    scene-keeper-idle 0.8s steps(4) infinite,
+    scene-keeper-idle var(--suspense) steps(16),
     scene-keeper-dive-frames 0.6s steps(5) var(--suspense) forwards,
     scene-keeper-save 0.5s steps(5) var(--suspense) forwards;
 }
@@ -225,8 +245,9 @@
 }
 
 .scene--concede .scene__keeper {
+  transform: translate(-50%, -100%) scaleX(-1); /* mirror: dive travels screen-left */
   animation:
-    scene-keeper-idle 0.8s steps(4) infinite,
+    scene-keeper-idle var(--suspense) steps(16),
     scene-keeper-dive-frames 0.6s steps(5) var(--suspense) forwards,
     scene-keeper-concede 0.7s steps(7) var(--suspense) forwards;
 }
