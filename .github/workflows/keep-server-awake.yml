@@ -1,0 +1,23 @@
+name: Keep multiplayer server awake
+
+# Render's free tier spins the WS server down after ~15 min with no inbound
+# HTTP traffic (see render.yaml / README "Deployment"). This pings /healthz
+# just under that window so a match is never blocked on a cold start.
+on:
+  schedule:
+    - cron: '*/14 * * * *'
+  workflow_dispatch: {}
+
+jobs:
+  ping:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Ping /healthz
+        env:
+          HEALTH_URL: ${{ vars.RENDER_HEALTH_URL }}
+        run: |
+          if [ -z "$HEALTH_URL" ]; then
+            echo "RENDER_HEALTH_URL repo variable is not set — skipping (see README Deployment)."
+            exit 0
+          fi
+          curl --fail --silent --show-error --retry 3 --retry-delay 5 --max-time 60 "$HEALTH_URL/healthz"

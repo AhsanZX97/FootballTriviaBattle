@@ -62,6 +62,23 @@ https://<project>.vercel.app
 The server rejects sockets from any other browser origin. Local dev is
 unaffected — `dev:server` defaults to allowing `http://localhost:5173`.
 
+### 4. Keep the server awake (optional but recommended)
+
+[.github/workflows/keep-server-awake.yml](.github/workflows/keep-server-awake.yml)
+pings `/healthz` every 14 minutes via GitHub Actions — just under Render's
+~15 min idle timeout — so a Quick Match is never blocked on a cold start.
+
+1. Repo → **Settings → Secrets and variables → Actions → Variables** →
+   New repository variable: `RENDER_HEALTH_URL` = `https://<render-service>.onrender.com`
+   (no trailing slash, no `/healthz`).
+2. That's it — the workflow no-ops with a log message until the variable is
+   set. You can trigger it manually via **Actions → Keep multiplayer server
+   awake → Run workflow** to test it.
+
+Note: GitHub Actions' `schedule` trigger isn't wall-clock precise — it can
+slip a few minutes during high load, and GitHub disables scheduled workflows
+on repos with no commits for 60 days (a commit re-enables it).
+
 ### Server environment variables
 
 | Var | Default | Purpose |
