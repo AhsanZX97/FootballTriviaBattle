@@ -28,24 +28,29 @@ That's the whole loop. No accounts, no persistence, no settings, no other modes.
 |------|----------|
 | **Stack** | Vite + React + TypeScript |
 | **Styling** | Deferred — design to be figured out later (likely via Claude design tooling). Code keeps styling decoupled so it can be dropped in without restructuring components. |
-| **Questions** | Open Trivia Database (OpenTDB) **Sports** category (id `21`) for now. Data access is abstracted behind one module so a football-only bank can replace it in a later phase. |
+| **Questions** | ~~OpenTDB Sports category~~ **Superseded:** a bundled **football-only question bank** (~400 hand-written questions across 8 topics in `services/trivia/bank/`). No network, no rate limits, works offline. Still served through the same `questionSource` seam. |
 | **Shootout rules** | Real football: best-of-5 each, then sudden death if level. |
 | **Timer** | **10 seconds** per question. Built as a configurable value (single constant / store field) so it can be changed or made user-selectable in a future phase. Timeout counts as a wrong answer. |
 | **Difficulty** | **Mixed** — request all difficulties from OpenTDB (don't pin `difficulty=`). |
-| **API failure** | Fall back to a small **bundled local question set** shipped with the app, served through the same question-source abstraction, so the game never hard-fails (offline / rate-limited). |
+| **API failure** | No longer applicable — questions are bundled with the app, so there is no API to fail. `getQuestions()` never throws. |
 | **Target screens** | Responsive — desktop *and* mobile. Mobile-first layout. |
 
-### Open Trivia DB notes
-- Endpoint: `https://opentdb.com/api.php?amount=N&category=21&type=multiple`
-- Returns multiple-choice questions; answers are **HTML-entity encoded** — must
-  decode (`&quot;`, `&#039;`, etc.) before rendering.
-- Rate-limited: ~1 request per 5s per IP. Strategy: **fetch a batch of questions
-  once at match start** (e.g. 20–50) and draw from that pool locally, rather than
-  one request per penalty.
-- Has no football-only category — accepted for Phase 1 (see table).
-- **Mixed difficulty:** omit the `difficulty` param so the batch contains easy/medium/hard.
-- **Resilience:** wrap the fetch so any failure (network, rate-limit, empty result)
-  falls back to a bundled local question set via the same `questionSource` abstraction.
+### Question bank notes (replaced OpenTDB)
+OpenTDB was used in Phase 1 but had no football-only category, was rate-limited,
+and could fail mid-session. It has been fully replaced by a bundled bank:
+
+- **~400 football-only questions** in `src/services/trivia/bank/`, split by topic:
+  World Cup, European cups, leagues, players, clubs, national teams,
+  rules & tactics, records & history. Each entry has easy/medium/hard difficulty.
+- **Sampler** (`sampler.ts`): draws a non-repeating random batch per match and
+  shuffles the four answers at draw time (correct answer never in a fixed slot).
+- **Repeat avoidance** (`recentIds.ts`): the last ~120 served question ids are
+  kept in localStorage so back-to-back matches don't reuse questions.
+  Best-effort — silently skipped on the server / private browsing.
+- **Multiplayer:** the WS server samples a shared 30-question batch per room
+  from the same bank (pure functions, Node-safe — no DOM APIs).
+- Adding questions = appending entries to a topic file. Ids stay stable as long
+  as existing entries keep their order.
 
 ---
 
@@ -89,9 +94,10 @@ src/
     match.ts           # ShootoutState, Kick, Stage, MatchResult
   services/
     trivia/
-      openTdbClient.ts  # raw fetch + HTML-entity decode
+      bank/             # football-only question bank, one file per topic
+      sampler.ts        # non-repeating draw + per-draw answer shuffle
+      recentIds.ts      # localStorage-backed cross-match repeat avoidance
       questionSource.ts # abstraction: getQuestions(count) -> Question[]
-                        #   (swappable: OpenTDB now, football bank later)
   game/
     shootout.ts        # resolveShootoutState(), isMatchOver(), nextStage()
     scoring.ts         # pure point/result helpers
@@ -196,8 +202,8 @@ Each milestone is independently demonstrable. Stop and re-plan if any one balloo
 
 ## 8. Explicitly out of scope (future phases)
 
-- Other modes (1 v 1 local/online, tournaments).
-- Football-only curated question bank.
+- Other modes (1 v 1 local/online, tournaments). *(1 v 1 online since shipped.)*
+- ~~Football-only curated question bank.~~ *(Shipped — see question bank notes above.)*
 - Difficulty selection, categories, custom rounds.
 - Accounts, leaderboards, stats persistence.
 - Sound design.
@@ -209,7 +215,7 @@ Each milestone is independently demonstrable. Stop and re-plan if any one balloo
 
 - **Timer:** 10 seconds per question, configurable (single constant / store field for
   future user-selectable timers). Timeout = wrong answer.
-- **Difficulty:** mixed — no `difficulty` param on the OpenTDB request.
-- **API failure:** fall back to a small bundled local question set via the same
-  `questionSource` abstraction, so the game never hard-fails.
-- **Answer options:** 4 multiple-choice (OpenTDB `type=multiple` default) — kept as is.
+- **Difficulty:** mixed — the bank sampler draws across easy/medium/hard.
+- **Resilience:** questions ship with the app; `getQuestions()` never throws and
+  needs no network, so the game can't hard-fail on question fetch.
+- **Answer options:** 4 multiple-choice — kept as is.

@@ -1,5 +1,10 @@
 import { useEffect, useState } from 'react'
+import { play } from '../../../services/sound'
 import './PreMatchCountdown.css'
+
+// ponytail: the "321 countdown" audio runs ~3s, so ticks are 1s to stay in
+// step with it — this is the knob if the beeps drift from the numbers.
+const TICK_MS = 1000
 
 /** "Found" only applies the first time (a fresh opponent); rematches skip
  * straight to who-goes-first since there's nothing new to announce. */
@@ -28,6 +33,11 @@ export function PreMatchCountdown({ opponentName, youGoFirst, onDone, skipFoundB
     return () => clearTimeout(t)
   }, [stage])
 
+  // fires once as the count begins, so the audio's 3-2-1 lines up with TICK_MS
+  useEffect(() => {
+    if (stage === 'countdown') play('countdown')
+  }, [stage])
+
   useEffect(() => {
     if (stage !== 'countdown') return
     if (count <= 0) {
@@ -35,7 +45,7 @@ export function PreMatchCountdown({ opponentName, youGoFirst, onDone, skipFoundB
       onDone()
       return
     }
-    const t = setTimeout(() => setCount((c) => c - 1), 700)
+    const t = setTimeout(() => setCount((c) => c - 1), TICK_MS)
     return () => clearTimeout(t)
   }, [stage, count, onDone])
 

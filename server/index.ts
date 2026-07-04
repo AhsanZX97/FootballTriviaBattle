@@ -7,7 +7,8 @@ import type { PlayerSlot, Room } from './room'
 import { MAX_NAME_LENGTH } from '../src/types/multiplayer'
 import type { ClientMessage, ServerMessage } from '../src/types/multiplayer'
 import { isMatchOver } from '../src/game/shootout'
-import { bundledQuestions } from '../src/services/trivia/bundledQuestions'
+import { footballBank } from '../src/services/trivia/bank'
+import { sampleQuestions } from '../src/services/trivia/sampler'
 
 const PORT = Number(process.env.PORT ?? 8787)
 const ALLOWED_ORIGINS = (process.env.ALLOWED_ORIGINS ?? 'http://localhost:5173')
@@ -50,11 +51,13 @@ function otherSlot(slot: PlayerSlot): PlayerSlot {
   return slot === 'a' ? 'b' : 'a'
 }
 
-// ponytail: server-side questions come from the offline bundle, not a live
-// OpenTDB fetch — openTdbClient's entity decoder needs a DOMParser, which
-// Node doesn't have. Swap in a Node-safe decoder if the bundle feels stale.
+// Enough for 5 kicks each plus a long sudden death.
+const QUESTIONS_PER_MATCH = 30
+
+// Both players must see the same questions, so the server draws one shared
+// sample per room from the bundled football bank (Node-safe: no DOM APIs).
 function questionsForRoom() {
-  return bundledQuestions
+  return sampleQuestions(footballBank, QUESTIONS_PER_MATCH)
 }
 
 function armKickTimer(roomId: string, entry: RoomEntry) {

@@ -1,43 +1,33 @@
-import { afterEach, describe, expect, it, vi } from 'vitest'
+import { beforeEach, describe, expect, it } from 'vitest'
 import { getQuestions } from '../questionSource'
-import { bundledQuestions } from '../bundledQuestions'
+import { footballBank } from '../bank'
 
 describe('getQuestions', () => {
-  afterEach(() => vi.unstubAllGlobals())
+  beforeEach(() => localStorage.clear())
 
-  it('falls back to the bundled set when the fetch fails', async () => {
-    vi.stubGlobal('fetch', vi.fn().mockRejectedValue(new Error('network down')))
-    const out = await getQuestions(3)
-    expect(out).toEqual(bundledQuestions.slice(0, 3))
+  it('returns the requested number of questions from the football bank', async () => {
+    const out = await getQuestions(10)
+    expect(out).toHaveLength(10)
+    const bankIds = new Set(footballBank.map((entry) => entry.id))
+    for (const question of out) expect(bankIds.has(question.id)).toBe(true)
   })
 
-  it('falls back when OpenTDB returns an error code', async () => {
-    vi.stubGlobal('fetch', vi.fn().mockResolvedValue({
-      ok: true,
-      json: async () => ({ response_code: 5, results: [] }),
-    }))
-    const out = await getQuestions(2)
-    expect(out).toHaveLength(2)
-    expect(out[0]).toEqual(bundledQuestions[0])
+  it('does not repeat questions from the previous match', async () => {
+    const first = await getQuestions(30)
+    const second = await getQuestions(30)
+    const firstIds = new Set(first.map((question) => question.id))
+    expect(second.some((question) => firstIds.has(question.id))).toBe(false)
   })
 
-  it('returns mapped questions on success', async () => {
-    vi.stubGlobal('fetch', vi.fn().mockResolvedValue({
-      ok: true,
-      json: async () => ({
-        response_code: 0,
-        results: [{
-          category: 'Sports',
-          type: 'multiple',
-          difficulty: 'easy',
-          question: 'Q?',
-          correct_answer: 'A',
-          incorrect_answers: ['B', 'C', 'D'],
-        }],
-      }),
-    }))
-    const out = await getQuestions(1)
-    expect(out).toHaveLength(1)
-    expect(out[0].correctAnswer).toBe('A')
+  it('keeps serving full batches match after match', async () => {
+    for (let i = 0; i < 10; i++) {
+      expect(await getQuestions(30)).toHaveLength(30)
+    }
+  })
+
+  it('shuffles answers so the correct one is not always first', async () => {
+    const out = await getQuestions(30)
+    const positions = new Set(out.map((question) => question.answers.indexOf(question.correctAnswer)))
+    expect(positions.size).toBeGreaterThan(1)
   })
 })

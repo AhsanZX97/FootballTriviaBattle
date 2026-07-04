@@ -4,10 +4,21 @@ import { getResult, KICKS_PER_SIDE } from '../../game/shootout'
 import { matchStore, QUESTION_TIME_SECONDS } from './store'
 import { PitchScene, type SceneFeedback } from './components/PitchScene'
 import { PreMatchCountdown } from '../lobby/components/PreMatchCountdown'
+import { fadeOutCrowd, play } from '../../services/sound'
 import './MatchScreen.css'
 
 /** Animation screen duration: 1s suspense delay + 0.7s animation + a beat to read the outcome. */
 export const FEEDBACK_MS = 2600
+
+/** Ball leaves the foot at PitchScene.css's --suspense mark. */
+const KICK_SOUND_MS = 1000
+/** Ball lands (net/keeper/crowd) at --suspense + flight time per outcome. */
+const LAND_MS: Record<SceneFeedback, number> = {
+  goal: 1700,
+  miss: 1700,
+  save: 1500,
+  concede: 1700,
+}
 
 function feedbackOf(stage: Stage, correct: boolean): SceneFeedback {
   if (stage === 'shoot') return correct ? 'goal' : 'miss'
@@ -15,8 +26,10 @@ function feedbackOf(stage: Stage, correct: boolean): SceneFeedback {
 }
 
 type Props = {
-  /** Called from the result screen's Play Again (cpu) or Lobby (1v1) button. */
+  /** Called from the connection-lost screen and the result screen's Lobby (1v1) button. */
   onExit?: () => void
+  /** Called from the result screens' Main Menu button — returns to the intro screen. */
+  onMainMenu?: () => void
 }
 
 // ponytail: sub-components live in this file; split into components/ when
@@ -39,7 +52,7 @@ function KickDots({ kicks, side }: { kicks: Kick[]; side: 'user' | 'cpu' }) {
   )
 }
 
-export function MatchScreen({ onExit }: Props) {
+export function MatchScreen({ onExit, onMainMenu }: Props) {
   const state = useSyncExternalStore(matchStore.subscribe, matchStore.getState)
   const [feedback, setFeedback] = useState<SceneFeedback | null>(null)
   const [feedbackIsMine, setFeedbackIsMine] = useState(false)
@@ -66,6 +79,33 @@ export function MatchScreen({ onExit }: Props) {
     const t = setTimeout(() => setTimeLeft((s) => s - 1), 1000)
     return () => clearTimeout(t)
   }, [state.phase, state.shootout.stage, timeLeft, feedback, result, is1v1, myTurn])
+
+  // sound track for the feedback animation: kick when the ball launches, the
+  // crowd + net when it lands. Cleanup fades the (30s-long) crowd file out as
+  // the next question appears, and kills pending sounds if the screen unmounts.
+  useEffect(() => {
+    if (!feedback) return
+    const kickT = setTimeout(() => play('kick'), KICK_SOUND_MS)
+    const landT = setTimeout(() => {
+      if (feedback === 'goal' || feedback === 'concede') play('netRipple')
+      play(feedback === 'goal' || feedback === 'save' ? 'cheer' : 'shock')
+    }, LAND_MS[feedback])
+    return () => {
+      clearTimeout(kickT)
+      clearTimeout(landT)
+      fadeOutCrowd()
+    }
+  }, [feedback])
+
+  // kickoff / full-time whistles. phase re-enters 'active' after each rematch,
+  // so both matches get a kickoff whistle; `!!result` flips exactly once per match.
+  useEffect(() => {
+    if (state.phase === 'active') play('startWhistle')
+  }, [state.phase])
+  const matchOver = result !== null
+  useEffect(() => {
+    if (matchOver) play('finalWhistle')
+  }, [matchOver])
 
   // let the animation play, then resolve the kick and reset the clock. In 1v1
   // mode a spectate-side animation (the opponent's kick) already had its
@@ -146,6 +186,16 @@ export function MatchScreen({ onExit }: Props) {
           >
             LOBBY
           </button>
+          <button
+            type="button"
+            className="match__answer"
+            onClick={() => {
+              matchStore.leaveMatch1v1()
+              onMainMenu?.()
+            }}
+          >
+            MAIN MENU
+          </button>
         </main>
       )
     }
@@ -155,8 +205,18 @@ export function MatchScreen({ onExit }: Props) {
         <p className="match__final-score">
           {result.userScore} – {result.cpuScore}
         </p>
-        <button type="button" className="match__answer" onClick={onExit}>
+        <button type="button" className="match__answer" onClick={() => void matchStore.start()}>
           PLAY AGAIN
+        </button>
+        <button
+          type="button"
+          className="match__answer"
+          onClick={() => {
+            matchStore.reset()
+            onMainMenu?.()
+          }}
+        >
+          MAIN MENU
         </button>
       </main>
     )

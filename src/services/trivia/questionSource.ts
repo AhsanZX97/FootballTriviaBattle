@@ -1,16 +1,16 @@
 import type { Question } from '../../types/trivia'
-import { fetchQuestions } from './openTdbClient'
-import { bundledQuestions } from './bundledQuestions'
+import { footballBank } from './bank'
+import { sampleQuestions } from './sampler'
+import { loadRecentIds, recordRecentIds } from './recentIds'
 
 /**
- * The single seam the rest of the app talks to. OpenTDB now; a football-only
- * bank can replace this later without touching callers. Never throws — any
- * fetch failure falls back to the bundled set so the game can't hard-fail.
+ * The single seam the rest of the app talks to. Serves the bundled
+ * football-only bank — no network, no rate limits, works offline. Recently
+ * seen questions are avoided across matches (best-effort, via localStorage).
+ * Kept async so callers don't care where questions come from.
  */
 export async function getQuestions(count: number): Promise<Question[]> {
-  try {
-    return await fetchQuestions(count)
-  } catch {
-    return bundledQuestions.slice(0, count)
-  }
+  const questions = sampleQuestions(footballBank, count, { excludeIds: loadRecentIds() })
+  recordRecentIds(questions.map((question) => question.id))
+  return questions
 }

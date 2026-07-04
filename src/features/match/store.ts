@@ -8,7 +8,7 @@ import { getQuestions } from '../../services/trivia/questionSource'
 
 /** Seconds per question. Single source of truth so it can be made user-selectable later. */
 export const QUESTION_TIME_SECONDS = 10
-/** Questions fetched once at match start, then drawn locally (OpenTDB rate limits). */
+/** Questions drawn once at match start from the bundled football bank. */
 export const QUESTION_BATCH = 30
 
 export type MatchMode = 'cpu' | '1v1'

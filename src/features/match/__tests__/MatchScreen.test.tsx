@@ -1,6 +1,7 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { render, screen, fireEvent, act } from '@testing-library/react'
 import type { Question } from '../../../types/trivia'
+import type { ServerMessage } from '../../../types/multiplayer'
 import type { MultiplayerSocket } from '../../../services/multiplayer/socket'
 
 const sample: Question[] = Array.from({ length: 4 }, (_, i) => ({
@@ -106,13 +107,52 @@ describe('MatchScreen', () => {
     expect(screen.getByText(/you lose/i)).toBeDefined()
   })
 
-  it('returns to intro via onExit when Play Again is clicked', async () => {
+  it('restarts a fresh match in place when Play Again is clicked', async () => {
     await act(() => matchStore.start())
     for (let i = 0; i < 10; i++) matchStore.submitAnswer(true)
-    const onExit = vi.fn()
-    render(<MatchScreen onExit={onExit} />)
-    fireEvent.click(screen.getByRole('button', { name: /play again/i }))
-    expect(onExit).toHaveBeenCalled()
+    render(<MatchScreen />)
+    await act(async () => {
+      fireEvent.click(screen.getByRole('button', { name: /play again/i }))
+    })
+    expect(getQuestions).toHaveBeenCalledTimes(2)
+    expect(matchStore.getState().shootout.kicks).toHaveLength(0)
+    expect(screen.getByText('Question 0?')).toBeDefined()
+  })
+
+  it('goes to the main menu from the cpu result screen', async () => {
+    await act(() => matchStore.start())
+    for (let i = 0; i < 10; i++) matchStore.submitAnswer(true)
+    const onMainMenu = vi.fn()
+    render(<MatchScreen onMainMenu={onMainMenu} />)
+    fireEvent.click(screen.getByRole('button', { name: /main menu/i }))
+    expect(onMainMenu).toHaveBeenCalled()
+    expect(matchStore.getState().phase).toBe('idle')
+  })
+
+  it('leaves the match and goes to the main menu from the 1v1 result screen', () => {
+    let handleMessage: ((m: ServerMessage) => void) | undefined
+    const close = vi.fn()
+    const socket: MultiplayerSocket = {
+      send: () => {},
+      onMessage: (h) => {
+        handleMessage = h
+        return () => {}
+      },
+      onClose: () => () => {},
+      close,
+    }
+    matchStore.start1v1({ socket, opponentName: 'Bob', youGoFirst: true, questions: sample })
+    act(() => {
+      for (let i = 0; i < 5; i++) {
+        handleMessage?.({ type: 'kickResolved', by: 'you', scored: true })
+        handleMessage?.({ type: 'kickResolved', by: 'opponent', scored: false })
+      }
+    })
+    const onMainMenu = vi.fn()
+    render(<MatchScreen onMainMenu={onMainMenu} />)
+    fireEvent.click(screen.getByRole('button', { name: /main menu/i }))
+    expect(close).toHaveBeenCalled()
+    expect(onMainMenu).toHaveBeenCalled()
   })
 
   it('lifts the dark overlay while spectating the opponent in 1v1', () => {
