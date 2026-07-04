@@ -18,11 +18,11 @@ export function IntroScreen({ onPlay, onOneVOne }: Props) {
       <div className="intro__scanlines" aria-hidden />
       <div className="intro__content">
         <img className="intro__logo" src={logo} alt="Football Trivia Battle" />
-        <button type="button" className="intro__play" onClick={onPlay}>
-          <span className="intro__play-label">1 v CPU</span>
-        </button>
-        <button type="button" className="intro__play intro__play--secondary" onClick={onOneVOne}>
+        <button type="button" className="intro__play" onClick={onOneVOne}>
           <span className="intro__play-label">1 v 1</span>
+        </button>
+        <button type="button" className="intro__play intro__play--secondary" onClick={onPlay}>
+          <span className="intro__play-label">1 v CPU</span>
         </button>
         <div className="intro__prompt">▸ PRESS START ◂</div>
       </div>

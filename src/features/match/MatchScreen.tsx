@@ -196,9 +196,11 @@ export function MatchScreen({ onExit }: Props) {
 
   const { shootout } = state
   const showQuestion = !is1v1 || (myTurn && !state.pendingKick)
+  // the pitch scene is on screen whenever the question isn't — full brightness
+  const showScene = Boolean(feedback) || !showQuestion
 
   return (
-    <main className={`match${feedback ? ' match--scene' : ''}`}>
+    <main className={`match${showScene ? ' match--scene' : ''}`}>
       <section className="match__scoreboard" aria-label="scoreboard">
         <div className="match__team">
           <span className="match__team-name">YOU</span>

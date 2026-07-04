@@ -1,10 +1,11 @@
-import { beforeEach, describe, expect, it, vi } from 'vitest'
+import { describe, expect, it, vi } from 'vitest'
 import type { ClientMessage, ServerMessage } from '../../../types/multiplayer'
 import type { MultiplayerSocket } from '../../../services/multiplayer/socket'
 import { createLobbyStore } from '../store'
 
 function createFakeSocket() {
   const messageHandlers: Array<(m: ServerMessage) => void> = []
+  const closeHandlers: Array<() => void> = []
   const sent: ClientMessage[] = []
   let closed = false
   const socket: MultiplayerSocket = {
@@ -13,7 +14,10 @@ function createFakeSocket() {
       messageHandlers.push(h)
       return () => void messageHandlers.splice(messageHandlers.indexOf(h), 1)
     },
-    onClose: () => () => {},
+    onClose: (h) => {
+      closeHandlers.push(h)
+      return () => void closeHandlers.splice(closeHandlers.indexOf(h), 1)
+    },
     close: () => void (closed = true),
   }
   return {
@@ -21,34 +25,33 @@ function createFakeSocket() {
     sent,
     isClosed: () => closed,
     emit: (m: ServerMessage) => messageHandlers.forEach((h) => h(m)),
+    emitClose: () => [...closeHandlers].forEach((h) => h()),
   }
 }
 
-beforeEach(() => {
-  localStorage.clear()
-})
-
 describe('initial state', () => {
-  it('generates and persists a name when none is stored', () => {
+  it('generates a random name without touching localStorage', () => {
     const store = createLobbyStore()
-    expect(store.getState().name.length).toBeGreaterThan(0)
-    expect(localStorage.getItem('ftb:playerName')).toBe(store.getState().name)
-  })
-
-  it('reuses a previously stored name', () => {
-    localStorage.setItem('ftb:playerName', 'ROGUE ACE 07')
-    const store = createLobbyStore()
-    expect(store.getState().name).toBe('ROGUE ACE 07')
+    expect(store.getState().name).toMatch(/^[A-Z]+ [A-Z]+ \d{2}$/)
+    expect(localStorage.getItem('ftb:playerName')).toBeNull()
   })
 })
 
 describe('setName', () => {
-  it('updates state, clears any name error, and persists to localStorage', () => {
+  it('updates state and clears any name error', () => {
     const store = createLobbyStore()
     store.setName('CUSTOM NAME')
     expect(store.getState().name).toBe('CUSTOM NAME')
     expect(store.getState().nameError).toBeNull()
-    expect(localStorage.getItem('ftb:playerName')).toBe('CUSTOM NAME')
+  })
+})
+
+describe('rerollName', () => {
+  it('replaces a custom name with a fresh random one', () => {
+    const store = createLobbyStore()
+    store.setName('CUSTOM NAME')
+    store.rerollName()
+    expect(store.getState().name).toMatch(/^[A-Z]+ [A-Z]+ \d{2}$/)
   })
 })
 
@@ -114,6 +117,47 @@ describe('quickMatch', () => {
     expect(store.getState().phase).toBe('idle')
     expect(store.getState().nameError).toBe('name taken')
     expect(fake.isClosed()).toBe(true)
+  })
+})
+
+describe('server unreachable', () => {
+  it('warns and returns to idle when the socket closes while searching', () => {
+    const fake = createFakeSocket()
+    const store = createLobbyStore(() => fake.socket)
+    store.setName('Alice')
+    store.quickMatch()
+
+    fake.emitClose()
+
+    expect(store.getState().phase).toBe('idle')
+    expect(store.getState().nameError).toMatch(/SERVER/)
+    expect(store.getSocket()).toBeNull()
+  })
+
+  it('does not treat a cancel-initiated close as a server failure', () => {
+    const fake = createFakeSocket()
+    const store = createLobbyStore(() => fake.socket)
+    store.setName('Alice')
+    store.quickMatch()
+
+    store.cancel()
+    fake.emitClose()
+
+    expect(store.getState().nameError).toBeNull()
+    expect(store.getState().phase).toBe('idle')
+  })
+
+  it('ignores socket closes once matched — the match screen owns them from there', () => {
+    const fake = createFakeSocket()
+    const store = createLobbyStore(() => fake.socket)
+    store.setName('Alice')
+    store.quickMatch()
+    fake.emit({ type: 'matched', opponentName: 'Bob', youGoFirst: true, questions: [] })
+
+    fake.emitClose()
+
+    expect(store.getState().phase).toBe('found')
+    expect(store.getState().nameError).toBeNull()
   })
 })
 

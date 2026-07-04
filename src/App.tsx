@@ -36,7 +36,11 @@ function App() {
         setMatchExit('intro')
         setScreen('match')
       }}
-      onOneVOne={() => setScreen('lobby')}
+      onOneVOne={() => {
+        // fresh identity each visit — the lobby never reuses last session's name
+        lobbyStore.rerollName()
+        setScreen('lobby')
+      }}
     />
   )
 }

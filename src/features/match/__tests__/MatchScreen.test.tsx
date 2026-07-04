@@ -1,6 +1,7 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { render, screen, fireEvent, act } from '@testing-library/react'
 import type { Question } from '../../../types/trivia'
+import type { MultiplayerSocket } from '../../../services/multiplayer/socket'
 
 const sample: Question[] = Array.from({ length: 4 }, (_, i) => ({
   id: `q${i}`,
@@ -112,6 +113,19 @@ describe('MatchScreen', () => {
     render(<MatchScreen onExit={onExit} />)
     fireEvent.click(screen.getByRole('button', { name: /play again/i }))
     expect(onExit).toHaveBeenCalled()
+  })
+
+  it('lifts the dark overlay while spectating the opponent in 1v1', () => {
+    const socket: MultiplayerSocket = {
+      send: () => {},
+      onMessage: () => () => {},
+      onClose: () => () => {},
+      close: () => {},
+    }
+    matchStore.start1v1({ socket, opponentName: 'Bob', youGoFirst: false, questions: sample })
+    render(<MatchScreen />)
+    expect(screen.getByText(/waiting for bob/i)).toBeDefined()
+    expect(document.querySelector('main.match')?.className).toContain('match--scene')
   })
 
   it('shows the error state when questions fail to load', async () => {

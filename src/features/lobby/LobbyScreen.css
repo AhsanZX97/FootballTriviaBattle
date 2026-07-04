@@ -1,6 +1,10 @@
 .lobby__content {
   gap: clamp(14px, 2.6vh, 26px);
+  /* .intro__content is absolute with inset: 0; adding a width over-constrains
+     that and the browser drops `right`, pinning the box to the left edge.
+     Auto margins re-center it, matching the intro screen's behaviour. */
   width: min(92%, 440px);
+  margin-inline: auto;
 }
 
 .lobby__title {

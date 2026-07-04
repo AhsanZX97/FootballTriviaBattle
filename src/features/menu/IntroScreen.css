@@ -120,8 +120,8 @@
 .intro__play--secondary {
   --accent: #6f8fc4;
   color: #eaf0fc;
-  padding: 16px 36px;
-  font-size: clamp(11px, 1.6vw, 17px);
+  padding: 13px 30px;
+  font-size: clamp(10px, 1.4vw, 15px);
 }
 
 .intro__play--secondary:hover {
