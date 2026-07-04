@@ -283,8 +283,12 @@ so the work can pause/resume at any phase boundary.
   distinct from the opponent leaving); fixed the LOBBY button routing to intro.
   The end-to-end *play* pass (milestone 13 — full match, both endings, rematch
   loop, disconnect, timeout) is the user's, per `CLAUDE.md`.
-- **Deploy:** client → Vercel, server → Render/Railway, `VITE_WS_URL`, origin
-  check. Needs your hosting account (§6) — everything before this is local.
+- **Deploy: ✅ code/config done.** Server: `start:server` script, `/healthz`
+  HTTP endpoint (WSS now rides on an http server), `render.yaml` blueprint,
+  env-driven `PORT`/`ALLOWED_ORIGINS` (origin check verified: foreign origin
+  → 401). Client already reads `VITE_WS_URL`. Remaining is account work (§6):
+  create the Render blueprint + Vercel project and set the two env vars —
+  step-by-step in the README's "Deployment" section.
 
 1. `types/multiplayer.ts` — protocol + lobby types.
 2. `randomName.ts` + tests.

@@ -1,4 +1,5 @@
 import { randomUUID } from 'node:crypto'
+import { createServer } from 'node:http'
 import { WebSocket, WebSocketServer } from 'ws'
 import { createQueue, dequeue, enqueue } from './matchmaking'
 import type { Queue } from './matchmaking'
@@ -183,8 +184,18 @@ function handleMessage(connection: Connection, message: ClientMessage) {
   }
 }
 
+// Hosts (Render etc.) health-check with plain HTTP, which a bare ws server
+// rejects — so the socket server rides on a minimal http server instead.
+const httpServer = createServer((req, res) => {
+  if (req.url === '/healthz') {
+    res.writeHead(200, { 'content-type': 'text/plain' }).end('ok')
+    return
+  }
+  res.writeHead(426, { 'content-type': 'text/plain' }).end('upgrade required')
+})
+
 const wss = new WebSocketServer({
-  port: PORT,
+  server: httpServer,
   verifyClient: ({ origin }, done) => {
     done(!origin || ALLOWED_ORIGINS.includes(origin))
   },
@@ -214,4 +225,6 @@ wss.on('connection', (ws) => {
   })
 })
 
-console.log(`Multiplayer WS server listening on ws://localhost:${PORT}`)
+httpServer.listen(PORT, () => {
+  console.log(`Multiplayer WS server listening on ws://localhost:${PORT}`)
+})

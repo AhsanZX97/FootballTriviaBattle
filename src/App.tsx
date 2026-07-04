@@ -16,6 +16,8 @@ function SoundControl({ screen }: { screen: Screen }) {
   const [open, setOpen] = useState(false)
   const [volume, setVolume] = useState(getMasterVolume)
   const rootRef = useRef<HTMLDivElement>(null)
+  // last non-zero volume, restored when double-click unmutes
+  const preMuteVolumeRef = useRef(volume > 0 ? volume : 1)
 
   // slider retracts when the app moves to another screen
   useEffect(() => setOpen(false), [screen])
@@ -38,6 +40,18 @@ function SoundControl({ screen }: { screen: Screen }) {
         aria-label={open ? 'hide volume slider' : 'show volume slider'}
         aria-expanded={open}
         onClick={() => setOpen((o) => !o)}
+        onDoubleClick={(e) => {
+          e.stopPropagation()
+          if (volume > 0) {
+            preMuteVolumeRef.current = volume
+            setVolume(0)
+            setMasterVolume(0)
+          } else {
+            const restored = preMuteVolumeRef.current || 1
+            setVolume(restored)
+            setMasterVolume(restored)
+          }
+        }}
       >
         <img
           className="sound__toggle-img"

@@ -1,0 +1,16 @@
+# Render blueprint for the multiplayer WebSocket server only.
+# The client (Vite bundle) deploys separately to Vercel — see README "Deployment".
+services:
+  - type: web
+    name: football-trivia-ws
+    runtime: node
+    plan: free # free tier sleeps after ~15 min idle -> first match has a cold start
+    buildCommand: npm ci
+    startCommand: npm run start:server
+    healthCheckPath: /healthz
+    envVars:
+      # Comma-separated browser origins allowed to open a socket.
+      # Set this in the Render dashboard to the Vercel domain(s), e.g.
+      # https://<project>.vercel.app  (PORT is injected by Render automatically.)
+      - key: ALLOWED_ORIGINS
+        sync: false
