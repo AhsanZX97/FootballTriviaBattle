@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">Football Trivia Battle</string>
+    <string name="title_activity_main">Football Trivia Battle</string>
+    <string name="package_name">com.degreatahsan.footballtriviabattle</string>
+    <string name="custom_url_scheme">com.degreatahsan.footballtriviabattle</string>
+</resources>

@@ -5,6 +5,7 @@ import { matchStore } from './features/match/store'
 import { LobbyScreen } from './features/lobby/LobbyScreen'
 import { lobbyStore } from './features/lobby/store'
 import { getMasterVolume, playTheme, setMasterVolume, stopTheme } from './services/sound'
+import { isNative } from './services/platform'
 import volumeIcon from './assets/volume-icon.png'
 import volumeMuteIcon from './assets/volume-mute-icon.png'
 
@@ -21,6 +22,19 @@ function SoundControl({ screen }: { screen: Screen }) {
 
   // slider retracts when the app moves to another screen
   useEffect(() => setOpen(false), [screen])
+
+  // shared by web's double-click-to-mute and native's explicit MUTE button
+  const toggleMute = () => {
+    if (volume > 0) {
+      preMuteVolumeRef.current = volume
+      setVolume(0)
+      setMasterVolume(0)
+    } else {
+      const restored = preMuteVolumeRef.current || 1
+      setVolume(restored)
+      setMasterVolume(restored)
+    }
+  }
 
   // ...and on any press outside the control
   useEffect(() => {
@@ -42,15 +56,7 @@ function SoundControl({ screen }: { screen: Screen }) {
         onClick={() => setOpen((o) => !o)}
         onDoubleClick={(e) => {
           e.stopPropagation()
-          if (volume > 0) {
-            preMuteVolumeRef.current = volume
-            setVolume(0)
-            setMasterVolume(0)
-          } else {
-            const restored = preMuteVolumeRef.current || 1
-            setVolume(restored)
-            setMasterVolume(restored)
-          }
+          toggleMute()
         }}
       >
         <img
@@ -75,6 +81,13 @@ function SoundControl({ screen }: { screen: Screen }) {
           }}
         />
       )}
+      {/* touch devices can't double-click to mute, so native gets an explicit
+          button; web keeps the double-click and never renders this */}
+      {open && isNative && (
+        <button type="button" className="sound__mute" onClick={toggleMute}>
+          {volume === 0 ? 'UNMUTE' : 'MUTE'}
+        </button>
+      )}
     </div>
   )
 }
@@ -89,6 +102,43 @@ function App() {
   useEffect(() => {
     if (screen === 'match') stopTheme()
     else playTheme()
+  }, [screen])
+
+  // Android hardware back button (native only). Registered once; a ref feeds it
+  // the live screen so it doesn't need re-subscribing on every navigation.
+  const screenRef = useRef(screen)
+  useEffect(() => {
+    screenRef.current = screen
+  }, [screen])
+  useEffect(() => {
+    if (!isNative) return
+    let handle: { remove: () => void } | undefined
+    let cancelled = false
+    void import('@capacitor/app').then(({ App: CapApp }) => {
+      void CapApp.addListener('backButton', () => {
+        const s = screenRef.current
+        if (s === 'intro') void CapApp.exitApp()
+        else if (s === 'lobby') setScreen('intro')
+        // in a match the on-screen buttons own every exit
+      }).then((h) => {
+        if (cancelled) h.remove()
+        else handle = h
+      })
+    })
+    return () => {
+      cancelled = true
+      handle?.remove()
+    }
+  }, [])
+
+  // Keep the screen awake during a match (native only) — the opponent's kick
+  // can leave the player watching without touching the screen.
+  useEffect(() => {
+    if (!isNative) return
+    void import('@capacitor-community/keep-awake').then(({ KeepAwake }) => {
+      if (screen === 'match') void KeepAwake.keepAwake()
+      else void KeepAwake.allowSleep()
+    })
   }, [screen])
 
   let content

@@ -11,16 +11,28 @@ console errors, inspect state. But don't sit there clicking through kicks or
 answering trivia to reach an end state — set it up, say what you want checked,
 and let the user play it.
 
-Why: driving full matches through the UI is slow, flaky under tool-driven
-timing (the kick timeout fires between round-trips), and the user can do it in
-seconds. Automated tests already cover the rules and store logic.
+**This applies to every surface, including the Android emulator / device.** Do
+NOT drive gameplay with `adb shell input tap` (or any automated input). The
+game is built on timing — the question countdown, the 20s kick timeout, the
+~2.6s feedback animation — and Claude's tool round-trips add seconds of latency
+between every action, so anything Claude "plays" fires timers mid-step and is
+worthless as a check. It also just wastes the user's time. A single static
+`adb exec-out screencap` of a screen that is **already** on the display (e.g.
+the intro after launch) is fine; tapping through the app to reach a screen is
+not — ask the user to navigate there, or verify the layout in code / a test.
+
+Why: driving matches (web or native) is slow, flaky under tool-driven timing
+(timers fire between round-trips), and the user can do it in seconds. Automated
+tests already cover the rules and store logic.
 
 **Practical split**
 - Claude: types, logic, store, tests, CSS, wiring, `typecheck`/`test`, booting
-  `npm run dev` + `npm run dev:server`, confirming a screen mounts / no console
-  errors, one-shot state pokes.
+  `npm run dev` + `npm run dev:server`, building/installing the Android app,
+  confirming a screen already on screen mounts / no console errors, one-shot
+  state pokes.
 - User: playing a match, quick-match pairing between two tabs, rematch, result
-  screens, anything that needs a human to answer questions in real time.
+  screens, tapping through any flow on the phone/emulator, anything that needs
+  a human to answer questions in real time.
 
 ## Playwright MCP: only when critical
 

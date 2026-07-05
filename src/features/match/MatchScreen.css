@@ -246,8 +246,10 @@
     4px 4px 0 3px rgba(0, 0, 0, 0.85);
 }
 
-.match__answer:hover {
-  background: #fff04a;
+@media (hover: hover) {
+  .match__answer:hover {
+    background: #fff04a;
+  }
 }
 
 .match__answer:active {
@@ -270,4 +272,10 @@
   .match__timer--low .match__timer-count {
     animation: none;
   }
+}
+
+/* Native: keep the match UI clear of the status bar and home indicator. */
+.native .match {
+  padding-top: calc(clamp(16px, 4vw, 40px) + env(safe-area-inset-top));
+  padding-bottom: calc(clamp(16px, 4vw, 40px) + env(safe-area-inset-bottom));
 }

@@ -6,6 +6,7 @@ import netRippleSrc from '../assets/sounds/net ripple.ogg'
 import startWhistleSrc from '../assets/sounds/start whistle.mp3'
 import finalWhistleSrc from '../assets/sounds/final ref whistle.mp3'
 import countdownSrc from '../assets/sounds/321 countdown.mp3'
+import { getItem, setItem } from './storage'
 
 export type SoundName =
   | 'kick'
@@ -42,7 +43,7 @@ function clamp01(v: number): number {
   return Math.min(1, Math.max(0, Number.isFinite(v) ? v : 1))
 }
 
-let master = clamp01(Number(localStorage.getItem(VOLUME_STORAGE_KEY) ?? 1))
+let master = clamp01(Number(getItem(VOLUME_STORAGE_KEY) ?? 1))
 
 const theme = new Audio(themeSrc)
 theme.loop = true
@@ -52,9 +53,19 @@ export function getMasterVolume(): number {
   return master
 }
 
+/**
+ * Re-read the persisted volume. Called once on native after Capacitor
+ * Preferences hydrates localStorage, since this module's initial read at import
+ * time runs before that boot step. A no-op on web (storage is already there).
+ */
+export function reloadMasterVolume(): void {
+  master = clamp01(Number(getItem(VOLUME_STORAGE_KEY) ?? 1))
+  theme.volume = master * THEME_LEVEL
+}
+
 export function setMasterVolume(v: number) {
   master = clamp01(v)
-  localStorage.setItem(VOLUME_STORAGE_KEY, String(master))
+  setItem(VOLUME_STORAGE_KEY, String(master))
   theme.volume = master * THEME_LEVEL
 }
 

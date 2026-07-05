@@ -113,8 +113,10 @@
     8px 8px 0 8px rgba(0, 0, 0, 0.85);
 }
 
-.intro__play:hover {
-  background: #fff04a;
+@media (hover: hover) {
+  .intro__play:hover {
+    background: #fff04a;
+  }
 }
 
 .intro__play--secondary {
@@ -124,8 +126,10 @@
   font-size: clamp(10px, 1.4vw, 15px);
 }
 
-.intro__play--secondary:hover {
-  background: #8fb0e6;
+@media (hover: hover) {
+  .intro__play--secondary:hover {
+    background: #8fb0e6;
+  }
 }
 
 .intro__play:active {

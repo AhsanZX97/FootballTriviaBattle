@@ -104,8 +104,10 @@
     5px 5px 0 3px rgba(0, 0, 0, 0.85);
 }
 
-.lobby__btn:hover:not(:disabled) {
-  background: #fff04a;
+@media (hover: hover) {
+  .lobby__btn:hover:not(:disabled) {
+    background: #fff04a;
+  }
 }
 
 .lobby__btn:active:not(:disabled) {
@@ -145,8 +147,10 @@
   text-shadow: 2px 2px 0 #000;
 }
 
-.lobby__back:hover {
-  color: #fff;
+@media (hover: hover) {
+  .lobby__back:hover {
+    color: #fff;
+  }
 }
 
 .lobby__status {

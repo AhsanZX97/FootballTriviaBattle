@@ -1,3 +1,17 @@
+/* Self-hosted so the pixel font is available offline and needs no CDN round
+   trip. Latin subset only — the game is English; the ▸◂ arrow glyphs aren't in
+   Press Start 2P and already fall back to a system font, as before. */
+@font-face {
+  font-family: 'Press Start 2P';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url('./assets/fonts/press-start-2p-latin.woff2') format('woff2');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA,
+    U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193,
+    U+2212, U+2215, U+FEFF, U+FFFD;
+}
+
 :root {
   --text: #6b6375;
   --text-h: #08060d;
@@ -114,4 +128,41 @@ h2 {
   background: url(./assets/volume-knob.png) center / contain no-repeat;
   border: none;
   image-rendering: pixelated;
+}
+
+/* --- Native (Capacitor) shell. The `native` class is only ever added inside a
+   Capacitor WebView (see main.tsx), so none of this touches the web build. --- */
+.native {
+  touch-action: manipulation; /* no double-tap-to-zoom */
+  -webkit-touch-callout: none;
+  -webkit-user-select: none;
+  user-select: none;
+  overscroll-behavior: none; /* no pull-to-refresh / rubber-banding */
+}
+
+/* text entry still needs selection (the lobby name field) */
+.native input {
+  -webkit-user-select: text;
+  user-select: text;
+}
+
+/* keep the floating volume control clear of the status bar / notch */
+.native .sound {
+  top: calc(12px + env(safe-area-inset-top));
+  right: calc(12px + env(safe-area-inset-right));
+}
+
+/* touch-friendly mute toggle shown in the volume panel on native, where the
+   web build's double-click-to-mute isn't discoverable */
+.sound__mute {
+  padding: 7px 10px;
+  border: none;
+  background: #0a2416;
+  color: #ffcf1a;
+  font-family: 'Press Start 2P', ui-monospace, Consolas, monospace;
+  font-size: 9px;
+  letter-spacing: 0.08em;
+  cursor: pointer;
+  image-rendering: pixelated;
+  box-shadow: 0 0 0 3px #0a0a0a, 3px 3px 0 3px rgba(0, 0, 0, 0.85);
 }
