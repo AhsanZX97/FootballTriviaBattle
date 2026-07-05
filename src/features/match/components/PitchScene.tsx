@@ -18,27 +18,30 @@ const LABELS: Record<SceneFeedback, string> = {
 type Props = {
   stage: Stage
   feedback: SceneFeedback | null
+  /** Who scored the conceded goal — defaults to CPU outside 1v1. */
+  opponentLabel?: string
 }
 
 // ponytail: emoji actors over the bg.jpg goal. Same props contract the sprite
 // version will keep — see Plans/Sprite Transfer Plan.md for the swap.
-export function PitchScene({ stage, feedback }: Props) {
+export function PitchScene({ stage, feedback, opponentLabel = 'CPU' }: Props) {
   // ponytail: the scene mounts fresh for every animation, so a lazy useState
   // initializer gives one stable random pick per goal
   const [variant] = useState(
     () => GOAL_KEEPER_VARIANTS[Math.floor(Math.random() * GOAL_KEEPER_VARIANTS.length)],
   )
+  const label = feedback === 'concede' ? `${opponentLabel} SCORES!` : feedback ? LABELS[feedback] : null
   return (
     <div
       className={`scene${feedback ? ` scene--${feedback}` : ''}${feedback === 'goal' ? ` scene--goal-${variant}` : ''}`}
       role="img"
-      aria-label={feedback ? LABELS[feedback] : stage === 'shoot' ? 'you are shooting' : 'you are in goal'}
+      aria-label={label ?? (stage === 'shoot' ? 'you are shooting' : 'you are in goal')}
     >
       {/* stage mirrors the background's center/cover sizing so % positions land on the bg.jpg goal */}
       <div className="scene__stage">
         <span className="scene__keeper" />
         <span className="scene__ball" />
-        {feedback && <span className="scene__label">{LABELS[feedback]}</span>}
+        {label && <span className="scene__label">{label}</span>}
       </div>
     </div>
   )

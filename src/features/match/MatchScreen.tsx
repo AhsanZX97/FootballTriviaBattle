@@ -292,7 +292,7 @@ export function MatchScreen({ onExit, onMainMenu }: Props) {
 
       {feedback ? (
         // animation screen: scene replaces the question until the kick resolves
-        <PitchScene stage={shootout.stage} feedback={feedback} />
+        <PitchScene stage={shootout.stage} feedback={feedback} opponentLabel={opponentLabel} />
       ) : showQuestion ? (
         <>
           <div className={`match__timer${timeLeft <= 3 ? ' match__timer--low' : ''}`}>

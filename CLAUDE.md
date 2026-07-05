@@ -22,6 +22,24 @@ seconds. Automated tests already cover the rules and store logic.
 - User: playing a match, quick-match pairing between two tabs, rematch, result
   screens, anything that needs a human to answer questions in real time.
 
+## Playwright MCP: only when critical
+
+Browser-driving via the Playwright MCP tools is expensive in tokens
+(snapshots and screenshots are large). Do **not** reach for it as routine
+verification. Default verification order:
+
+1. `npm run typecheck` + `npm test` (covers rules, stores, parsers).
+2. Static checks on build output when relevant (e.g. inspect `dist/` for an
+   unexpected chunk) — no browser needed.
+3. Hand visual/gameplay confirmation to the user (see section above) with a
+   one-line "boot X, look at Y" instruction.
+
+Use Playwright MCP only when a browser is genuinely the only way to answer
+the question **and** the user can't easily check it themselves — e.g.
+diagnosing a runtime error that only reproduces in-page, or reading console
+output the user can't retrieve. When used, keep it surgical: one navigate,
+the minimal snapshot/console read, done — not click-through flows.
+
 ## Multiplayer dev
 
 - `npm run dev` (Vite, port 5173) + `npm run dev:server` (WS server, port 8787).
