@@ -187,3 +187,45 @@
     animation: none;
   }
 }
+
+/* Big screens (≥1440p full-screen): the base clamps cap out small, leaving a
+   440px HUD marooned in the middle of a wide viewport. Raise the caps so the
+   panel and its controls scale up. Gated above the window sizes that already
+   look right, so smaller windows are untouched. */
+@media (min-width: 1500px) {
+  .lobby__content {
+    gap: clamp(26px, 2vw, 40px);
+    width: clamp(440px, 40vw, 720px);
+  }
+
+  .lobby__title {
+    font-size: clamp(32px, 3.4vw, 52px);
+  }
+
+  .lobby__name-input {
+    padding: clamp(14px, 1.3vw, 22px) clamp(16px, 1.4vw, 26px);
+    font-size: clamp(13px, 1.1vw, 20px);
+  }
+
+  .lobby__reroll {
+    padding: 0 clamp(16px, 1.4vw, 26px);
+    font-size: clamp(18px, 1.6vw, 28px);
+  }
+
+  .lobby__btn {
+    padding: clamp(16px, 1.5vw, 26px) clamp(24px, 2.2vw, 40px);
+    font-size: clamp(15px, 1.4vw, 24px);
+  }
+
+  .lobby__back {
+    font-size: clamp(12px, 1vw, 18px);
+  }
+
+  .lobby__warning {
+    font-size: clamp(12px, 1vw, 16px);
+  }
+
+  .lobby__status {
+    font-size: clamp(17px, 1.6vw, 28px);
+  }
+}
