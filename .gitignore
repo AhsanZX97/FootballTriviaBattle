@@ -27,3 +27,7 @@ keystore.properties
 *.njsproj
 *.sln
 *.sw?
+
+docs/
+
+src/assets/screenshots

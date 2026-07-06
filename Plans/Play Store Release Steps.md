@@ -27,19 +27,28 @@ one-time** registration fee (if you don't already have an account).
 
 Fastest track — no review wait.
 
-1. Left menu → **Testing → Internal testing** → *Create new release*.
-2. On this first upload, Play offers **Play App Signing** — **accept it**.
-   Google then holds the real app-signing key; your `upload-keystore.jks`
-   stays your *upload* key only (Google can help recover a lost upload key
-   under this model — but back the file up regardless).
-3. Upload `app-release.aab`, add release notes, **Save → Review → Roll out
-   to internal testing**.
-4. *Testers* tab → add your Google account email → copy the **opt-in
-   link** → open it on your phone → become a tester → install from Play.
+1. Left menu → **Test and release → Testing → Internal testing** →
+   *Create new release*.
+2. **Play App Signing is now automatic** — no "accept" prompt anymore. On
+   the release page the **App integrity** section already shows ✅ *Automatic
+   protection is on* and ✅ *Releases signed by Google Play*; that second
+   check **is** Play App Signing, enabled by default for all new apps.
+   Google holds the real app-signing key; your `upload-keystore.jks` stays
+   your *upload* key only (Google can help recover a lost upload key under
+   this model — but back the file up regardless). Nothing to click here.
+3. Drop `app-release.aab` into the **App bundles** upload box (leave the
+   "Play Games Sidekick" checkbox unticked — it's an in-game overlay we're
+   not using), fill **Release name** + **Release notes**, then **Next →
+   Save and publish** (older wording: *Review → Roll out to internal
+   testing*).
+4. *Testers* tab → add an email list (or your Google account) → copy the
+   **opt-in link** → open it on your phone → become a tester → install
+   from Play.
 
 ## 4. Complete the "App content" declarations
 
-Play will nag you with a checklist. Internal testing tolerates some of these
+Under **Policy and programs → App content** (formerly just "App content")
+Play gives you a checklist. Internal testing tolerates some of these
 incomplete; **production requires all of them**:
 
 - **Privacy policy URL** — required. A simple hosted page works (GitHub
@@ -47,8 +56,24 @@ incomplete; **production requires all of them**:
 - **Data safety form** — declare the WebSocket connection; no ads, no
   analytics, no data sold.
 - **Content rating** questionnaire.
-- **Target audience**.
+- **Target audience and content**.
 - **Ads** — No.
+- **Advertising ID** — declare you don't use it (we don't).
+- **Government apps**, **Financial features**, **Health**, **Data
+  collection for kids** — all No / not applicable.
+
+## 4a. ⚠ New: closed-testing requirement before production
+
+**This is a recent Google policy that the earlier version of this plan
+predates.** Personal / individual developer accounts created after **Nov
+2023** must run a **closed test with at least 12 testers, opted-in for 14
+continuous days**, before Play will unlock **production** access. Internal
+testing does **not** count toward this.
+
+Practical path: after internal testing works, promote to a **Closed testing**
+track, recruit ≥12 testers, keep them opted in for 14 days, then apply for
+production. If you only ever want internal testing (up to 100 testers, no
+review wait), you can ignore this — but you cannot go public without it.
 
 ## App icon — DONE
 
