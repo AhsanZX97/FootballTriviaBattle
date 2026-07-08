@@ -53,12 +53,17 @@ incomplete; **production requires all of them**:
 
 - **Privacy policy URL** — required. A simple hosted page works (GitHub
   Pages, Notion page, etc.).
-- **Data safety form** — declare the WebSocket connection; no ads, no
-  analytics, no data sold.
+- **Data safety form** — declare the WebSocket connection, **plus AdMob's
+  data collection** (device identifiers / advertising ID, collected by the
+  Google Mobile Ads SDK for advertising). Google publishes the exact answers
+  to give: search "AdMob data safety" — the Play Console form has an AdMob
+  section to copy from.
 - **Content rating** questionnaire.
 - **Target audience and content**.
-- **Ads** — No.
-- **Advertising ID** — declare you don't use it (we don't).
+- **Ads** — **Yes** (AdMob banner on the main menu + result screen).
+- **Advertising ID** — declare **Yes, used for advertising** (the AdMob SDK
+  uses it; the manifest gains `com.google.android.gms.permission.AD_ID`
+  automatically via the SDK).
 - **Government apps**, **Financial features**, **Health**, **Data
   collection for kids** — all No / not applicable.
 
@@ -124,11 +129,42 @@ with the plain OS icon+color splash. Revisit this section if that changes.
 - At least **2 phone screenshots**.
 - Short + full description.
 
+## AdMob ads (added 2026-07)
+
+Banner ads (AdMob via `@capacitor-community/admob`) show at the bottom of the
+main menu and the match result screens.
+
+- **App ID** `ca-app-pub-7656537208669381~7347214967` — baked into
+  `AndroidManifest.xml`, same in every build (Google's documented setup).
+- **Banner ad unit** `ca-app-pub-7656537208669381/4747760334` — lives ONLY in
+  `.env.release`. Dev server, debug `npm run android` builds and the web
+  deploy all serve **Google test ads** instead; never copy the real ID into
+  another env file (clicking real ads on your own device risks an AdMob ban).
+- **Building the Play Store bundle now has one extra requirement:** run
+  `npm run cap:sync:release` (instead of `npm run cap:sync`) **before**
+  `bundleRelease` in Android Studio, otherwise the bundle ships with test ads.
+- In AdMob the app is registered as "not listed on a store yet" — once the
+  app is live in production, link the Play Store listing in AdMob
+  (Apps → app → App settings) and add an `app-ads.txt` if prompted.
+- During the 12-tester closed test, testers seeing test ads is fine and
+  intended; don't ship them real ads.
+- **UMP / GDPR consent is NOT implemented.** Before releasing to the EU/UK,
+  either set up the consent message (AdMob → Privacy & messaging) + wire the
+  plugin's consent API, or exclude EEA/UK countries from the release.
+- **Families / children declaration: the target audience includes children
+  and "ads suitable for children" was answered YES.** To keep that true, every
+  ad request is tagged `tagForChildDirectedTreatment: true` with
+  `maxAdContentRating: General` (see `src/services/ads.ts` init). Consequences:
+  child-directed inventory pays less, and if ads or targeting are ever changed
+  the Play declaration must be revisited. AdMob is a Play Families
+  self-certified ad SDK, which is the other half of that "Yes".
+
 ## For future updates
 
 Every new upload needs a **higher `versionCode`**. Bump `versionCode` (and
 usually `versionName`) in `android/app/build.gradle` before each
-`bundleRelease` — currently `1` / `"1.0"`.
+`bundleRelease` — currently `1` / `"1.0"`. Build the web layer with
+`npm run cap:sync:release` first (real ad IDs — see AdMob section above).
 
 ## Still open / not done
 

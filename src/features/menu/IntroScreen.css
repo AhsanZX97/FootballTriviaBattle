@@ -63,6 +63,8 @@
   justify-content: center;
   gap: clamp(20px, 4vh, 44px);
   padding: 5% 6%;
+  /* keep the menu clear of the native ad banner overlay (0 when no ad) */
+  padding-bottom: calc(5% + var(--ad-banner-height, 0px));
 }
 
 .intro__logo {

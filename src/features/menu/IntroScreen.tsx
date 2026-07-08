@@ -1,3 +1,4 @@
+import { useBottomBanner } from '../../services/ads'
 import bg from '../../assets/bg.jpg'
 import logo from '../../assets/logo.png'
 import './IntroScreen.css'
@@ -10,6 +11,7 @@ type Props = {
 }
 
 export function IntroScreen({ onPlay, onOneVOne }: Props) {
+  useBottomBanner(true) // ad banner sits under the menu for as long as it's open
   return (
     <main className="intro">
       <img className="intro__bg" src={bg} alt="" aria-hidden />

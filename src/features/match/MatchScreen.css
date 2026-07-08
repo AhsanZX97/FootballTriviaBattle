@@ -42,6 +42,8 @@
 
 .match--message {
   justify-content: center;
+  /* result screens keep their buttons clear of the native ad banner overlay */
+  padding-bottom: calc(clamp(16px, 4vw, 40px) + var(--ad-banner-height, 0px));
 }
 
 .match__status {

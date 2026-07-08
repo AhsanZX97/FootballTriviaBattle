@@ -5,6 +5,7 @@ import { matchStore, QUESTION_TIME_SECONDS } from './store'
 import { PitchScene, type SceneFeedback } from './components/PitchScene'
 import { PreMatchCountdown } from '../lobby/components/PreMatchCountdown'
 import { fadeOutCrowd, play } from '../../services/sound'
+import { useBottomBanner } from '../../services/ads'
 import './MatchScreen.css'
 
 /** Animation screen duration: 1s suspense delay + 0.7s animation + a beat to read the outcome. */
@@ -106,6 +107,10 @@ export function MatchScreen({ onExit, onMainMenu }: Props) {
   useEffect(() => {
     if (matchOver) play('finalWhistle')
   }, [matchOver])
+
+  // ad banner joins the result screen; a rematch (result gone) or the
+  // connection-lost screen takes it back down
+  useBottomBanner(matchOver && !state.connectionLost)
 
   // let the animation play, then resolve the kick and reset the clock. In 1v1
   // mode a spectate-side animation (the opponent's kick) already had its

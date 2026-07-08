@@ -6,6 +6,8 @@
   "scripts": {
     "dev": "vite",
     "build": "tsc -b && vite build",
+    "build:release": "tsc -b && vite build --mode release",
+    "cap:sync:release": "npm run build:release && npx cap sync android",
     "typecheck": "tsc -b --noEmit",
     "test": "vitest run",
     "test:watch": "vitest",
@@ -18,6 +20,7 @@
     "android:open": "npx cap open android"
   },
   "dependencies": {
+    "@capacitor-community/admob": "^8.0.0",
     "@capacitor-community/keep-awake": "^8.0.1",
     "@capacitor/android": "^8.4.1",
     "@capacitor/app": "^8.1.0",
