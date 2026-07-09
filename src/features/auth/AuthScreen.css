@@ -11,9 +11,10 @@
   width: min(92%, 420px);
 }
 
+/* Moved below the form (matches the 1v1 lobby's BACK): a plain, centered link
+   under the action buttons rather than a top-left affordance. */
 .auth__back {
-  align-self: flex-start;
-  margin-bottom: -4px;
+  margin-top: 4px;
   border: none;
   background: transparent;
   color: #cfd8e6;
@@ -67,6 +68,17 @@
   margin: -6px 0 0;
   font-size: clamp(8px, 1.1vw, 11px);
   color: #cfd8e6;
+  text-shadow: 2px 2px 0 #000;
+}
+
+/* Leading instruction (e.g. the reset-request prompt): brighter, larger and
+   centered so it reads as a heading-level cue rather than a small side hint. */
+.auth__helper--lead {
+  margin: 0;
+  font-size: clamp(10px, 1.4vw, 13px);
+  line-height: 1.5;
+  color: #ffcf1a;
+  text-align: center;
   text-shadow: 2px 2px 0 #000;
 }
 
@@ -131,6 +143,57 @@
     5px 5px 0 3px rgba(0, 0, 0, 0.5);
 }
 
+/* Sign Up + Forgot password as a split pair of bevel buttons that fill the
+   row, sharing the .auth__submit formula at a smaller scale. The 8px gap is
+   the "small separation" so the two squares don't touch. */
+.auth__btn-row {
+  display: flex;
+  gap: 8px;
+  width: 100%;
+}
+
+.auth__secondary {
+  flex: 1;
+  min-width: 0;
+  padding: 14px 8px;
+  border: none;
+  border-radius: 0;
+  background: #ffcf1a;
+  color: #1a1206;
+  font-family: 'Press Start 2P', ui-monospace, Consolas, monospace;
+  font-size: clamp(8px, 1.2vw, 12px);
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+  cursor: pointer;
+  image-rendering: pixelated;
+  transition: transform 0.04s steps(1), box-shadow 0.04s steps(1);
+  box-shadow:
+    inset 3px 3px 0 0 rgba(255, 255, 255, 0.55),
+    inset -3px -3px 0 0 rgba(0, 0, 0, 0.45),
+    0 0 0 3px #0a0a0a,
+    5px 5px 0 3px rgba(0, 0, 0, 0.85);
+}
+
+@media (hover: hover) {
+  .auth__secondary:hover {
+    background: #fff04a;
+  }
+}
+
+.auth__secondary:active {
+  transform: translate(4px, 4px);
+  box-shadow:
+    inset 3px 3px 0 0 rgba(255, 255, 255, 0.55),
+    inset -3px -3px 0 0 rgba(0, 0, 0, 0.45),
+    0 0 0 3px #0a0a0a,
+    1px 1px 0 3px rgba(0, 0, 0, 0.85);
+}
+
+.auth__secondary:focus-visible {
+  outline: 3px solid #fff;
+  outline-offset: 6px;
+}
+
 .auth__link {
   margin-top: 2px;
   border: none;
@@ -188,5 +251,14 @@
   .auth__submit {
     padding: clamp(16px, 1.5vw, 26px) clamp(24px, 2.2vw, 40px);
     font-size: clamp(15px, 1.4vw, 24px);
+  }
+
+  .auth__secondary {
+    padding: clamp(14px, 1.3vw, 22px) clamp(8px, 1vw, 16px);
+    font-size: clamp(12px, 1vw, 18px);
+  }
+
+  .auth__back {
+    font-size: clamp(12px, 1vw, 18px);
   }
 }

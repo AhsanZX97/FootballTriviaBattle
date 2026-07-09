@@ -2,6 +2,7 @@ import { useSyncExternalStore } from 'react'
 import bg from '../../assets/bg.jpg'
 import { MAX_NAME_LENGTH } from '../../types/multiplayer'
 import { authStore } from '../auth/store'
+import { Sprite } from '../../components/Sprite'
 import '../menu/IntroScreen.css'
 import './LobbyScreen.css'
 import { lobbyStore } from './store'
@@ -60,11 +61,15 @@ export function LobbyScreen({ onBack, onMatchReady }: Props) {
                   onClick={() => lobbyStore.rerollName()}
                   aria-label="Randomise name"
                 >
-                  🎲
+                  <Sprite name="dice" />
                 </button>
               </div>
             )}
-            {state.nameError && <p className="lobby__warning">⚠ {state.nameError}</p>}
+            {state.nameError && (
+              <p className="lobby__warning">
+                <Sprite name="warning" /> {state.nameError}
+              </p>
+            )}
 
             <button type="button" className="lobby__btn" onClick={() => lobbyStore.quickMatch()}>
               QUICK MATCH

@@ -1,6 +1,7 @@
 import { useSyncExternalStore } from 'react'
 import { authStore } from '../../auth/store'
 import type { AuthStore } from '../../auth/store'
+import coinSprite from '../../../assets/sprites/coin.png'
 
 type Props = {
   /** Defaults to the real singleton; tests inject a fake. */
@@ -15,9 +16,7 @@ export function CoinCounter({ store = authStore }: Props) {
 
   return (
     <div className="coin-counter">
-      <span className="coin-counter__icon" aria-hidden>
-        🪙
-      </span>
+      <img className="coin-counter__icon" src={coinSprite} alt="" aria-hidden />
       <span className="coin-counter__value">{coins}</span>
     </div>
   )

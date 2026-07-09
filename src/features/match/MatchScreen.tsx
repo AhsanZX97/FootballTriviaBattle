@@ -6,6 +6,7 @@ import { PitchScene, type SceneFeedback } from './components/PitchScene'
 import { PreMatchCountdown } from '../lobby/components/PreMatchCountdown'
 import { fadeOutCrowd, play } from '../../services/sound'
 import { useBottomBanner } from '../../services/ads'
+import { Sprite } from '../../components/Sprite'
 import './MatchScreen.css'
 
 /** Animation screen duration: 1s suspense delay + 0.7s animation + a beat to read the outcome. */
@@ -45,7 +46,7 @@ function KickDots({ kicks, side }: { kicks: Kick[]; side: 'user' | 'cpu' }) {
         const kick = own[i]
         return (
           <span key={i} className="match__dot">
-            {kick ? (kick.scoredBy === side ? '⚽' : '❌') : '·'}
+            {kick ? <Sprite name={kick.scoredBy === side ? 'ball' : 'miss'} /> : '·'}
           </span>
         )
       })}
@@ -146,7 +147,9 @@ export function MatchScreen({ onExit, onMainMenu }: Props) {
   if (state.connectionLost) {
     return (
       <main className="match match--message">
-        <p className="match__result">📡 CONNECTION LOST</p>
+        <p className="match__result">
+          <Sprite name="disconnect" /> CONNECTION LOST
+        </p>
         <button
           type="button"
           className="match__answer"
@@ -165,7 +168,17 @@ export function MatchScreen({ onExit, onMainMenu }: Props) {
     if (is1v1) {
       return (
         <main className="match match--message">
-          <p className="match__result">{result.outcome === 'win' ? '🏆 YOU WIN' : '💀 YOU LOSE'}</p>
+          <p className="match__result">
+            {result.outcome === 'win' ? (
+              <>
+                <Sprite name="trophy" /> YOU WIN
+              </>
+            ) : (
+              <>
+                <Sprite name="skull" /> YOU LOSE
+              </>
+            )}
+          </p>
           <p className="match__final-score">
             {result.userScore} – {result.cpuScore}
           </p>
@@ -206,7 +219,17 @@ export function MatchScreen({ onExit, onMainMenu }: Props) {
     }
     return (
       <main className="match match--message">
-        <p className="match__result">{result.outcome === 'win' ? '🏆 YOU WIN' : '💀 YOU LOSE'}</p>
+        <p className="match__result">
+          {result.outcome === 'win' ? (
+            <>
+              <Sprite name="trophy" /> YOU WIN
+            </>
+          ) : (
+            <>
+              <Sprite name="skull" /> YOU LOSE
+            </>
+          )}
+        </p>
         <p className="match__final-score">
           {result.userScore} – {result.cpuScore}
         </p>
@@ -286,13 +309,23 @@ export function MatchScreen({ onExit, onMainMenu }: Props) {
       </section>
 
       <p className="match__stage">
-        {is1v1
-          ? myTurn
-            ? '⚽ YOUR KICK'
-            : `⏳ ${opponentLabel}'S KICK…`
-          : myTurn
-            ? "⚽ YOU'RE SHOOTING"
-            : "🧤 YOU'RE IN GOAL"}
+        {is1v1 ? (
+          myTurn ? (
+            <>
+              <Sprite name="ball" /> YOUR KICK
+            </>
+          ) : (
+            <>⏳ {opponentLabel}'S KICK…</>
+          )
+        ) : myTurn ? (
+          <>
+            <Sprite name="ball" /> YOU'RE SHOOTING
+          </>
+        ) : (
+          <>
+            <Sprite name="glove" /> YOU'RE IN GOAL
+          </>
+        )}
       </p>
 
       {feedback ? (

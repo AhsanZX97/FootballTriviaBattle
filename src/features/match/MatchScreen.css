@@ -46,6 +46,14 @@
   padding-bottom: calc(clamp(16px, 4vw, 40px) + var(--ad-banner-height, 0px));
 }
 
+/* Result/message screens stack their buttons in a centered column. Without a
+   shared width each button shrinks to its own label (REMATCH vs LOBBY vs MAIN
+   MENU), leaving a ragged edge — pin them to one width so the column aligns. */
+.match--message .match__answer {
+  width: min(88%, 320px);
+  text-align: center;
+}
+
 .match__status {
   font-size: clamp(11px, 1.6vw, 16px);
   letter-spacing: 0.12em;

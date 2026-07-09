@@ -151,8 +151,13 @@ h2 {
 }
 
 .coin-counter__icon {
-  font-size: 16px;
-  line-height: 1;
+  width: 20px;
+  height: 20px;
+  object-fit: contain;
+  display: block;
+  /* the container sets image-rendering: pixelated for the bitmap font; the coin
+     is a smooth-shaded sprite, so opt back into smooth downscaling here */
+  image-rendering: auto;
 }
 
 .coin-counter__value {
@@ -168,7 +173,8 @@ h2 {
   }
 
   .coin-counter__icon {
-    font-size: 13px;
+    width: 16px;
+    height: 16px;
   }
 }
 

@@ -27,6 +27,13 @@ const SUPABASE_URL = process.env.SUPABASE_URL
 const SUPABASE_SERVICE_ROLE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY
 const jwtVerifier = SUPABASE_URL ? createJwtVerifier(SUPABASE_URL) : null
 
+// Boot-time visibility into why coin awards might silently do nothing.
+console.log(
+  SUPABASE_URL && SUPABASE_SERVICE_ROLE_KEY
+    ? '[config] coin awards ENABLED (Supabase URL + service role key present)'
+    : `[config] coin awards DISABLED — SUPABASE_URL ${SUPABASE_URL ? 'set' : 'MISSING'}, SUPABASE_SERVICE_ROLE_KEY ${SUPABASE_SERVICE_ROLE_KEY ? 'set' : 'MISSING'}`,
+)
+
 // Grace window for a stalled kick (dropped connection, closed tab): roughly
 // the 10s question timer + the ~2.6s feedback animation + a buffer.
 const KICK_TIMEOUT_MS = 20_000
@@ -122,7 +129,10 @@ async function incrementCoins(userId: string, amount: number): Promise<number | 
       headers: { ...supabaseHeaders(), 'content-type': 'application/json' },
       body: JSON.stringify({ p_user_id: userId, p_amount: amount }),
     })
-    if (!res.ok) return null
+    if (!res.ok) {
+      console.error(`[awards] increment_coins RPC rejected: HTTP ${res.status} ${await res.text()}`)
+      return null
+    }
     return (await res.json()) as number
   } catch (err) {
     console.error('[awards] increment_coins RPC failed', err)
@@ -147,12 +157,18 @@ async function settleAndAward(entry: RoomEntry, reason: SettleReason) {
       { aUserId: entry.connections.a.userId, bUserId: entry.connections.b.userId },
       reason,
     )
+    console.log(
+      `[awards] settling reason=${reason} status=${status}` +
+        ` a=${entry.connections.a.userId ?? 'anonymous'} b=${entry.connections.b.userId ?? 'anonymous'}` +
+        ` awards=${JSON.stringify(awards)}`,
+    )
     for (const award of awards) {
       if (award.amount <= 0) continue
       const connection =
         entry.connections.a.userId === award.userId ? entry.connections.a : entry.connections.b
       const balance = await incrementCoins(award.userId, award.amount)
       if (balance === null) continue
+      console.log(`[awards] +${award.amount} coins -> ${award.userId} (new balance ${balance})`)
       send(connection.ws, { type: 'coinsAwarded', amount: award.amount, balance })
     }
   } catch (err) {
@@ -312,7 +328,14 @@ function handleMessage(connection: Connection, message: ClientMessage) {
 // rejects — so the socket server rides on a minimal http server instead.
 const httpServer = createServer((req, res) => {
   if (req.url === '/healthz') {
-    res.writeHead(200, { 'content-type': 'text/plain' }).end('ok')
+    // `coinAwards: false` in prod means the Supabase env vars are missing on
+    // the host — the #1 silent cause of "won but got no coins".
+    res.writeHead(200, { 'content-type': 'application/json' }).end(
+      JSON.stringify({
+        ok: true,
+        coinAwards: Boolean(SUPABASE_URL && SUPABASE_SERVICE_ROLE_KEY),
+      }),
+    )
     return
   }
   res.writeHead(426, { 'content-type': 'text/plain' }).end('upgrade required')
@@ -330,16 +353,23 @@ const wss = new WebSocketServer({
     if (!token || !jwtVerifier) {
       // No token (anonymous) or no Supabase configured (dev without env
       // vars): still allow the connection through as anonymous.
+      if (token && !jwtVerifier) {
+        console.log('[auth] client sent a token but SUPABASE_URL is unset — treating as anonymous')
+      }
       done(true)
       return
     }
     jwtVerifier(token)
       .then((result) => {
+        if (!result) {
+          console.log('[auth] token failed verification (bad signature / expired / no sub) — anonymous')
+        }
         pendingAuth.set(info.req, result)
         done(true)
       })
       .catch(() => {
         // A stale/invalid token must degrade to anonymous, never block the handshake.
+        console.log('[auth] token verification threw (JWKS unreachable?) — anonymous')
         done(true)
       })
   },
@@ -358,6 +388,9 @@ wss.on('connection', (ws, req) => {
     username: null,
     profileReady: Promise.resolve(),
   }
+  console.log(
+    `[auth] connection ${connection.id} ${connection.userId ? `authed as ${connection.userId}` : 'anonymous'}`,
+  )
   if (connection.userId) {
     connection.profileReady = fetchProfileUsername(connection.userId).then((username) => {
       connection.username = username

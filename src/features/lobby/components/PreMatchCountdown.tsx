@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import { play } from '../../../services/sound'
+import { Sprite } from '../../../components/Sprite'
 import './PreMatchCountdown.css'
 
 // ponytail: the "321 countdown" audio runs ~3s, so ticks are 1s to stay in
@@ -58,10 +59,20 @@ export function PreMatchCountdown({ opponentName, youGoFirst, onDone, skipFoundB
         </>
       )}
       {stage === 'whoFirst' && (
-        <p className="pmc__status">{youGoFirst ? 'YOU GO FIRST ⚽' : `${opponentName} GOES FIRST 🧤`}</p>
+        <p className="pmc__status">
+          {youGoFirst ? (
+            <>
+              YOU GO FIRST <Sprite name="ball" />
+            </>
+          ) : (
+            <>
+              {opponentName} GOES FIRST <Sprite name="glove" />
+            </>
+          )}
+        </p>
       )}
       {(stage === 'countdown' || stage === 'go') && (
-        <p className="pmc__countdown">{stage === 'countdown' ? count : '⚽'}</p>
+        <p className="pmc__countdown">{stage === 'countdown' ? count : <Sprite name="ball" />}</p>
       )}
     </div>
   )

@@ -2,6 +2,7 @@ import { useEffect, useState, useSyncExternalStore, type FormEvent } from 'react
 import bg from '../../assets/bg.jpg'
 import { authStore } from './store'
 import type { AuthStore } from './store'
+import { Sprite } from '../../components/Sprite'
 import '../menu/IntroScreen.css'
 import './AuthScreen.css'
 
@@ -109,10 +110,6 @@ export function AuthScreen({ onBack, onAuthenticated, initialMode = 'signin', st
       <div className="intro__scanlines" aria-hidden />
       <div className="intro__content">
         <div className="auth__panel">
-          <button type="button" className="auth__back" onClick={onBack} aria-label="Back to menu">
-            ◂ BACK
-          </button>
-
           <h1 className="auth__title">{TITLES[mode]}</h1>
 
           {mode === 'signin' ? (
@@ -139,15 +136,19 @@ export function AuthScreen({ onBack, onAuthenticated, initialMode = 'signin', st
                   clearErrorOnEdit()
                 }}
               />
-              {state.error && <p className="auth__error">⚠ {state.error}</p>}
+              {state.error && (
+                <p className="auth__error">
+                  <Sprite name="warning" /> {state.error}
+                </p>
+              )}
               <button type="submit" className="auth__submit" disabled={pending}>
                 {pending ? 'SIGNING IN…' : 'SIGN IN'}
               </button>
-              <div className="auth__link-row">
-                <button type="button" className="auth__link auth__link--small" onClick={() => switchMode('signup')}>
+              <div className="auth__btn-row">
+                <button type="button" className="auth__secondary" onClick={() => switchMode('signup')}>
                   Sign Up
                 </button>
-                <button type="button" className="auth__link auth__link--small" onClick={openForgotPassword}>
+                <button type="button" className="auth__secondary" onClick={openForgotPassword}>
                   Forgot password?
                 </button>
               </div>
@@ -189,7 +190,11 @@ export function AuthScreen({ onBack, onAuthenticated, initialMode = 'signin', st
                 }}
               />
               <p className="auth__helper">min 8 characters</p>
-              {state.error && <p className="auth__error">⚠ {state.error}</p>}
+              {state.error && (
+                <p className="auth__error">
+                  <Sprite name="warning" /> {state.error}
+                </p>
+              )}
               <button type="submit" className="auth__submit" disabled={pending}>
                 {pending ? 'SIGNING UP…' : 'SIGN UP'}
               </button>
@@ -199,7 +204,7 @@ export function AuthScreen({ onBack, onAuthenticated, initialMode = 'signin', st
             </form>
           ) : mode === 'reset-request' ? (
             <form className="auth__form" onSubmit={handleRequestReset}>
-              <p className="auth__helper">Enter your account email and we'll send an 8-digit code.</p>
+              <p className="auth__helper auth__helper--lead">Enter your account email and we'll send an 8-digit code.</p>
               <input
                 type="email"
                 className="auth__input"
@@ -211,7 +216,11 @@ export function AuthScreen({ onBack, onAuthenticated, initialMode = 'signin', st
                   clearErrorOnEdit()
                 }}
               />
-              {state.error && <p className="auth__error">⚠ {state.error}</p>}
+              {state.error && (
+                <p className="auth__error">
+                  <Sprite name="warning" /> {state.error}
+                </p>
+              )}
               <button type="submit" className="auth__submit" disabled={pending}>
                 {pending ? 'SENDING…' : 'SEND CODE'}
               </button>
@@ -247,7 +256,11 @@ export function AuthScreen({ onBack, onAuthenticated, initialMode = 'signin', st
                 }}
               />
               <p className="auth__helper">min 8 characters</p>
-              {state.error && <p className="auth__error">⚠ {state.error}</p>}
+              {state.error && (
+                <p className="auth__error">
+                  <Sprite name="warning" /> {state.error}
+                </p>
+              )}
               <button type="submit" className="auth__submit" disabled={pending}>
                 {pending ? 'RESETTING…' : 'RESET PASSWORD'}
               </button>
@@ -266,6 +279,10 @@ export function AuthScreen({ onBack, onAuthenticated, initialMode = 'signin', st
               </div>
             </form>
           )}
+
+          <button type="button" className="auth__back" onClick={onBack} aria-label="Back to menu">
+            ◂ BACK
+          </button>
         </div>
       </div>
     </main>

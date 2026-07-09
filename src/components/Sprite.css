@@ -1,0 +1,8 @@
+.sprite {
+  height: 1em;
+  width: auto;
+  vertical-align: -0.15em;
+  display: inline-block;
+  /* sprites are smooth-shaded art; opt out of any inherited pixelated scaling */
+  image-rendering: auto;
+}
