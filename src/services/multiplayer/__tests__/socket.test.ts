@@ -1,6 +1,14 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import type { ServerMessage } from '../../../types/multiplayer'
-import { connect } from '../socket'
+import { connect, connectWithAuth } from '../socket'
+import { supabase } from '../../supabase'
+
+// Only touched by the connectWithAuth describe block below — every plain
+// connect() test never imports this module at all (the real import is lazy,
+// inside connectWithAuth), so mocking it here can't affect them.
+vi.mock('../../supabase', () => ({
+  supabase: { auth: { getSession: vi.fn() } },
+}))
 
 /** Minimal fake standing in for the browser WebSocket — the system boundary. */
 class FakeWebSocket {
@@ -105,5 +113,47 @@ describe('connect', () => {
 
     lastSocket.close()
     expect(onClose).toHaveBeenCalledOnce()
+  })
+
+  it('appends the token as a query param when one is given', () => {
+    connect('ws://test', 'jwt-abc')
+    expect(lastSocket.url).toBe('ws://test?token=jwt-abc')
+  })
+
+  it('connects with the plain url when no token is given', () => {
+    connect('ws://test')
+    expect(lastSocket.url).toBe('ws://test')
+  })
+})
+
+describe('connectWithAuth', () => {
+  it('attaches the session access token when a session exists', async () => {
+    vi.mocked(supabase.auth.getSession).mockResolvedValue({
+      data: { session: { access_token: 'jwt-abc' } },
+      error: null,
+    } as never)
+
+    await connectWithAuth('ws://test')
+
+    expect(lastSocket.url).toBe('ws://test?token=jwt-abc')
+  })
+
+  it('connects anonymously when there is no session', async () => {
+    vi.mocked(supabase.auth.getSession).mockResolvedValue({
+      data: { session: null },
+      error: null,
+    } as never)
+
+    await connectWithAuth('ws://test')
+
+    expect(lastSocket.url).toBe('ws://test')
+  })
+
+  it('falls back to an anonymous connection if the session lookup throws', async () => {
+    vi.mocked(supabase.auth.getSession).mockRejectedValue(new Error('boom'))
+
+    await connectWithAuth('ws://test')
+
+    expect(lastSocket.url).toBe('ws://test')
   })
 })

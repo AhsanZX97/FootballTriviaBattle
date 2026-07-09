@@ -153,6 +153,26 @@
   text-shadow: 2px 2px 0 rgba(255, 255, 255, 0.4);
 }
 
+/* greyed-out, non-interactive variant (Shop, for now) — same bevel formula
+   as .intro__play but flattened and desaturated, matching .lobby__btn--disabled */
+.intro__play--disabled {
+  --accent: #5b5f66;
+  color: #9aa0aa;
+  cursor: not-allowed;
+  box-shadow:
+    inset 4px 4px 0 0 rgba(255, 255, 255, 0.15),
+    inset -4px -4px 0 0 rgba(0, 0, 0, 0.35),
+    0 0 0 4px #0a0a0a,
+    0 0 0 8px var(--accent),
+    8px 8px 0 8px rgba(0, 0, 0, 0.5);
+}
+
+@media (hover: hover) {
+  .intro__play--disabled:hover {
+    background: var(--accent);
+  }
+}
+
 .intro__prompt {
   font-size: clamp(9px, 1.2vw, 13px);
   letter-spacing: 0.18em;

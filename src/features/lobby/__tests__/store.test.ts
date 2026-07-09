@@ -1,6 +1,20 @@
-import { describe, expect, it, vi } from 'vitest'
+import { beforeEach, describe, expect, it, vi } from 'vitest'
 import type { ClientMessage, ServerMessage } from '../../../types/multiplayer'
 import type { MultiplayerSocket } from '../../../services/multiplayer/socket'
+
+const authState: { status: 'signedOut' | 'loading' | 'signedIn'; username: string | null } = {
+  status: 'signedOut',
+  username: null,
+}
+vi.mock('../../auth/store', () => ({
+  authStore: { getState: () => authState },
+}))
+
+beforeEach(() => {
+  authState.status = 'signedOut'
+  authState.username = null
+})
+
 import { createLobbyStore } from '../store'
 
 function createFakeSocket() {
@@ -69,12 +83,12 @@ describe('quickMatch', () => {
     expect(connectFn).not.toHaveBeenCalled()
   })
 
-  it('connects, sends queue, and optimistically enters searching', () => {
+  it('connects, sends queue, and optimistically enters searching', async () => {
     const fake = createFakeSocket()
     const store = createLobbyStore(() => fake.socket)
     store.setName('Alice')
 
-    store.quickMatch()
+    await store.quickMatch()
 
     expect(fake.sent).toEqual([{ type: 'queue', name: 'Alice' }])
     expect(store.getState().phase).toBe('searching')
@@ -91,11 +105,11 @@ describe('quickMatch', () => {
     expect(connectFn).toHaveBeenCalledOnce()
   })
 
-  it('moves to found with opponent info once matched', () => {
+  it('moves to found with opponent info once matched', async () => {
     const fake = createFakeSocket()
     const store = createLobbyStore(() => fake.socket)
     store.setName('Alice')
-    store.quickMatch()
+    await store.quickMatch()
 
     fake.emit({ type: 'matched', opponentName: 'Bob', youGoFirst: true, questions: [] })
 
@@ -106,11 +120,11 @@ describe('quickMatch', () => {
     })
   })
 
-  it('reverts to idle with a name error and closes the socket on a server error', () => {
+  it('reverts to idle with a name error and closes the socket on a server error', async () => {
     const fake = createFakeSocket()
     const store = createLobbyStore(() => fake.socket)
     store.setName('Alice')
-    store.quickMatch()
+    await store.quickMatch()
 
     fake.emit({ type: 'error', reason: 'name taken' })
 
@@ -118,14 +132,47 @@ describe('quickMatch', () => {
     expect(store.getState().nameError).toBe('name taken')
     expect(fake.isClosed()).toBe(true)
   })
+
+  it('uses the signed-in account username instead of the typed name, skipping the empty-name check', async () => {
+    authState.status = 'signedIn'
+    authState.username = 'CoolUser'
+    const fake = createFakeSocket()
+    const store = createLobbyStore(() => fake.socket)
+    store.setName('') // never gets used, and must not trigger the empty-name error
+
+    await store.quickMatch()
+
+    expect(fake.sent).toEqual([{ type: 'queue', name: 'CoolUser' }])
+    expect(store.getState().nameError).toBeNull()
+    expect(store.getState().phase).toBe('searching')
+  })
+
+  it('does not resurrect a queued match if cancelled while still connecting', async () => {
+    const fake = createFakeSocket()
+    let resolveConnect: (s: MultiplayerSocket) => void = () => {}
+    const connectFn = vi.fn(
+      () => new Promise<MultiplayerSocket>((resolve) => { resolveConnect = resolve }),
+    )
+    const store = createLobbyStore(connectFn)
+    store.setName('Alice')
+
+    const pending = store.quickMatch() // does not resolve until we say so
+    store.cancel() // player backs out before the connect finishes
+    resolveConnect(fake.socket)
+    await pending
+
+    expect(fake.sent).toEqual([]) // 'queue' must never be sent for a cancelled attempt
+    expect(fake.isClosed()).toBe(true) // the late socket is closed, not leaked
+    expect(store.getState().phase).toBe('idle')
+  })
 })
 
 describe('server unreachable', () => {
-  it('warns and returns to idle when the socket closes while searching', () => {
+  it('warns and returns to idle when the socket closes while searching', async () => {
     const fake = createFakeSocket()
     const store = createLobbyStore(() => fake.socket)
     store.setName('Alice')
-    store.quickMatch()
+    await store.quickMatch()
 
     fake.emitClose()
 
@@ -134,11 +181,11 @@ describe('server unreachable', () => {
     expect(store.getSocket()).toBeNull()
   })
 
-  it('does not treat a cancel-initiated close as a server failure', () => {
+  it('does not treat a cancel-initiated close as a server failure', async () => {
     const fake = createFakeSocket()
     const store = createLobbyStore(() => fake.socket)
     store.setName('Alice')
-    store.quickMatch()
+    await store.quickMatch()
 
     store.cancel()
     fake.emitClose()
@@ -147,11 +194,11 @@ describe('server unreachable', () => {
     expect(store.getState().phase).toBe('idle')
   })
 
-  it('ignores socket closes once matched — the match screen owns them from there', () => {
+  it('ignores socket closes once matched — the match screen owns them from there', async () => {
     const fake = createFakeSocket()
     const store = createLobbyStore(() => fake.socket)
     store.setName('Alice')
-    store.quickMatch()
+    await store.quickMatch()
     fake.emit({ type: 'matched', opponentName: 'Bob', youGoFirst: true, questions: [] })
 
     fake.emitClose()
@@ -162,11 +209,11 @@ describe('server unreachable', () => {
 })
 
 describe('cancel', () => {
-  it('sends cancel, closes the socket, and returns to idle', () => {
+  it('sends cancel, closes the socket, and returns to idle', async () => {
     const fake = createFakeSocket()
     const store = createLobbyStore(() => fake.socket)
     store.setName('Alice')
-    store.quickMatch()
+    await store.quickMatch()
 
     store.cancel()
 
@@ -177,11 +224,11 @@ describe('cancel', () => {
 })
 
 describe('reset', () => {
-  it('returns a found lobby to idle so it will not replay the countdown, keeping the name', () => {
+  it('returns a found lobby to idle so it will not replay the countdown, keeping the name', async () => {
     const fake = createFakeSocket()
     const store = createLobbyStore(() => fake.socket)
     store.setName('Alice')
-    store.quickMatch()
+    await store.quickMatch()
     fake.emit({ type: 'matched', opponentName: 'Bob', youGoFirst: true, questions: [] })
     expect(store.getState().phase).toBe('found')
 

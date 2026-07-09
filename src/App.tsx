@@ -1,15 +1,17 @@
 import { useEffect, useRef, useState } from 'react'
 import { IntroScreen } from './features/menu/IntroScreen'
+import { CoinCounter } from './features/menu/components/CoinCounter'
 import { MatchScreen } from './features/match/MatchScreen'
 import { matchStore } from './features/match/store'
 import { LobbyScreen } from './features/lobby/LobbyScreen'
 import { lobbyStore } from './features/lobby/store'
+import { AuthScreen } from './features/auth/AuthScreen'
 import { getMasterVolume, playTheme, setMasterVolume, stopTheme } from './services/sound'
 import { isNative } from './services/platform'
 import volumeIcon from './assets/volume-icon.png'
 import volumeMuteIcon from './assets/volume-mute-icon.png'
 
-type Screen = 'intro' | 'lobby' | 'match'
+type Screen = 'intro' | 'lobby' | 'match' | 'auth'
 
 // ponytail: lives in App.tsx like MatchScreen's sub-components; graduate to
 // its own file if it grows settings beyond one slider.
@@ -118,7 +120,7 @@ function App() {
       void CapApp.addListener('backButton', () => {
         const s = screenRef.current
         if (s === 'intro') void CapApp.exitApp()
-        else if (s === 'lobby') setScreen('intro')
+        else if (s === 'lobby' || s === 'auth') setScreen('intro')
         // in a match the on-screen buttons own every exit
       }).then((h) => {
         if (cancelled) h.remove()
@@ -160,6 +162,8 @@ function App() {
         }}
       />
     )
+  } else if (screen === 'auth') {
+    content = <AuthScreen onBack={() => setScreen('intro')} onAuthenticated={() => setScreen('intro')} />
   } else {
     content = (
       <IntroScreen
@@ -173,6 +177,7 @@ function App() {
           lobbyStore.rerollName()
           setScreen('lobby')
         }}
+        onSignIn={() => setScreen('auth')}
       />
     )
   }
@@ -180,6 +185,7 @@ function App() {
   return (
     <>
       <SoundControl screen={screen} />
+      <CoinCounter />
       {content}
     </>
   )

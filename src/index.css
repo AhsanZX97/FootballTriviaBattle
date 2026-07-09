@@ -130,6 +130,48 @@ h2 {
   image-rendering: pixelated;
 }
 
+/* --- coin balance (App-level, floats left of the SoundControl so the two
+   never overlap, incl. at narrow widths — see Bugs & edge cases #20) --- */
+.coin-counter {
+  position: fixed;
+  top: 12px;
+  right: 64px;
+  z-index: 100;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 12px;
+  background: #0a2416;
+  color: #ffcf1a;
+  font-family: 'Press Start 2P', ui-monospace, Consolas, monospace;
+  font-size: 12px;
+  letter-spacing: 0.04em;
+  image-rendering: pixelated;
+  box-shadow: 0 0 0 3px #0a0a0a, 3px 3px 0 3px rgba(0, 0, 0, 0.85);
+}
+
+.coin-counter__icon {
+  font-size: 16px;
+  line-height: 1;
+}
+
+.coin-counter__value {
+  min-width: 1ch;
+}
+
+@media (max-width: 360px) {
+  .coin-counter {
+    right: 58px;
+    padding: 6px 8px;
+    gap: 4px;
+    font-size: 10px;
+  }
+
+  .coin-counter__icon {
+    font-size: 13px;
+  }
+}
+
 /* --- Native (Capacitor) shell. The `native` class is only ever added inside a
    Capacitor WebView (see main.tsx), so none of this touches the web build. --- */
 .native {
@@ -150,6 +192,11 @@ h2 {
 .native .sound {
   top: calc(12px + env(safe-area-inset-top));
   right: calc(12px + env(safe-area-inset-right));
+}
+
+.native .coin-counter {
+  top: calc(12px + env(safe-area-inset-top));
+  right: calc(64px + env(safe-area-inset-right));
 }
 
 /* touch-friendly mute toggle shown in the volume panel on native, where the

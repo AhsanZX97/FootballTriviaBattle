@@ -1,6 +1,8 @@
 export interface QueuedPlayer {
   id: string
   name: string
+  /** Authed players only; used to stop the same account from self-matching across two devices/tabs. */
+  userId?: string
 }
 
 export interface Queue {
@@ -17,12 +19,24 @@ export function createQueue(): Queue {
   return { waiting: [] }
 }
 
-/** Add a player to the queue, pairing them off immediately if someone's already waiting. */
+/** Two authed players are the same account trying to farm coins off itself. Anonymous (no userId) is always compatible. */
+function canPair(x: QueuedPlayer, y: QueuedPlayer): boolean {
+  return !(x.userId && x.userId === y.userId)
+}
+
+/**
+ * Add a player to the queue, pairing them with the earliest still-waiting
+ * player they're compatible with (anyone but the same authed userId). If no
+ * one currently waiting is compatible, the new player waits too.
+ */
 export function enqueue(queue: Queue, player: QueuedPlayer): EnqueueResult {
-  const waiting = [...queue.waiting, player]
-  if (waiting.length < 2) return { queue: { waiting }, pair: null }
-  const [a, b, ...rest] = waiting
-  return { queue: { waiting: rest }, pair: [a, b] }
+  const opponentIndex = queue.waiting.findIndex((candidate) => canPair(candidate, player))
+  if (opponentIndex === -1) {
+    return { queue: { waiting: [...queue.waiting, player] }, pair: null }
+  }
+  const opponent = queue.waiting[opponentIndex]!
+  const waiting = queue.waiting.filter((_, index) => index !== opponentIndex)
+  return { queue: { waiting }, pair: [opponent, player] }
 }
 
 /** Remove a player from the queue (cancel, or disconnect while still waiting). No-op if absent. */

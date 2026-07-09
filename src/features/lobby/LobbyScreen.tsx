@@ -1,6 +1,7 @@
 import { useSyncExternalStore } from 'react'
 import bg from '../../assets/bg.jpg'
 import { MAX_NAME_LENGTH } from '../../types/multiplayer'
+import { authStore } from '../auth/store'
 import '../menu/IntroScreen.css'
 import './LobbyScreen.css'
 import { lobbyStore } from './store'
@@ -15,6 +16,8 @@ type Props = {
 
 export function LobbyScreen({ onBack, onMatchReady }: Props) {
   const state = useSyncExternalStore(lobbyStore.subscribe, lobbyStore.getState)
+  const auth = useSyncExternalStore(authStore.subscribe, authStore.getState)
+  const signedIn = auth.status === 'signedIn'
 
   function handleCountdownDone() {
     const socket = lobbyStore.getSocket()
@@ -39,24 +42,28 @@ export function LobbyScreen({ onBack, onMatchReady }: Props) {
 
         {state.phase === 'idle' && (
           <>
-            <div className="lobby__name-row">
-              <input
-                type="text"
-                className={`lobby__name-input${state.nameError ? ' lobby__name-input--error' : ''}`}
-                value={state.name}
-                onChange={(e) => lobbyStore.setName(e.target.value)}
-                maxLength={MAX_NAME_LENGTH}
-                aria-label="Your name"
-              />
-              <button
-                type="button"
-                className="lobby__reroll"
-                onClick={() => lobbyStore.rerollName()}
-                aria-label="Randomise name"
-              >
-                🎲
-              </button>
-            </div>
+            {signedIn ? (
+              <p className="lobby__username">{auth.username}</p>
+            ) : (
+              <div className="lobby__name-row">
+                <input
+                  type="text"
+                  className={`lobby__name-input${state.nameError ? ' lobby__name-input--error' : ''}`}
+                  value={state.name}
+                  onChange={(e) => lobbyStore.setName(e.target.value)}
+                  maxLength={MAX_NAME_LENGTH}
+                  aria-label="Your name"
+                />
+                <button
+                  type="button"
+                  className="lobby__reroll"
+                  onClick={() => lobbyStore.rerollName()}
+                  aria-label="Randomise name"
+                >
+                  🎲
+                </button>
+              </div>
+            )}
             {state.nameError && <p className="lobby__warning">⚠ {state.nameError}</p>}
 
             <button type="button" className="lobby__btn" onClick={() => lobbyStore.quickMatch()}>

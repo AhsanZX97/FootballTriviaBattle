@@ -1,7 +1,8 @@
 import type { LobbyPhase } from '../../types/multiplayer'
 import type { Question } from '../../types/trivia'
 import type { MultiplayerSocket } from '../../services/multiplayer/socket'
-import { connect } from '../../services/multiplayer/socket'
+import { connectWithAuth } from '../../services/multiplayer/socket'
+import { authStore } from '../auth/store'
 import { randomName } from './randomName'
 
 /** Handed to onMatchReady once the lobby's countdown finishes; carries the
@@ -23,7 +24,7 @@ export interface LobbyState {
 }
 
 type Listener = () => void
-type ConnectFn = (url?: string) => MultiplayerSocket
+type ConnectFn = (url?: string) => MultiplayerSocket | Promise<MultiplayerSocket>
 
 // names aren't persisted: every visit to the lobby rerolls a fresh one
 const initialState = (): LobbyState => ({
@@ -36,12 +37,15 @@ const initialState = (): LobbyState => ({
 })
 
 /** Exported for tests, which inject a fake socket; the app uses the `lobbyStore` singleton. */
-export function createLobbyStore(connectFn: ConnectFn = connect) {
+export function createLobbyStore(connectFn: ConnectFn = connectWithAuth) {
   let state = initialState()
   let socket: MultiplayerSocket | null = null
   /** Active while queueing only — every other path (cancel, matched, error,
    * handoff) detaches it first, so a firing always means the server dropped us. */
   let offClose: (() => void) | null = null
+  /** Bumped by cancel()/reset() so a connect() that resolves after the player
+   * backed out doesn't resurrect a queue join — see quickMatch(). */
+  let connectAttempt = 0
   const listeners = new Set<Listener>()
 
   const getState = () => state
@@ -67,16 +71,32 @@ export function createLobbyStore(connectFn: ConnectFn = connect) {
     setName(randomName())
   }
 
-  /** Validates the name and, if non-empty, connects and joins the quick-match queue. */
-  function quickMatch() {
+  /** Validates the name (or, when signed in, uses the account username instead
+   * and skips the empty-name check entirely) and, if valid, connects and joins
+   * the quick-match queue. connectFn (connectWithAuth by default) resolves
+   * asynchronously, so a cancel()/reset() fired while connecting is tracked
+   * via connectAttempt and unwinds the now-unwanted socket once it arrives. */
+  async function quickMatch() {
     if (state.phase !== 'idle') return
-    const trimmed = state.name.trim()
+    const auth = authStore.getState()
+    const trimmed = auth.status === 'signedIn' && auth.username ? auth.username : state.name.trim()
     if (!trimmed) {
       set({ nameError: 'ENTER A NAME FIRST!' })
       return
     }
 
-    socket = connectFn()
+    const attempt = ++connectAttempt
+    // Optimistic: also blocks re-entrant quickMatch() calls while connecting.
+    set({ phase: 'searching', nameError: null })
+
+    const newSocket = await connectFn()
+    if (attempt !== connectAttempt) {
+      // cancel()/reset() ran while we were connecting — don't resurrect a queue join.
+      newSocket.close()
+      return
+    }
+
+    socket = newSocket
     socket.onMessage((message) => {
       switch (message.type) {
         case 'matched':
@@ -107,12 +127,10 @@ export function createLobbyStore(connectFn: ConnectFn = connect) {
       set({ phase: 'idle', nameError: "CAN'T REACH SERVER!" })
     })
     socket.send({ type: 'queue', name: trimmed })
-    // Optimistic: the server only echoes 'queued' when no opponent was waiting;
-    // if paired instantly the next message is 'matched' and this gets overwritten.
-    set({ phase: 'searching', nameError: null })
   }
 
   function cancel() {
+    connectAttempt++
     detachClose()
     socket?.send({ type: 'cancel' })
     socket?.close()
@@ -125,6 +143,7 @@ export function createLobbyStore(connectFn: ConnectFn = connect) {
    * with a stale/dead socket. Keeps the player's name; the match owns the
    * socket now, so we only drop our reference, never close it here. */
   function reset() {
+    connectAttempt++
     detachClose()
     socket = null
     set({ phase: 'idle', nameError: null, opponentName: null, youGoFirst: null, questions: [] })

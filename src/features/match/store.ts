@@ -5,6 +5,8 @@ import type { MultiplayerSocket } from '../../services/multiplayer/socket'
 import type { MatchReadySession } from '../lobby/store'
 import { applyAnswer, createInitialState, isMatchOver } from '../../game/shootout'
 import { getQuestions } from '../../services/trivia/questionSource'
+import { authStore } from '../auth/store'
+import { supabase } from '../../services/supabase'
 
 /** Seconds per question. Single source of truth so it can be made user-selectable later. */
 export const QUESTION_TIME_SECONDS = 10
@@ -75,6 +77,19 @@ function createMatchStore() {
   const getCurrentQuestion = (): Question | undefined =>
     state.questions[state.questionIndex]
 
+  /** Best-effort vs-CPU coin award — rate-limited server-side (see
+   * award_cpu_win in the Supabase migration), so a failure or a
+   * rate-limit response here is silent and never blocks the result screen. */
+  async function awardCpuWinIfSignedIn() {
+    if (authStore.getState().status !== 'signedIn') return
+    try {
+      const { data, error } = await supabase.rpc('award_cpu_win')
+      if (!error && typeof data === 'number') authStore.applyCoinsUpdate(data)
+    } catch {
+      // best-effort; network/RPC failures never surface to the player
+    }
+  }
+
   async function start() {
     set({ ...initialState, phase: 'loading' })
     try {
@@ -99,6 +114,9 @@ function createMatchStore() {
     // swap for a no-repeat draw if question reuse becomes noticeable.
     const questionIndex = (state.questionIndex + 1) % state.questions.length
     set({ shootout, questionIndex })
+    // isMatchOver guard above means this only ever fires once, on the
+    // playing -> won transition.
+    if (shootout.status === 'won') void awardCpuWinIfSignedIn()
   }
 
   function nextQuestionIndex() {
@@ -142,6 +160,9 @@ function createMatchStore() {
             ? state.shootout
             : { ...state.shootout, status: 'won' },
         })
+        return
+      case 'coinsAwarded':
+        authStore.applyCoinsUpdate(message.balance)
         return
       default:
         return

@@ -18,6 +18,20 @@ vi.mock('../../../services/trivia/questionSource', () => ({
   getQuestions: (count: number) => getQuestions(count),
 }))
 
+const authState: { status: 'signedOut' | 'loading' | 'signedIn' } = { status: 'signedOut' }
+const applyCoinsUpdate = vi.fn()
+vi.mock('../../auth/store', () => ({
+  authStore: {
+    getState: () => authState,
+    applyCoinsUpdate: (balance: number) => applyCoinsUpdate(balance),
+  },
+}))
+
+const rpc = vi.fn<(fn: string) => Promise<{ data: unknown; error: { message: string } | null }>>()
+vi.mock('../../../services/supabase', () => ({
+  supabase: { rpc: (fn: string) => rpc(fn) },
+}))
+
 import { matchStore } from '../store'
 
 function createFakeSocket() {
@@ -66,6 +80,10 @@ beforeEach(() => {
   matchStore.reset()
   getQuestions.mockReset()
   getQuestions.mockResolvedValue(sample)
+  authState.status = 'signedOut'
+  applyCoinsUpdate.mockReset()
+  rpc.mockReset()
+  rpc.mockResolvedValue({ data: null, error: null })
 })
 
 describe('matchStore', () => {
@@ -112,6 +130,46 @@ describe('matchStore', () => {
     await matchStore.start()
     expect(matchStore.getState().phase).toBe('error')
   })
+
+  it('awards a CPU-win coin via RPC when signed in and the match is won', async () => {
+    authState.status = 'signedIn'
+    rpc.mockResolvedValue({ data: 7, error: null })
+    await matchStore.start()
+    for (let i = 0; i < 10; i++) matchStore.submitAnswer(true) // win 5-0
+
+    await vi.waitFor(() => expect(applyCoinsUpdate).toHaveBeenCalledWith(7))
+    expect(rpc).toHaveBeenCalledWith('award_cpu_win')
+  })
+
+  it('does not attempt a CPU-win award when signed out', async () => {
+    authState.status = 'signedOut'
+    await matchStore.start()
+    for (let i = 0; i < 10; i++) matchStore.submitAnswer(true) // win 5-0
+
+    await Promise.resolve()
+    expect(rpc).not.toHaveBeenCalled()
+    expect(applyCoinsUpdate).not.toHaveBeenCalled()
+  })
+
+  it('does not award a coin on a CPU loss', async () => {
+    authState.status = 'signedIn'
+    await matchStore.start()
+    for (let i = 0; i < 10; i++) matchStore.submitAnswer(false) // lose 0-5
+
+    await Promise.resolve()
+    expect(matchStore.getState().shootout.status).toBe('lost')
+    expect(rpc).not.toHaveBeenCalled()
+  })
+
+  it('silently ignores a rate-limited (null balance) CPU award response', async () => {
+    authState.status = 'signedIn'
+    rpc.mockResolvedValue({ data: null, error: null })
+    await matchStore.start()
+    for (let i = 0; i < 10; i++) matchStore.submitAnswer(true)
+
+    await vi.waitFor(() => expect(rpc).toHaveBeenCalled())
+    expect(applyCoinsUpdate).not.toHaveBeenCalled()
+  })
 })
 
 describe('matchStore 1v1 mode', () => {
@@ -138,6 +196,15 @@ describe('matchStore 1v1 mode', () => {
     expect(fake.sent).toEqual([{ type: 'kickResult', scored: true }])
     expect(matchStore.getState().pendingKick).toBe(true)
     expect(matchStore.getState().shootout.userScore).toBe(0)
+  })
+
+  it('applies a server coinsAwarded message to the auth store', () => {
+    const { session, fake } = readySession()
+    matchStore.start1v1(session)
+
+    fake.emit({ type: 'coinsAwarded', amount: 3, balance: 13 })
+
+    expect(applyCoinsUpdate).toHaveBeenCalledWith(13)
   })
 
   it('applies my own kickResolved, clears pendingKick, and advances the question', () => {

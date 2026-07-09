@@ -18,6 +18,7 @@ export type ServerMessage =
   | { type: 'rematchStart'; youGoFirst: boolean; questions: Question[] }
   | { type: 'opponentLeft' }
   | { type: 'error'; reason: string }
+  | { type: 'coinsAwarded'; amount: number; balance: number }
 
 /**
  * Connection-level lobby state — not sent over the wire. The "starting /

@@ -14,3 +14,9 @@ services:
       # https://<project>.vercel.app  (PORT is injected by Render automatically.)
       - key: ALLOWED_ORIGINS
         sync: false
+      # Supabase project for JWT verification + service-role coin writes.
+      # Set in the Render dashboard — never commit the service role key.
+      - key: SUPABASE_URL
+        sync: false
+      - key: SUPABASE_SERVICE_ROLE_KEY
+        sync: false

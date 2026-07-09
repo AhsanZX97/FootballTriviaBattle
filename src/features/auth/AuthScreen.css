@@ -1,0 +1,192 @@
+/* Sits inside .intro__content (position:absolute; inset:0; flex; centered) as
+   a normal flow child, so it gets centered like the menu's logo/buttons do —
+   it must never set position/inset itself, or it fights that centering (see
+   the earlier bug: an explicit width on .intro__content directly pinned the
+   panel to the left edge instead of centering it). */
+.auth__panel {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: clamp(12px, 2vh, 20px);
+  width: min(92%, 420px);
+}
+
+.auth__back {
+  align-self: flex-start;
+  margin-bottom: -4px;
+  border: none;
+  background: transparent;
+  color: #cfd8e6;
+  font-family: 'Press Start 2P', ui-monospace, Consolas, monospace;
+  font-size: clamp(9px, 1.2vw, 12px);
+  letter-spacing: 0.1em;
+  cursor: pointer;
+  text-shadow: 2px 2px 0 #000;
+}
+
+@media (hover: hover) {
+  .auth__back:hover {
+    color: #fff;
+  }
+}
+
+.auth__title {
+  margin: 0 0 clamp(4px, 1vh, 10px);
+  font-size: clamp(18px, 3vw, 28px);
+  color: #fff;
+  text-shadow: 3px 3px 0 #000;
+}
+
+.auth__form {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 12px;
+  width: 100%;
+}
+
+.auth__input {
+  width: 100%;
+  padding: 14px 16px;
+  border: none;
+  border-radius: 0;
+  background: #0a2416;
+  color: #fff;
+  font-family: 'Press Start 2P', ui-monospace, Consolas, monospace;
+  font-size: clamp(10px, 1.4vw, 13px);
+  image-rendering: pixelated;
+  box-shadow: 0 0 0 3px #0a0a0a, 3px 3px 0 3px rgba(0, 0, 0, 0.85);
+}
+
+.auth__input:focus-visible {
+  outline: 3px solid #ffcf1a;
+  outline-offset: 2px;
+}
+
+.auth__helper {
+  margin: -6px 0 0;
+  font-size: clamp(8px, 1.1vw, 11px);
+  color: #cfd8e6;
+  text-shadow: 2px 2px 0 #000;
+}
+
+.auth__error {
+  margin: -2px 0 0;
+  font-size: clamp(9px, 1.3vw, 12px);
+  color: #ff8a80;
+  text-shadow: 2px 2px 0 #000;
+}
+
+/* Bevel button, same formula as .intro__play / .lobby__btn. */
+.auth__submit {
+  width: 100%;
+  padding: 16px 24px;
+  margin-top: 4px;
+  border: none;
+  border-radius: 0;
+  background: #ffcf1a;
+  color: #1a1206;
+  font-family: 'Press Start 2P', ui-monospace, Consolas, monospace;
+  font-size: clamp(11px, 1.6vw, 15px);
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+  cursor: pointer;
+  image-rendering: pixelated;
+  transition: transform 0.04s steps(1), box-shadow 0.04s steps(1);
+  box-shadow:
+    inset 3px 3px 0 0 rgba(255, 255, 255, 0.55),
+    inset -3px -3px 0 0 rgba(0, 0, 0, 0.45),
+    0 0 0 3px #0a0a0a,
+    5px 5px 0 3px rgba(0, 0, 0, 0.85);
+}
+
+@media (hover: hover) {
+  .auth__submit:hover:not(:disabled) {
+    background: #fff04a;
+  }
+}
+
+.auth__submit:active:not(:disabled) {
+  transform: translate(4px, 4px);
+  box-shadow:
+    inset 3px 3px 0 0 rgba(255, 255, 255, 0.55),
+    inset -3px -3px 0 0 rgba(0, 0, 0, 0.45),
+    0 0 0 3px #0a0a0a,
+    1px 1px 0 3px rgba(0, 0, 0, 0.85);
+}
+
+.auth__submit:focus-visible {
+  outline: 3px solid #fff;
+  outline-offset: 6px;
+}
+
+.auth__submit:disabled {
+  background: #5b5f66;
+  color: #9aa0aa;
+  cursor: not-allowed;
+  box-shadow:
+    inset 3px 3px 0 0 rgba(255, 255, 255, 0.15),
+    inset -3px -3px 0 0 rgba(0, 0, 0, 0.35),
+    0 0 0 3px #0a0a0a,
+    5px 5px 0 3px rgba(0, 0, 0, 0.5);
+}
+
+.auth__link {
+  margin-top: 2px;
+  border: none;
+  background: transparent;
+  color: #ffcf1a;
+  font-family: 'Press Start 2P', ui-monospace, Consolas, monospace;
+  font-size: clamp(9px, 1.3vw, 12px);
+  letter-spacing: 0.05em;
+  cursor: pointer;
+  text-shadow: 2px 2px 0 #000;
+}
+
+.auth__link:disabled {
+  color: #6b6f78;
+  cursor: not-allowed;
+}
+
+/* Sign Up + Forgot password (and Resend code + back to sign in) share a row,
+   each shrunk so both fit without wrapping down to narrow phone widths. */
+.auth__link-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: clamp(10px, 3vw, 24px);
+  width: 100%;
+  margin-top: 2px;
+}
+
+.auth__link--small {
+  margin-top: 0;
+  font-size: clamp(7px, 1vw, 10px);
+  white-space: nowrap;
+}
+
+@media (hover: hover) {
+  .auth__link:hover {
+    color: #fff04a;
+  }
+}
+
+@media (min-width: 1500px) {
+  .auth__panel {
+    width: clamp(420px, 36vw, 640px);
+  }
+
+  .auth__title {
+    font-size: clamp(28px, 3vw, 44px);
+  }
+
+  .auth__input {
+    padding: clamp(14px, 1.3vw, 22px) clamp(16px, 1.4vw, 26px);
+    font-size: clamp(13px, 1.1vw, 20px);
+  }
+
+  .auth__submit {
+    padding: clamp(16px, 1.5vw, 26px) clamp(24px, 2.2vw, 40px);
+    font-size: clamp(15px, 1.4vw, 24px);
+  }
+}

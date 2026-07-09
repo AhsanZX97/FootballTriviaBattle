@@ -58,6 +58,21 @@
   }
 }
 
+/* static replacement for .lobby__name-row when signed in — same box
+   treatment as the input it replaces, minus the reroll die */
+.lobby__username {
+  margin: 0;
+  padding: 14px 16px;
+  width: 100%;
+  background: #0a2416;
+  color: #ffcf1a;
+  font-family: 'Press Start 2P', ui-monospace, Consolas, monospace;
+  font-size: clamp(10px, 1.4vw, 13px);
+  text-align: center;
+  image-rendering: pixelated;
+  box-shadow: 0 0 0 3px #0a0a0a, 3px 3px 0 3px rgba(0, 0, 0, 0.85);
+}
+
 .lobby__reroll {
   flex: none;
   padding: 0 16px;

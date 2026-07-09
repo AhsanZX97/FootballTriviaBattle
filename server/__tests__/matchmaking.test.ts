@@ -37,3 +37,31 @@ describe('dequeue', () => {
     expect(dequeue(queue, 'missing').waiting).toEqual([player('p1')])
   })
 })
+
+describe('enqueue — same-user pairing guard', () => {
+  const authed = (id: string, userId: string) => ({ id, name: id, userId })
+
+  it('does not pair two waiting players who share a userId (self-match farming)', () => {
+    const first = enqueue(createQueue(), authed('p1', 'u1'))
+    expect(first.pair).toBeNull()
+
+    const second = enqueue(first.queue, authed('p2', 'u1'))
+    expect(second.pair).toBeNull()
+    expect(second.queue.waiting).toEqual([authed('p1', 'u1'), authed('p2', 'u1')])
+  })
+
+  it('pairs a third, different-user player with whichever waiting entry is compatible', () => {
+    let result = enqueue(createQueue(), authed('p1', 'u1'))
+    result = enqueue(result.queue, authed('p2', 'u1'))
+    result = enqueue(result.queue, authed('p3', 'u2'))
+
+    expect(result.pair).toEqual([authed('p1', 'u1'), authed('p3', 'u2')])
+    expect(result.queue.waiting).toEqual([authed('p2', 'u1')])
+  })
+
+  it('still pairs anonymous players with each other and with authed players', () => {
+    let result = enqueue(createQueue(), player('p1'))
+    result = enqueue(result.queue, authed('p2', 'u1'))
+    expect(result.pair).toEqual([player('p1'), authed('p2', 'u1')])
+  })
+})
