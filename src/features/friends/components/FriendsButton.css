@@ -1,0 +1,61 @@
+/* Profile icon, top-left of the screen (the coin + sound cluster owns the
+   right). App-level float, same z-index band as .sound / .coin-counter. */
+.friends-btn {
+  position: fixed;
+  /* the coin sits centred in a 44px box (~7px transparent margin above it),
+     so pull the button up to line the coin's centre up with the 30px coin
+     counter / volume icons rather than its box */
+  top: 5px;
+  left: 12px;
+  z-index: 100;
+  padding: 0;
+  border: none;
+  background: none;
+  cursor: pointer;
+  line-height: 0;
+  filter: drop-shadow(2px 2px 0 rgba(0, 0, 0, 0.6));
+}
+
+.friends-btn__img {
+  display: block;
+  width: 44px;
+  height: 44px;
+  object-fit: contain;
+  image-rendering: auto; /* smooth-shaded sprite, like the coin */
+}
+
+/* red count bubble hugging the top-right of the icon */
+.friends-btn__badge {
+  position: absolute;
+  top: -4px;
+  right: -4px;
+  min-width: 20px;
+  height: 20px;
+  padding: 0 5px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-sizing: border-box;
+  color: #fff;
+  font-family: 'Press Start 2P', ui-monospace, Consolas, monospace;
+  font-size: 9px;
+  line-height: 1;
+  background: #e0202a;
+  border-radius: 999px;
+  box-shadow:
+    0 0 0 2px #0a0a0a,
+    1px 1px 0 2px rgba(0, 0, 0, 0.55);
+}
+
+@media (max-width: 360px) {
+  .friends-btn__img {
+    width: 38px;
+    height: 38px;
+  }
+}
+
+/* keep clear of the status bar / notch on native */
+.native .friends-btn {
+  top: calc(5px + env(safe-area-inset-top));
+  left: calc(12px + env(safe-area-inset-left));
+}

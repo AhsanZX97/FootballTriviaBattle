@@ -6,6 +6,7 @@ import { matchStore } from './features/match/store'
 import { LobbyScreen } from './features/lobby/LobbyScreen'
 import { lobbyStore } from './features/lobby/store'
 import { AuthScreen } from './features/auth/AuthScreen'
+import { FriendsButton } from './features/friends/components/FriendsButton'
 import { getMasterVolume, playTheme, setMasterVolume, stopTheme } from './services/sound'
 import { isNative } from './services/platform'
 import volumeIcon from './assets/volume-icon.png'
@@ -186,6 +187,7 @@ function App() {
     <>
       <SoundControl screen={screen} />
       {screen !== 'match' && <CoinCounter />}
+      {screen !== 'match' && <FriendsButton />}
       {content}
     </>
   )
