@@ -11,7 +11,7 @@
     "typecheck": "tsc -b --noEmit",
     "test": "vitest run",
     "test:watch": "vitest",
-    "dev:server": "tsx watch server/index.ts",
+    "dev:server": "tsx watch --env-file-if-exists=.env.development.local server/index.ts",
     "start:server": "tsx server/index.ts",
     "lint": "oxlint",
     "preview": "vite preview",

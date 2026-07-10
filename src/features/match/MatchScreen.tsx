@@ -3,6 +3,7 @@ import type { Kick, Stage } from '../../types/match'
 import { getResult, KICKS_PER_SIDE } from '../../game/shootout'
 import { matchStore, QUESTION_TIME_SECONDS } from './store'
 import { PitchScene, type SceneFeedback } from './components/PitchScene'
+import { CoinReward } from './components/CoinReward'
 import { PreMatchCountdown } from '../lobby/components/PreMatchCountdown'
 import { fadeOutCrowd, play } from '../../services/sound'
 import { useBottomBanner } from '../../services/ads'
@@ -168,17 +169,8 @@ export function MatchScreen({ onExit, onMainMenu }: Props) {
     if (is1v1) {
       return (
         <main className="match match--message">
-          <p className="match__result">
-            {result.outcome === 'win' ? (
-              <>
-                <Sprite name="trophy" /> YOU WIN
-              </>
-            ) : (
-              <>
-                <Sprite name="skull" /> YOU LOSE
-              </>
-            )}
-          </p>
+          <CoinReward amount={state.coinsAwarded} />
+          <p className="match__result">{result.outcome === 'win' ? 'YOU WIN' : 'YOU LOSE'}</p>
           <p className="match__final-score">
             {result.userScore} – {result.cpuScore}
           </p>
@@ -219,17 +211,8 @@ export function MatchScreen({ onExit, onMainMenu }: Props) {
     }
     return (
       <main className="match match--message">
-        <p className="match__result">
-          {result.outcome === 'win' ? (
-            <>
-              <Sprite name="trophy" /> YOU WIN
-            </>
-          ) : (
-            <>
-              <Sprite name="skull" /> YOU LOSE
-            </>
-          )}
-        </p>
+        <CoinReward amount={state.coinsAwarded} />
+        <p className="match__result">{result.outcome === 'win' ? 'YOU WIN' : 'YOU LOSE'}</p>
         <p className="match__final-score">
           {result.userScore} – {result.cpuScore}
         </p>

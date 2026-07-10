@@ -58,3 +58,9 @@ the minimal snapshot/console read, done — not click-through flows.
 - The server's origin check only allows `http://localhost:5173`. If Vite grabs
   5174 because a stale Vite is still on 5173, the socket handshake fails with
   "HTTP Authentication failed" — kill the stray process, don't change the port.
+- `dev:server` loads `.env.development.local` (gitignored). 1v1 coin awards
+  only work locally if that file sets `SUPABASE_URL` and
+  `SUPABASE_SERVICE_ROLE_KEY`; the server's boot log says ENABLED or DISABLED
+  either way, and `/healthz` reports `coinAwards`. Vs-CPU coin awards are a
+  separate path (client → `award_cpu_win` RPC, straight to Supabase) and work
+  regardless of the WS server's config.

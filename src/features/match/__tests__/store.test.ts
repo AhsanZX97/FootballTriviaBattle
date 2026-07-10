@@ -18,7 +18,10 @@ vi.mock('../../../services/trivia/questionSource', () => ({
   getQuestions: (count: number) => getQuestions(count),
 }))
 
-const authState: { status: 'signedOut' | 'loading' | 'signedIn' } = { status: 'signedOut' }
+const authState: { status: 'signedOut' | 'loading' | 'signedIn'; coins: number } = {
+  status: 'signedOut',
+  coins: 0,
+}
 const applyCoinsUpdate = vi.fn()
 vi.mock('../../auth/store', () => ({
   authStore: {
@@ -81,6 +84,7 @@ beforeEach(() => {
   getQuestions.mockReset()
   getQuestions.mockResolvedValue(sample)
   authState.status = 'signedOut'
+  authState.coins = 0
   applyCoinsUpdate.mockReset()
   rpc.mockReset()
   rpc.mockResolvedValue({ data: null, error: null })
@@ -139,6 +143,27 @@ describe('matchStore', () => {
 
     await vi.waitFor(() => expect(applyCoinsUpdate).toHaveBeenCalledWith(7))
     expect(rpc).toHaveBeenCalledWith('award_cpu_win')
+  })
+
+  it('records the CPU-win gain (new balance minus old) as coinsAwarded', async () => {
+    authState.status = 'signedIn'
+    authState.coins = 4
+    rpc.mockResolvedValue({ data: 7, error: null })
+    await matchStore.start()
+    for (let i = 0; i < 10; i++) matchStore.submitAnswer(true) // win 5-0
+
+    await vi.waitFor(() => expect(matchStore.getState().coinsAwarded).toBe(3))
+  })
+
+  it('leaves coinsAwarded null when a rate-limited CPU award returns the same balance', async () => {
+    authState.status = 'signedIn'
+    authState.coins = 7
+    rpc.mockResolvedValue({ data: 7, error: null }) // unchanged: rate-limited
+    await matchStore.start()
+    for (let i = 0; i < 10; i++) matchStore.submitAnswer(true)
+
+    await vi.waitFor(() => expect(applyCoinsUpdate).toHaveBeenCalledWith(7))
+    expect(matchStore.getState().coinsAwarded).toBeNull()
   })
 
   it('does not attempt a CPU-win award when signed out', async () => {
@@ -205,6 +230,18 @@ describe('matchStore 1v1 mode', () => {
     fake.emit({ type: 'coinsAwarded', amount: 3, balance: 13 })
 
     expect(applyCoinsUpdate).toHaveBeenCalledWith(13)
+    expect(matchStore.getState().coinsAwarded).toBe(3)
+  })
+
+  it('clears coinsAwarded when a rematch starts', () => {
+    const { session, fake } = readySession()
+    matchStore.start1v1(session)
+    fake.emit({ type: 'coinsAwarded', amount: 3, balance: 13 })
+    expect(matchStore.getState().coinsAwarded).toBe(3)
+
+    fake.emit({ type: 'rematchStart', youGoFirst: false, questions: sample })
+
+    expect(matchStore.getState().coinsAwarded).toBeNull()
   })
 
   it('applies my own kickResolved, clears pendingKick, and advances the question', () => {

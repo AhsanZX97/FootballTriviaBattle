@@ -37,6 +37,10 @@ export interface MatchState {
   /** Who the most recently resolved kick belonged to — lets the UI skip
    * re-animating a kick it already showed optimistically. */
   lastKickBy: 'you' | 'opponent' | null
+  /** Coins gained from this match's result (the balance *delta*, not the new
+   * total), used to show the "+N" reward on the result screen. Null until an
+   * award lands; a rate-limited/zero award stays null so nothing is shown. */
+  coinsAwarded: number | null
 }
 
 const initialState: MatchState = {
@@ -52,6 +56,7 @@ const initialState: MatchState = {
   connectionLost: false,
   pendingKick: false,
   lastKickBy: null,
+  coinsAwarded: null,
 }
 
 type Listener = () => void
@@ -82,9 +87,14 @@ function createMatchStore() {
    * rate-limit response here is silent and never blocks the result screen. */
   async function awardCpuWinIfSignedIn() {
     if (authStore.getState().status !== 'signedIn') return
+    const before = authStore.getState().coins
     try {
       const { data, error } = await supabase.rpc('award_cpu_win')
-      if (!error && typeof data === 'number') authStore.applyCoinsUpdate(data)
+      if (!error && typeof data === 'number') {
+        authStore.applyCoinsUpdate(data)
+        const gained = data - before
+        if (gained > 0) set({ coinsAwarded: gained })
+      }
     } catch {
       // best-effort; network/RPC failures never surface to the player
     }
@@ -151,6 +161,7 @@ function createMatchStore() {
           rematchVotes: 0,
           rematchIVoted: false,
           lastKickBy: null,
+          coinsAwarded: null,
         })
         return
       case 'opponentLeft':
@@ -163,6 +174,7 @@ function createMatchStore() {
         return
       case 'coinsAwarded':
         authStore.applyCoinsUpdate(message.balance)
+        if (message.amount > 0) set({ coinsAwarded: message.amount })
         return
       default:
         return

@@ -1,0 +1,61 @@
+.coin-reward {
+  display: flex;
+  align-items: center;
+  gap: clamp(10px, 2.4vw, 18px);
+  /* one size drives both the coin and the "+ N" text so they stay matched */
+  font-size: clamp(11px, 1.8vw, 18px);
+  animation: coin-reward-pop 0.35s steps(4) both;
+}
+
+/* One frame of the 9-frame coinSpinSheet.png (2160x240; nine 240px cells).
+   The box shows a single square cell; the sheet is scaled so each frame is
+   --coin-size wide, and background-position-x steps across the nine frames. */
+.coin-reward__coin {
+  /* sized to visually match the digit height. >1em compensates for the
+     transparent margin baked into each sprite cell (the coin fills ~90% of its
+     square) plus the pixel font's tall glyphs. Scales with the text since it's
+     in em, so the coin/number ratio holds on any screen width. */
+  --coin-size: 1.4em;
+  width: var(--coin-size);
+  height: var(--coin-size);
+  background-image: var(--coin-sheet);
+  background-repeat: no-repeat;
+  background-size: calc(var(--coin-size) * 9) var(--coin-size);
+  background-position-x: 0;
+  /* the coin is smooth cartoon art; opt out of .match's inherited pixelated scaling */
+  image-rendering: auto;
+  /* nudge up: the pixel-font digit sits high in its line box, so plain
+     center-alignment leaves the coin looking slightly low next to it */
+  transform: translateY(-0.1em);
+  animation: coin-spin 0.9s steps(9) infinite;
+}
+
+@keyframes coin-spin {
+  to {
+    background-position-x: calc(var(--coin-size) * -9);
+  }
+}
+
+.coin-reward__amount {
+  color: #ffcf1a;
+  text-shadow: 2px 2px 0 #000;
+}
+
+@keyframes coin-reward-pop {
+  from {
+    opacity: 0;
+    transform: scale(0.6);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+/* Respect reduced-motion: hold the full-face first frame, drop the entrance pop. */
+@media (prefers-reduced-motion: reduce) {
+  .coin-reward,
+  .coin-reward__coin {
+    animation: none;
+  }
+}

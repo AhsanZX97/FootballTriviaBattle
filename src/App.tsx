@@ -185,7 +185,7 @@ function App() {
   return (
     <>
       <SoundControl screen={screen} />
-      <CoinCounter />
+      {screen !== 'match' && <CoinCounter />}
       {content}
     </>
   )

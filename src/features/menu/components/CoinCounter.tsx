@@ -17,7 +17,9 @@ export function CoinCounter({ store = authStore }: Props) {
   return (
     <div className="coin-counter">
       <img className="coin-counter__icon" src={coinSprite} alt="" aria-hidden />
-      <span className="coin-counter__value">{coins}</span>
+      <span className="coin-counter__bar">
+        <span className="coin-counter__value">{coins}</span>
+      </span>
     </div>
   )
 }

@@ -139,42 +139,66 @@ h2 {
   z-index: 100;
   display: flex;
   align-items: center;
-  gap: 6px;
-  padding: 8px 12px;
-  background: #0a2416;
+  image-rendering: pixelated;
+}
+
+/* the coin sits in front of, and overlapping, the left end of the bar */
+.coin-counter__icon {
+  width: 30px;
+  height: 30px;
+  object-fit: contain;
+  display: block;
+  position: relative;
+  z-index: 2;
+  margin-right: -14px;
+  /* the container sets image-rendering: pixelated for the bitmap font; the coin
+     is a smooth-shaded sprite, so opt back into smooth downscaling here */
+  image-rendering: auto;
+  filter: drop-shadow(0 2px 0 rgba(0, 0, 0, 0.55));
+}
+
+/* rounded pill holding the number, with room on the left for the coin */
+.coin-counter__bar {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 46px;
+  height: 24px;
+  padding: 0 12px 0 20px;
   color: #ffcf1a;
   font-family: 'Press Start 2P', ui-monospace, Consolas, monospace;
   font-size: 12px;
   letter-spacing: 0.04em;
-  image-rendering: pixelated;
-  box-shadow: 0 0 0 3px #0a0a0a, 3px 3px 0 3px rgba(0, 0, 0, 0.85);
-}
-
-.coin-counter__icon {
-  width: 20px;
-  height: 20px;
-  object-fit: contain;
-  display: block;
-  /* the container sets image-rendering: pixelated for the bitmap font; the coin
-     is a smooth-shaded sprite, so opt back into smooth downscaling here */
-  image-rendering: auto;
+  background: linear-gradient(#123a24, #0a2416);
+  border-radius: 999px;
+  box-shadow:
+    inset 0 0 0 2px rgba(255, 207, 26, 0.35),
+    inset 0 2px 2px rgba(0, 0, 0, 0.55),
+    0 0 0 3px #0a0a0a,
+    3px 3px 0 3px rgba(0, 0, 0, 0.85);
 }
 
 .coin-counter__value {
   min-width: 1ch;
+  text-align: center;
 }
 
 @media (max-width: 360px) {
   .coin-counter {
     right: 58px;
-    padding: 6px 8px;
-    gap: 4px;
-    font-size: 10px;
   }
 
   .coin-counter__icon {
-    width: 16px;
-    height: 16px;
+    width: 24px;
+    height: 24px;
+    margin-right: -12px;
+  }
+
+  .coin-counter__bar {
+    min-width: 38px;
+    height: 20px;
+    padding: 0 8px 0 16px;
+    font-size: 10px;
   }
 }
 
