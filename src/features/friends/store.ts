@@ -56,6 +56,14 @@ export function createFriendsStore(
   const listeners = new Set<Listener>()
   // Bumped on every search so a slow earlier query can't overwrite newer results.
   let searchToken = 0
+  // Late-bound (App wires it to presenceStore.notifyFriends) so this store never
+  // imports the presence layer — keeps it decoupled and unit-testable. When a
+  // mutation changes a friendship, we ping the other user to refresh live.
+  let notify: ((userIds: string[]) => void) | null = null
+
+  function setNotifier(fn: (userIds: string[]) => void): void {
+    notify = fn
+  }
 
   const getState = () => state
   const subscribe = (l: Listener): (() => void) => {
@@ -89,13 +97,15 @@ export function createFriendsStore(
     }
   }
 
-  async function sendRequest(username: string): Promise<SendRequestResult> {
+  async function sendRequest(username: string, targetId?: string): Promise<SendRequestResult> {
     set({ actionError: null })
     const result = await api.sendFriendRequest(username)
     if (result === 'sent' || result === 'accepted') {
       await refresh()
       // reflect the new relationship in any open search results
       if (state.searchQuery) await search(state.searchQuery)
+      // nudge the recipient so their request badge appears without a reopen
+      if (targetId) notify?.([targetId])
     } else {
       set({ actionError: SEND_MESSAGES[result] ?? 'Could not send request.' })
     }
@@ -105,16 +115,19 @@ export function createFriendsStore(
   async function accept(requesterId: string): Promise<void> {
     await api.respondToRequest(requesterId, true)
     await refresh()
+    notify?.([requesterId]) // they're now your friend — update their list too
   }
 
   async function decline(requesterId: string): Promise<void> {
     await api.respondToRequest(requesterId, false)
     await refresh()
+    notify?.([requesterId])
   }
 
   async function remove(userId: string): Promise<void> {
     await api.removeFriend(userId)
     await refresh()
+    notify?.([userId])
   }
 
   async function search(query: string): Promise<void> {
@@ -157,6 +170,7 @@ export function createFriendsStore(
   return {
     getState,
     subscribe,
+    setNotifier,
     refresh,
     sendRequest,
     accept,

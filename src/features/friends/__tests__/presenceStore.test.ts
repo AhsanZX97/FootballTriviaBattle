@@ -132,6 +132,25 @@ describe('presence store', () => {
     expect(handler.mock.calls[0]![0]).toMatchObject({ socket: fake.socket, opponentName: 'Bob', youGoFirst: true })
   })
 
+  it('notifyFriends sends the userIds to the server', async () => {
+    const { seam } = createFakeAuth('signedOut')
+    const fake = createFakeSocket()
+    const store = createPresenceStore({ connectFn: () => fake.socket, auth: seam })
+    await store.notifyFriends(['u1', 'u2'])
+    expect(fake.sent).toContainEqual({ type: 'notifyFriends', userIds: ['u1', 'u2'] })
+  })
+
+  it('friendsChanged fires onFriendsChanged handlers', async () => {
+    const { seam } = createFakeAuth('signedOut')
+    const fake = createFakeSocket()
+    const store = createPresenceStore({ connectFn: () => fake.socket, auth: seam })
+    await store.connect()
+    const handler = vi.fn()
+    store.onFriendsChanged(handler)
+    fake.emit({ type: 'friendsChanged' })
+    expect(handler).toHaveBeenCalledTimes(1)
+  })
+
   it('tears down and clears state on sign-out', async () => {
     const { seam, setStatus } = createFakeAuth('signedIn')
     const fake = createFakeSocket()

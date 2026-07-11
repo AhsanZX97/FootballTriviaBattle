@@ -121,6 +121,35 @@ describe('friends store', () => {
     expect(api.listFriends).toHaveBeenCalled()
   })
 
+  it('notifies the target on a successful sendRequest', async () => {
+    const { seam } = createFakeAuth('signedIn')
+    const api = createFakeApi({ sendFriendRequest: vi.fn(async () => 'sent' as SendRequestResult) })
+    const notify = vi.fn()
+    const store = createFriendsStore({ api, auth: seam })
+    store.setNotifier(notify)
+    await store.sendRequest('bob', 'b1')
+    expect(notify).toHaveBeenCalledWith(['b1'])
+  })
+
+  it('does not notify when a sendRequest fails', async () => {
+    const { seam } = createFakeAuth('signedIn')
+    const api = createFakeApi({ sendFriendRequest: vi.fn(async () => 'not_found' as SendRequestResult) })
+    const notify = vi.fn()
+    const store = createFriendsStore({ api, auth: seam })
+    store.setNotifier(notify)
+    await store.sendRequest('ghost', 'g1')
+    expect(notify).not.toHaveBeenCalled()
+  })
+
+  it('notifies the requester on accept', async () => {
+    const { seam } = createFakeAuth('signedIn')
+    const notify = vi.fn()
+    const store = createFriendsStore({ api: createFakeApi(), auth: seam })
+    store.setNotifier(notify)
+    await store.accept('r1')
+    expect(notify).toHaveBeenCalledWith(['r1'])
+  })
+
   it('decline calls respondToRequest with accept=false', async () => {
     const { seam } = createFakeAuth('signedIn')
     const api = createFakeApi()

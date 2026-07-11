@@ -444,6 +444,22 @@ function handleChallengeCancel(connection: Connection, challengeId: string) {
   if (target) send(target.ws, { type: 'challengeCanceled', challengeId })
 }
 
+/** Relay a "your friends changed" nudge to the named users' live connections
+ * (all but the sender), so their client re-fetches and the request badge
+ * updates instantly. The nudge only triggers a read the target is already
+ * entitled to (their own friends, via RLS), so it can't leak anything; capped
+ * to keep a single message from fanning out unboundedly. */
+function handleNotifyFriends(connection: Connection, userIds: string[]) {
+  if (!connection.userId || !Array.isArray(userIds)) return
+  for (const userId of userIds.slice(0, 20)) {
+    const set = connectionsByUser.get(userId)
+    if (!set) continue
+    for (const target of set) {
+      if (target !== connection) send(target.ws, { type: 'friendsChanged' })
+    }
+  }
+}
+
 /** Drop every challenge a disconnecting connection was part of, notifying the
  * still-connected other side. */
 function cleanUpChallenges(connection: Connection) {
@@ -494,6 +510,9 @@ function handleMessage(connection: Connection, message: ClientMessage) {
       return
     case 'challengeCancel':
       handleChallengeCancel(connection, message.challengeId)
+      return
+    case 'notifyFriends':
+      handleNotifyFriends(connection, message.userIds)
       return
   }
 }

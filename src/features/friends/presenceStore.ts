@@ -31,6 +31,7 @@ export interface PresenceState {
 type Listener = () => void
 type ConnectFn = (url?: string) => MultiplayerSocket | Promise<MultiplayerSocket>
 type MatchReadyHandler = (session: MatchReadySession) => void
+type FriendsChangedHandler = () => void
 
 /** Minimal auth slice: connect while signed in, tear down on sign-out. */
 export interface AuthSeam {
@@ -73,6 +74,7 @@ export function createPresenceStore(
   let state: PresenceState = initialState()
   const listeners = new Set<Listener>()
   const matchReadyHandlers = new Set<MatchReadyHandler>()
+  const friendsChangedHandlers = new Set<FriendsChangedHandler>()
 
   let socket: MultiplayerSocket | null = null
   let offMessage: (() => void) | null = null
@@ -95,6 +97,13 @@ export function createPresenceStore(
   const onMatchReady = (handler: MatchReadyHandler): (() => void) => {
     matchReadyHandlers.add(handler)
     return () => void matchReadyHandlers.delete(handler)
+  }
+
+  /** Fires when a friend's action (request/accept/…) nudges us to re-fetch.
+   * App wires this to friendsStore.refresh so the two stores stay decoupled. */
+  const onFriendsChanged = (handler: FriendsChangedHandler): (() => void) => {
+    friendsChangedHandlers.add(handler)
+    return () => void friendsChangedHandlers.delete(handler)
   }
 
   /** Drop our handlers from the socket without closing it (the match adopts it),
@@ -152,6 +161,9 @@ export function createPresenceStore(
         if (state.incoming?.challengeId === message.challengeId) {
           set({ incoming: null, notice: 'Challenge withdrawn.' })
         }
+        return
+      case 'friendsChanged':
+        friendsChangedHandlers.forEach((h) => h())
         return
       case 'matched': {
         const s = socket
@@ -230,6 +242,14 @@ export function createPresenceStore(
     set({ notice: null })
   }
 
+  /** Tell the server to nudge these users (people I just changed a friendship
+   * with) so their friends list / request badge refreshes live. */
+  async function notifyFriends(userIds: string[]): Promise<void> {
+    if (userIds.length === 0) return
+    await connect()
+    socket?.send({ type: 'notifyFriends', userIds })
+  }
+
   // Connect while signed in, tear down on sign-out.
   let lastStatus: string | null = null
   const syncToAuth = () => {
@@ -252,12 +272,14 @@ export function createPresenceStore(
     getState,
     subscribe,
     onMatchReady,
+    onFriendsChanged,
     connect,
     challenge,
     cancelOutgoing,
     acceptIncoming,
     declineIncoming,
     clearNotice,
+    notifyFriends,
   }
 }
 

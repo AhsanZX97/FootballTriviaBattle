@@ -40,7 +40,7 @@ export function FriendList({ onChallenge }: Props) {
 
   const onAddOrAccept = (rel: Relationship, id: string, username: string) => {
     if (rel === 'incoming') void friendsStore.accept(id)
-    else void friendsStore.sendRequest(username)
+    else void friendsStore.sendRequest(username, id)
   }
 
   const showingSearch = query.trim().length > 0

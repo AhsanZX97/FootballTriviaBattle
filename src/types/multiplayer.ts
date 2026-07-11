@@ -14,6 +14,9 @@ export type ClientMessage =
   | { type: 'challengeAccept'; challengeId: string }
   | { type: 'challengeDecline'; challengeId: string }
   | { type: 'challengeCancel'; challengeId: string }
+  // Nudge the given users to re-fetch their friends (I just changed a
+  // friendship with them — sent/accepted/declined/removed).
+  | { type: 'notifyFriends'; userIds: string[] }
 
 /** Why a challenge couldn't be delivered/started. */
 export type ChallengeFailReason = 'offline' | 'busy' | 'declined' | 'expired' | 'gone'
@@ -36,6 +39,9 @@ export type ServerMessage =
   | { type: 'challengeFailed'; reason: ChallengeFailReason }
   /** To the target: the challenger withdrew before they answered. */
   | { type: 'challengeCanceled'; challengeId: string }
+  /** A friend changed a friendship with you — re-fetch the friends list so the
+   * request badge / list updates live instead of only on the next open. */
+  | { type: 'friendsChanged' }
 
 /**
  * Connection-level lobby state — not sent over the wire. The "starting /

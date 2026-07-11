@@ -8,6 +8,7 @@ import { lobbyStore } from './features/lobby/store'
 import { AuthScreen } from './features/auth/AuthScreen'
 import { authStore } from './features/auth/store'
 import { presenceStore } from './features/friends/presenceStore'
+import { friendsStore } from './features/friends/store'
 import { ChallengeOverlay } from './features/friends/components/ChallengeOverlay'
 import { FriendsPopup } from './features/friends/components/FriendsPopup'
 import { playTheme, stopTheme } from './services/sound'
@@ -38,6 +39,14 @@ function App() {
       setMatchExit('intro')
       setScreen('match')
     })
+  }, [])
+
+  // Wire the two friends stores together without either importing the other:
+  // outgoing friend actions ping the other user via presence; an incoming ping
+  // refreshes our friends list live (so the request badge appears at once).
+  useEffect(() => {
+    friendsStore.setNotifier((ids) => void presenceStore.notifyFriends(ids))
+    return presenceStore.onFriendsChanged(() => void friendsStore.refresh())
   }, [])
 
   // The presence socket hands itself to the match on a challenge, so it needs
