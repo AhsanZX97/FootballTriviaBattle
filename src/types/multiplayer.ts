@@ -9,6 +9,14 @@ export type ClientMessage =
   | { type: 'kickResult'; scored: boolean }
   | { type: 'rematchVote' }
   | { type: 'leave' }
+  // --- friend challenges (directed matchmaking over the presence socket) ---
+  | { type: 'challenge'; targetUserId: string }
+  | { type: 'challengeAccept'; challengeId: string }
+  | { type: 'challengeDecline'; challengeId: string }
+  | { type: 'challengeCancel'; challengeId: string }
+
+/** Why a challenge couldn't be delivered/started. */
+export type ChallengeFailReason = 'offline' | 'busy' | 'declined' | 'expired' | 'gone'
 
 export type ServerMessage =
   | { type: 'queued' }
@@ -19,6 +27,15 @@ export type ServerMessage =
   | { type: 'opponentLeft' }
   | { type: 'error'; reason: string }
   | { type: 'coinsAwarded'; amount: number; balance: number }
+  // --- friend challenges ---
+  /** Ack to the challenger: the invite reached the friend and is pending. */
+  | { type: 'challengeSent'; challengeId: string }
+  /** To the target: someone is challenging you. Reuse `matched` once accepted. */
+  | { type: 'challengeReceived'; challengeId: string; fromUserId: string; fromName: string }
+  /** To the challenger: the invite couldn't be delivered or was turned down. */
+  | { type: 'challengeFailed'; reason: ChallengeFailReason }
+  /** To the target: the challenger withdrew before they answered. */
+  | { type: 'challengeCanceled'; challengeId: string }
 
 /**
  * Connection-level lobby state — not sent over the wire. The "starting /

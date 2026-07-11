@@ -62,81 +62,9 @@ h2 {
   color: var(--text-h);
 }
 
-/* --- master volume control (App-level, floats over every screen) --- */
-.sound {
-  position: fixed;
-  top: 12px;
-  right: 12px;
-  z-index: 100;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 8px;
-}
-
-/* bare sprite button — the icon art carries its own outline */
-.sound__toggle {
-  padding: 0;
-  border: none;
-  background: none;
-  cursor: pointer;
-  filter: drop-shadow(2px 2px 0 rgba(0, 0, 0, 0.6));
-}
-
-.sound__toggle-img {
-  display: block;
-  width: 44px;
-  image-rendering: pixelated;
-}
-
-/* vertical slider dropping down from the icon; gold/black to match the sprites */
-.sound__slider {
-  writing-mode: vertical-lr;
-  direction: rtl; /* up = louder */
-  appearance: none;
-  width: 28px;
-  height: 120px;
-  background: none;
-  filter: drop-shadow(2px 2px 0 rgba(0, 0, 0, 0.6));
-}
-
-.sound__slider::-webkit-slider-runnable-track {
-  width: 10px;
-  background: #3a2a08;
-  border: 3px solid #000;
-}
-
-.sound__slider::-webkit-slider-thumb {
-  appearance: none;
-  width: 26px;
-  height: 25px; /* knob sprite is 42x40 */
-  margin-left: -5px; /* recenter the 26px thumb on the 16px track (cross axis is physical-horizontal here) */
-  background: url(./assets/volume-knob.png) center / contain no-repeat;
-  border: none;
-  image-rendering: pixelated;
-}
-
-.sound__slider::-moz-range-track {
-  width: 10px;
-  background: #3a2a08;
-  border: 3px solid #000;
-}
-
-.sound__slider::-moz-range-thumb {
-  width: 26px;
-  height: 25px;
-  background: url(./assets/volume-knob.png) center / contain no-repeat;
-  border: none;
-  image-rendering: pixelated;
-}
-
-/* --- coin balance (App-level, floats left of the SoundControl so the two
-   never overlap, incl. at narrow widths — see Bugs & edge cases #20) --- */
+/* --- coin balance (sits in the TopBar's right slot, left of the sound
+   control; the bar owns its position now) --- */
 .coin-counter {
-  position: fixed;
-  top: 12px;
-  right: 64px;
-  z-index: 100;
   display: flex;
   align-items: center;
   image-rendering: pixelated;
@@ -184,10 +112,6 @@ h2 {
 }
 
 @media (max-width: 360px) {
-  .coin-counter {
-    right: 58px;
-  }
-
   .coin-counter__icon {
     width: 24px;
     height: 24px;
@@ -218,28 +142,3 @@ h2 {
   user-select: text;
 }
 
-/* keep the floating volume control clear of the status bar / notch */
-.native .sound {
-  top: calc(12px + env(safe-area-inset-top));
-  right: calc(12px + env(safe-area-inset-right));
-}
-
-.native .coin-counter {
-  top: calc(12px + env(safe-area-inset-top));
-  right: calc(64px + env(safe-area-inset-right));
-}
-
-/* touch-friendly mute toggle shown in the volume panel on native, where the
-   web build's double-click-to-mute isn't discoverable */
-.sound__mute {
-  padding: 7px 10px;
-  border: none;
-  background: #0a2416;
-  color: #ffcf1a;
-  font-family: 'Press Start 2P', ui-monospace, Consolas, monospace;
-  font-size: 9px;
-  letter-spacing: 0.08em;
-  cursor: pointer;
-  image-rendering: pixelated;
-  box-shadow: 0 0 0 3px #0a0a0a, 3px 3px 0 3px rgba(0, 0, 0, 0.85);
-}

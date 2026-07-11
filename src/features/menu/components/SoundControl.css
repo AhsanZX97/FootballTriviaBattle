@@ -1,0 +1,92 @@
+/* Master volume control. Positioned by the TopBar flex row now (no fixed
+   coords of its own); relative only so the expand panel can anchor to it. */
+.sound {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+/* bare sprite button — the icon art carries its own outline */
+.sound__toggle {
+  padding: 0;
+  border: none;
+  background: none;
+  cursor: pointer;
+  line-height: 0;
+  filter: drop-shadow(2px 2px 0 rgba(0, 0, 0, 0.6));
+}
+
+.sound__toggle-img {
+  display: block;
+  width: 44px;
+  image-rendering: pixelated;
+}
+
+/* expanded slider + mute drop out of flow (absolute) so opening them never
+   changes .sound's height and knocks the top-bar row off its centre line */
+.sound__panel {
+  position: absolute;
+  top: calc(100% + 8px);
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+}
+
+/* vertical slider dropping down from the icon; gold/black to match the sprites */
+.sound__slider {
+  writing-mode: vertical-lr;
+  direction: rtl; /* up = louder */
+  appearance: none;
+  width: 28px;
+  height: 120px;
+  background: none;
+  filter: drop-shadow(2px 2px 0 rgba(0, 0, 0, 0.6));
+}
+
+.sound__slider::-webkit-slider-runnable-track {
+  width: 10px;
+  background: #3a2a08;
+  border: 3px solid #000;
+}
+
+.sound__slider::-webkit-slider-thumb {
+  appearance: none;
+  width: 26px;
+  height: 25px; /* knob sprite is 42x40 */
+  margin-left: -5px; /* recenter the 26px thumb on the 16px track (cross axis is physical-horizontal here) */
+  background: url(../../../assets/volume-knob.png) center / contain no-repeat;
+  border: none;
+  image-rendering: pixelated;
+}
+
+.sound__slider::-moz-range-track {
+  width: 10px;
+  background: #3a2a08;
+  border: 3px solid #000;
+}
+
+.sound__slider::-moz-range-thumb {
+  width: 26px;
+  height: 25px;
+  background: url(../../../assets/volume-knob.png) center / contain no-repeat;
+  border: none;
+  image-rendering: pixelated;
+}
+
+/* touch-friendly mute toggle shown in the volume panel on native, where the
+   web build's double-click-to-mute isn't discoverable */
+.sound__mute {
+  padding: 7px 10px;
+  border: none;
+  background: #0a2416;
+  color: #ffcf1a;
+  font-family: 'Press Start 2P', ui-monospace, Consolas, monospace;
+  font-size: 9px;
+  letter-spacing: 0.08em;
+  cursor: pointer;
+  image-rendering: pixelated;
+  box-shadow: 0 0 0 3px #0a0a0a, 3px 3px 0 3px rgba(0, 0, 0, 0.85);
+}

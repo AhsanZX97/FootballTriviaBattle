@@ -1,13 +1,14 @@
 import { useState, useSyncExternalStore } from 'react'
 import { authStore } from '../../auth/store'
 import { friendsStore } from '../store'
+import { presenceStore } from '../presenceStore'
 import { FriendsPopup } from './FriendsPopup'
 import profileIcon from '../../../assets/sprites/profile.png'
 import './FriendsButton.css'
 
-/** Profile icon in the top bar. Only shown when signed in (friends need an
- * account). Carries a red badge with the count of incoming friend requests and
- * opens the friends popup. App-level float, mirroring CoinCounter. */
+/** Profile icon in the TopBar's left slot. Only shown when signed in (friends
+ * need an account). Carries a red badge with the count of incoming friend
+ * requests and opens the friends popup. */
 export function FriendsButton() {
   const auth = useSyncExternalStore(authStore.subscribe, authStore.getState)
   const friends = useSyncExternalStore(friendsStore.subscribe, friendsStore.getState)
@@ -32,7 +33,15 @@ export function FriendsButton() {
           </span>
         )}
       </button>
-      {open && <FriendsPopup onClose={() => setOpen(false)} />}
+      {open && (
+        <FriendsPopup
+          onClose={() => setOpen(false)}
+          onChallenge={(friendId, username) => {
+            void presenceStore.challenge(friendId, username)
+            setOpen(false)
+          }}
+        />
+      )}
     </>
   )
 }

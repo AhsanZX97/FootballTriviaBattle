@@ -73,13 +73,20 @@ export function createFriendsStore(
       return
     }
     set({ status: state.status === 'loaded' ? 'loaded' : 'loading' })
-    const [friends, requests] = await Promise.all([api.listFriends(), api.listFriendRequests()])
-    set({
-      status: 'loaded',
-      friends,
-      incoming: requests.filter((r) => r.direction === 'incoming'),
-      outgoing: requests.filter((r) => r.direction === 'outgoing'),
-    })
+    try {
+      const [friends, requests] = await Promise.all([api.listFriends(), api.listFriendRequests()])
+      set({
+        status: 'loaded',
+        friends,
+        incoming: requests.filter((r) => r.direction === 'incoming'),
+        outgoing: requests.filter((r) => r.direction === 'outgoing'),
+      })
+    } catch (err) {
+      // A transient network failure must not crash (refresh is fire-and-forget
+      // on sign-in). Leave any existing lists in place and mark loaded.
+      console.error('[friends] refresh failed', err)
+      set({ status: 'loaded' })
+    }
   }
 
   async function sendRequest(username: string): Promise<SendRequestResult> {
@@ -131,7 +138,7 @@ export function createFriendsStore(
 
   // Refresh when signed in, clear when signed out. supabase-js fires the auth
   // store once on boot, so this covers hydration and every later transition.
-  let lastStatus = auth.getState().status
+  let lastStatus: string | null = null
   const syncToAuth = () => {
     const status = auth.getState().status
     if (status === lastStatus) return
@@ -140,7 +147,12 @@ export function createFriendsStore(
     else if (status === 'signedOut') set(emptyState())
   }
   auth.subscribe(syncToAuth)
-  if (lastStatus === 'signedIn') void refresh()
+  // Initial connect only, deferred so constructing the singleton does no
+  // import-time auth read (that would fire before a test's auth mock is set up).
+  queueMicrotask(() => {
+    lastStatus = auth.getState().status
+    if (lastStatus === 'signedIn') void refresh()
+  })
 
   return {
     getState,

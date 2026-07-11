@@ -46,15 +46,17 @@ async function sendFriendRequest(username: string): Promise<SendRequestResult> {
 }
 
 async function respondToRequest(requesterId: string, accept: boolean): Promise<boolean> {
-  const { data } = await supabase.rpc('respond_to_friend_request', {
+  const { data, error } = await supabase.rpc('respond_to_friend_request', {
     p_requester: requesterId,
     p_accept: accept,
   })
+  if (error) console.error('[friends] respond_to_friend_request failed', { requesterId, accept, error })
   return data === true
 }
 
 async function removeFriend(userId: string): Promise<boolean> {
-  const { data } = await supabase.rpc('remove_friend', { p_user: userId })
+  const { data, error } = await supabase.rpc('remove_friend', { p_user: userId })
+  if (error) console.error('[friends] remove_friend failed', { userId, error })
   return data === true
 }
 

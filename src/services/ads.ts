@@ -86,13 +86,50 @@ export async function hideBottomBanner(): Promise<void> {
   }
 }
 
+// The banner's on-screen state is (desired && not suppressed). `desired` is set
+// by the screen that wants a banner (via useBottomBanner); `suppressCount`
+// temporarily hides it — e.g. while a modal with a text field is open, so the
+// Android soft keyboard doesn't shove the native overlay up over the content.
+let bannerDesired = false
+let suppressCount = 0
+
+function applyBannerState(): void {
+  if (bannerDesired && suppressCount === 0) void showBottomBanner()
+  else void hideBottomBanner()
+}
+
 /** Keeps the bottom banner on screen while `visible` is true, hidden otherwise. */
 export function useBottomBanner(visible: boolean): void {
   useEffect(() => {
-    if (!visible) return
-    void showBottomBanner()
+    bannerDesired = visible
+    applyBannerState()
     return () => {
-      void hideBottomBanner()
+      bannerDesired = false
+      applyBannerState()
     }
   }, [visible])
+}
+
+/** Temporarily hide the banner; returns a release fn that restores it to its
+ * desired state. Ref-counted, so overlapping suppressors compose. */
+export function pushBannerSuppressed(): () => void {
+  suppressCount++
+  applyBannerState()
+  let released = false
+  return () => {
+    if (released) return
+    released = true
+    suppressCount = Math.max(0, suppressCount - 1)
+    applyBannerState()
+  }
+}
+
+/** Hides the bottom banner for as long as the calling component is mounted (and
+ * `active`). Use in modals containing a text input so the soft keyboard can't
+ * push the native banner overlay up over the dialog. */
+export function useSuppressBanner(active = true): void {
+  useEffect(() => {
+    if (!active) return
+    return pushBannerSuppressed()
+  }, [active])
 }

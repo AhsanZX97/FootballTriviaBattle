@@ -13,9 +13,12 @@ type Props = {
   onBack: () => void
   /** Fires once the 3-2-1 countdown finishes; the match screen takes over from here. */
   onMatchReady?: (session: MatchReadySession) => void
+  /** Opens the friends picker to challenge a friend (owned by App). Only offered
+   * when signed in. */
+  onFriendlyMatch?: () => void
 }
 
-export function LobbyScreen({ onBack, onMatchReady }: Props) {
+export function LobbyScreen({ onBack, onMatchReady, onFriendlyMatch }: Props) {
   const state = useSyncExternalStore(lobbyStore.subscribe, lobbyStore.getState)
   const auth = useSyncExternalStore(authStore.subscribe, authStore.getState)
   const signedIn = auth.status === 'signedIn'
@@ -76,9 +79,10 @@ export function LobbyScreen({ onBack, onMatchReady }: Props) {
             </button>
             <button
               type="button"
-              className="lobby__btn lobby__btn--disabled"
-              disabled
-              title="Coming soon"
+              className={`lobby__btn${signedIn ? '' : ' lobby__btn--disabled'}`}
+              disabled={!signedIn}
+              title={signedIn ? undefined : 'Sign in to challenge friends'}
+              onClick={onFriendlyMatch}
             >
               FRIENDLY MATCH
             </button>

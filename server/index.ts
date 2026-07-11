@@ -4,6 +4,7 @@ import type { IncomingMessage } from 'node:http'
 import { WebSocket, WebSocketServer } from 'ws'
 import { createQueue, dequeue, enqueue } from './matchmaking'
 import type { Queue } from './matchmaking'
+import { createChallengeStore } from './challenges'
 import { activeSlot, applyKick, createRoom, forfeit, voteRematch } from './room'
 import type { PlayerSlot, Room } from './room'
 import { MAX_NAME_LENGTH } from '../src/types/multiplayer'
@@ -38,6 +39,10 @@ console.log(
 // the 10s question timer + the ~2.6s feedback animation + a buffer.
 const KICK_TIMEOUT_MS = 20_000
 
+// How long a friend challenge stays live before it auto-expires (the target
+// never answered). Kept short so a stale invite doesn't linger on either side.
+const CHALLENGE_TIMEOUT_MS = 30_000
+
 interface Connection {
   id: string
   name: string
@@ -68,6 +73,13 @@ let queue: Queue = createQueue()
 const connectionsByWs = new Map<WebSocket, Connection>()
 const connectionsById = new Map<string, Connection>()
 const rooms = new Map<string, RoomEntry>()
+// Presence: every live authed connection, grouped by userId (a user may have
+// several tabs/devices open). Used to locate a friend to deliver a challenge to.
+const connectionsByUser = new Map<string, Set<Connection>>()
+// In-flight friend challenges + their expiry timers (parallel maps keyed by
+// challenge id). See challenges.ts for the pure bookkeeping.
+const challenges = createChallengeStore()
+const challengeTimers = new Map<string, ReturnType<typeof setTimeout>>()
 // Handshake-time identity, stashed against the upgrade request so the
 // 'connection' handler (which shares the same IncomingMessage) can pick it
 // up — ws doesn't otherwise thread verifyClient's result through to it.
@@ -221,32 +233,14 @@ function handleLeave(roomId: string, entry: RoomEntry, leaver: Connection) {
   rooms.delete(roomId)
 }
 
-async function handleQueue(connection: Connection, name: string) {
-  // For an authed connection, wait for the profile-username fetch (kicked
-  // off at handshake) so we never fall through to the client-sent name —
-  // that name is only trustworthy for anonymous players.
-  await connection.profileReady
-  const effectiveName = connection.userId ? (connection.username ?? name) : name
-
-  const trimmed = effectiveName.trim().slice(0, MAX_NAME_LENGTH)
-  if (!trimmed) {
-    send(connection.ws, { type: 'error', reason: 'name required' })
-    return
-  }
-  connection.name = trimmed
-  const result = enqueue(queue, {
-    id: connection.id,
-    name: trimmed,
-    userId: connection.userId ?? undefined,
-  })
-  queue = result.queue
-  if (!result.pair) {
-    send(connection.ws, { type: 'queued' })
-    return
-  }
-
-  const [x, y] = result.pair
-  const room = createRoom(x, y, Math.random() < 0.5)
+/**
+ * Put two live connections into a fresh match: build the room, notify both
+ * with `matched`, and arm the first kick timer. Shared by quick-match pairing
+ * (handleQueue) and friend challenges (handleChallengeAccept). `xGoesFirst`
+ * decides which of the two takes slot 'a' (kicks first).
+ */
+function startMatch(x: Connection, y: Connection, xGoesFirst: boolean) {
+  const room = createRoom({ id: x.id, name: x.name }, { id: y.id, name: y.name }, xGoesFirst)
   const roomConnections: Record<PlayerSlot, Connection> = {
     a: connectionsById.get(room.players.a.id)!,
     b: connectionsById.get(room.players.b.id)!,
@@ -272,6 +266,34 @@ async function handleQueue(connection: Connection, name: string) {
   const entry: RoomEntry = { room, connections: roomConnections, kickTimer: null, settled: false }
   rooms.set(roomId, entry)
   armKickTimer(roomId, entry)
+}
+
+async function handleQueue(connection: Connection, name: string) {
+  // For an authed connection, wait for the profile-username fetch (kicked
+  // off at handshake) so we never fall through to the client-sent name —
+  // that name is only trustworthy for anonymous players.
+  await connection.profileReady
+  const effectiveName = connection.userId ? (connection.username ?? name) : name
+
+  const trimmed = effectiveName.trim().slice(0, MAX_NAME_LENGTH)
+  if (!trimmed) {
+    send(connection.ws, { type: 'error', reason: 'name required' })
+    return
+  }
+  connection.name = trimmed
+  const result = enqueue(queue, {
+    id: connection.id,
+    name: trimmed,
+    userId: connection.userId ?? undefined,
+  })
+  queue = result.queue
+  if (!result.pair) {
+    send(connection.ws, { type: 'queued' })
+    return
+  }
+
+  const [x, y] = result.pair
+  startMatch(connectionsById.get(x.id)!, connectionsById.get(y.id)!, Math.random() < 0.5)
 }
 
 function handleKickResult(connection: Connection, scored: boolean) {
@@ -301,6 +323,146 @@ function handleRematchVote(connection: Connection) {
   armKickTimer(connection.roomId!, entry)
 }
 
+// --- presence (authed connections grouped by userId) ---
+
+function addPresence(connection: Connection) {
+  if (!connection.userId) return
+  let set = connectionsByUser.get(connection.userId)
+  if (!set) {
+    set = new Set()
+    connectionsByUser.set(connection.userId, set)
+  }
+  set.add(connection)
+}
+
+function removePresence(connection: Connection) {
+  if (!connection.userId) return
+  const set = connectionsByUser.get(connection.userId)
+  if (!set) return
+  set.delete(connection)
+  if (set.size === 0) connectionsByUser.delete(connection.userId)
+}
+
+// --- friend challenges ---
+
+function clearChallengeTimer(id: string) {
+  const timer = challengeTimers.get(id)
+  if (timer) {
+    clearTimeout(timer)
+    challengeTimers.delete(id)
+  }
+}
+
+/** No answer within CHALLENGE_TIMEOUT_MS: drop the invite and tell both sides. */
+function expireChallenge(id: string) {
+  challengeTimers.delete(id)
+  const challenge = challenges.remove(id)
+  if (!challenge) return
+  const challenger = connectionsById.get(challenge.challengerConnId)
+  if (challenger) send(challenger.ws, { type: 'challengeFailed', reason: 'expired' })
+  const target = connectionsById.get(challenge.targetConnId)
+  if (target) send(target.ws, { type: 'challengeCanceled', challengeId: id })
+}
+
+/** A player challenges a friend by userId. Requires an authed challenger and a
+ * friend who is online and not already in a match. */
+async function handleChallenge(connection: Connection, targetUserId: string) {
+  if (!connection.userId || connection.roomId || targetUserId === connection.userId) return
+  // Username (== display name for challenges) is fetched at handshake; wait for
+  // it so the invite carries a real name, not a blank.
+  await connection.profileReady
+
+  // Only one outstanding outgoing challenge at a time — replace any prior one,
+  // telling its target the invite is gone.
+  const existing = challenges.outgoingFor(connection.id)
+  if (existing) {
+    challenges.remove(existing.id)
+    clearChallengeTimer(existing.id)
+    const oldTarget = connectionsById.get(existing.targetConnId)
+    if (oldTarget) send(oldTarget.ws, { type: 'challengeCanceled', challengeId: existing.id })
+  }
+
+  const candidates = connectionsByUser.get(targetUserId)
+  if (!candidates || candidates.size === 0) {
+    send(connection.ws, { type: 'challengeFailed', reason: 'offline' })
+    return
+  }
+  const target = [...candidates].find((c) => !c.roomId)
+  if (!target) {
+    send(connection.ws, { type: 'challengeFailed', reason: 'busy' })
+    return
+  }
+
+  const id = randomUUID()
+  challenges.add({
+    id,
+    challengerConnId: connection.id,
+    targetConnId: target.id,
+    createdAt: Date.now(),
+  })
+  challengeTimers.set(id, setTimeout(() => expireChallenge(id), CHALLENGE_TIMEOUT_MS))
+  send(connection.ws, { type: 'challengeSent', challengeId: id })
+  send(target.ws, {
+    type: 'challengeReceived',
+    challengeId: id,
+    fromUserId: connection.userId,
+    fromName: connection.name || 'A friend',
+  })
+}
+
+function handleChallengeAccept(connection: Connection, challengeId: string) {
+  const challenge = challenges.get(challengeId)
+  if (!challenge || challenge.targetConnId !== connection.id) return
+  challenges.remove(challengeId)
+  clearChallengeTimer(challengeId)
+  if (connection.roomId) return
+  const challenger = connectionsById.get(challenge.challengerConnId)
+  if (!challenger || challenger.roomId) {
+    // Challenger disconnected or got into another match while we deliberated.
+    send(connection.ws, { type: 'challengeCanceled', challengeId })
+    return
+  }
+  startMatch(challenger, connection, Math.random() < 0.5)
+}
+
+function handleChallengeDecline(connection: Connection, challengeId: string) {
+  const challenge = challenges.get(challengeId)
+  if (!challenge || challenge.targetConnId !== connection.id) return
+  challenges.remove(challengeId)
+  clearChallengeTimer(challengeId)
+  const challenger = connectionsById.get(challenge.challengerConnId)
+  if (challenger) send(challenger.ws, { type: 'challengeFailed', reason: 'declined' })
+}
+
+/** The challenger withdraws before the target answers. */
+function handleChallengeCancel(connection: Connection, challengeId: string) {
+  const challenge = challenges.get(challengeId)
+  if (!challenge || challenge.challengerConnId !== connection.id) return
+  challenges.remove(challengeId)
+  clearChallengeTimer(challengeId)
+  const target = connectionsById.get(challenge.targetConnId)
+  if (target) send(target.ws, { type: 'challengeCanceled', challengeId })
+}
+
+/** Drop every challenge a disconnecting connection was part of, notifying the
+ * still-connected other side. */
+function cleanUpChallenges(connection: Connection) {
+  for (const challenge of challenges.removeInvolving(connection.id)) {
+    clearChallengeTimer(challenge.id)
+    const isChallenger = challenge.challengerConnId === connection.id
+    const otherId = isChallenger ? challenge.targetConnId : challenge.challengerConnId
+    const other = connectionsById.get(otherId)
+    if (!other) continue
+    if (isChallenger) {
+      // the target loses an invite that's no longer answerable
+      send(other.ws, { type: 'challengeCanceled', challengeId: challenge.id })
+    } else {
+      // the challenger's target vanished
+      send(other.ws, { type: 'challengeFailed', reason: 'gone' })
+    }
+  }
+}
+
 function handleMessage(connection: Connection, message: ClientMessage) {
   switch (message.type) {
     case 'queue':
@@ -321,6 +483,18 @@ function handleMessage(connection: Connection, message: ClientMessage) {
       if (entry) handleLeave(connection.roomId, entry, connection)
       return
     }
+    case 'challenge':
+      void handleChallenge(connection, message.targetUserId)
+      return
+    case 'challengeAccept':
+      handleChallengeAccept(connection, message.challengeId)
+      return
+    case 'challengeDecline':
+      handleChallengeDecline(connection, message.challengeId)
+      return
+    case 'challengeCancel':
+      handleChallengeCancel(connection, message.challengeId)
+      return
   }
 }
 
@@ -394,10 +568,14 @@ wss.on('connection', (ws, req) => {
   if (connection.userId) {
     connection.profileReady = fetchProfileUsername(connection.userId).then((username) => {
       connection.username = username
+      // Default display name for challenge matches (quick-match overrides it in
+      // handleQueue). Lets an invite carry a real name without queueing first.
+      if (username) connection.name = username
     })
   }
   connectionsByWs.set(ws, connection)
   connectionsById.set(connection.id, connection)
+  addPresence(connection)
 
   ws.on('message', (data) => {
     let message: ClientMessage
@@ -412,6 +590,8 @@ wss.on('connection', (ws, req) => {
   ws.on('close', () => {
     connectionsByWs.delete(ws)
     connectionsById.delete(connection.id)
+    removePresence(connection)
+    cleanUpChallenges(connection)
     queue = dequeue(queue, connection.id)
     const entry = connection.roomId ? rooms.get(connection.roomId) : undefined
     if (entry) handleLeave(connection.roomId!, entry, connection)

@@ -85,32 +85,32 @@ end $$;
 create function respond_to_friend_request(p_requester uuid, p_accept boolean)
   returns boolean
 language plpgsql security definer set search_path = public as $$
-declare hit boolean;
+declare affected integer;
 begin
   if p_accept then
     update friendships set status = 'accepted'
      where requester_id = p_requester and addressee_id = auth.uid()
        and status = 'pending';
-    get diagnostics hit = row_count;
+    get diagnostics affected = row_count;
   else
     delete from friendships
      where requester_id = p_requester and addressee_id = auth.uid()
        and status = 'pending';
-    get diagnostics hit = row_count;
+    get diagnostics affected = row_count;
   end if;
-  return hit > 0;
+  return affected > 0;
 end $$;
 
 -- Remove an existing (accepted) friend, or withdraw a pending request you sent.
 create function remove_friend(p_user uuid) returns boolean
 language plpgsql security definer set search_path = public as $$
-declare hit boolean;
+declare affected integer;
 begin
   delete from friendships
    where least(requester_id, addressee_id) = least(auth.uid(), p_user)
      and greatest(requester_id, addressee_id) = greatest(auth.uid(), p_user);
-  get diagnostics hit = row_count;
-  return hit > 0;
+  get diagnostics affected = row_count;
+  return affected > 0;
 end $$;
 
 -- The caller's accepted friends, with each friend's username and coins.

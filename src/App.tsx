@@ -1,110 +1,54 @@
 import { useEffect, useRef, useState } from 'react'
 import { IntroScreen } from './features/menu/IntroScreen'
-import { CoinCounter } from './features/menu/components/CoinCounter'
+import { TopBar } from './features/menu/components/TopBar'
 import { MatchScreen } from './features/match/MatchScreen'
 import { matchStore } from './features/match/store'
 import { LobbyScreen } from './features/lobby/LobbyScreen'
 import { lobbyStore } from './features/lobby/store'
 import { AuthScreen } from './features/auth/AuthScreen'
-import { FriendsButton } from './features/friends/components/FriendsButton'
-import { getMasterVolume, playTheme, setMasterVolume, stopTheme } from './services/sound'
+import { authStore } from './features/auth/store'
+import { presenceStore } from './features/friends/presenceStore'
+import { ChallengeOverlay } from './features/friends/components/ChallengeOverlay'
+import { FriendsPopup } from './features/friends/components/FriendsPopup'
+import { playTheme, stopTheme } from './services/sound'
 import { isNative } from './services/platform'
-import volumeIcon from './assets/volume-icon.png'
-import volumeMuteIcon from './assets/volume-mute-icon.png'
 
 type Screen = 'intro' | 'lobby' | 'match' | 'auth'
-
-// ponytail: lives in App.tsx like MatchScreen's sub-components; graduate to
-// its own file if it grows settings beyond one slider.
-function SoundControl({ screen }: { screen: Screen }) {
-  const [open, setOpen] = useState(false)
-  const [volume, setVolume] = useState(getMasterVolume)
-  const rootRef = useRef<HTMLDivElement>(null)
-  // last non-zero volume, restored when double-click unmutes
-  const preMuteVolumeRef = useRef(volume > 0 ? volume : 1)
-
-  // slider retracts when the app moves to another screen
-  useEffect(() => setOpen(false), [screen])
-
-  // shared by web's double-click-to-mute and native's explicit MUTE button
-  const toggleMute = () => {
-    if (volume > 0) {
-      preMuteVolumeRef.current = volume
-      setVolume(0)
-      setMasterVolume(0)
-    } else {
-      const restored = preMuteVolumeRef.current || 1
-      setVolume(restored)
-      setMasterVolume(restored)
-    }
-  }
-
-  // ...and on any press outside the control
-  useEffect(() => {
-    if (!open) return
-    const onPointerDown = (e: PointerEvent) => {
-      if (!rootRef.current?.contains(e.target as Node)) setOpen(false)
-    }
-    document.addEventListener('pointerdown', onPointerDown)
-    return () => document.removeEventListener('pointerdown', onPointerDown)
-  }, [open])
-
-  return (
-    <div className="sound" ref={rootRef}>
-      <button
-        type="button"
-        className="sound__toggle"
-        aria-label={open ? 'hide volume slider' : 'show volume slider'}
-        aria-expanded={open}
-        onClick={() => setOpen((o) => !o)}
-        onDoubleClick={(e) => {
-          e.stopPropagation()
-          toggleMute()
-        }}
-      >
-        <img
-          className="sound__toggle-img"
-          src={volume === 0 ? volumeMuteIcon : volumeIcon}
-          alt=""
-        />
-      </button>
-      {open && (
-        <input
-          type="range"
-          className="sound__slider"
-          aria-label="master volume"
-          min={0}
-          max={1}
-          step={0.05}
-          value={volume}
-          onChange={(e) => {
-            const v = Number(e.target.value)
-            setVolume(v)
-            setMasterVolume(v)
-          }}
-        />
-      )}
-      {/* touch devices can't double-click to mute, so native gets an explicit
-          button; web keeps the double-click and never renders this */}
-      {open && isNative && (
-        <button type="button" className="sound__mute" onClick={toggleMute}>
-          {volume === 0 ? 'UNMUTE' : 'MUTE'}
-        </button>
-      )}
-    </div>
-  )
-}
 
 function App() {
   const [screen, setScreen] = useState<Screen>('intro')
   // Where the current match exits to. Captured at launch so it can't be
   // disturbed by the store reset the exit buttons trigger before onExit runs.
   const [matchExit, setMatchExit] = useState<'intro' | 'lobby'>('intro')
+  // Friends picker opened from the lobby's FRIENDLY MATCH button. App owns it so
+  // the lobby screen stays free of the friends/presence module graph.
+  const [friendsPickerOpen, setFriendsPickerOpen] = useState(false)
 
   // theme plays over the menus, stops for the match, resumes on the way back
   useEffect(() => {
     if (screen === 'match') stopTheme()
     else playTheme()
+  }, [screen])
+
+  // A friend challenge (from either side) resolves to a live match here: adopt
+  // the presence socket as the match socket and jump straight into the match.
+  useEffect(() => {
+    return presenceStore.onMatchReady((session) => {
+      matchStore.start1v1(session)
+      setMatchExit('intro')
+      setScreen('match')
+    })
+  }, [])
+
+  // The presence socket hands itself to the match on a challenge, so it needs
+  // re-opening whenever we're back on a menu screen and still signed in (the
+  // initial connect is driven by the auth store; this covers post-match).
+  useEffect(() => {
+    if (screen !== 'match' && authStore.getState().status === 'signedIn') {
+      void presenceStore.connect()
+    }
+    // the lobby-only friends picker shouldn't survive a screen change
+    if (screen !== 'lobby') setFriendsPickerOpen(false)
   }, [screen])
 
   // Android hardware back button (native only). Registered once; a ref feeds it
@@ -153,6 +97,7 @@ function App() {
     content = (
       <LobbyScreen
         onBack={() => setScreen('intro')}
+        onFriendlyMatch={() => setFriendsPickerOpen(true)}
         onMatchReady={(session) => {
           matchStore.start1v1(session)
           // Lobby's job is done — clear it so returning here shows the name
@@ -185,10 +130,18 @@ function App() {
 
   return (
     <>
-      <SoundControl screen={screen} />
-      {screen !== 'match' && <CoinCounter />}
-      {screen !== 'match' && <FriendsButton />}
+      <TopBar screen={screen} />
+      {screen !== 'match' && <ChallengeOverlay />}
       {content}
+      {friendsPickerOpen && screen === 'lobby' && (
+        <FriendsPopup
+          onClose={() => setFriendsPickerOpen(false)}
+          onChallenge={(friendId, username) => {
+            void presenceStore.challenge(friendId, username)
+            setFriendsPickerOpen(false)
+          }}
+        />
+      )}
     </>
   )
 }

@@ -1,0 +1,28 @@
+.topbar {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 100;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px;
+  /* the bar spans the full width but must not eat clicks in its empty middle */
+  pointer-events: none;
+}
+
+.topbar__slot {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  /* re-enable interaction over the actual controls */
+  pointer-events: auto;
+}
+
+/* keep the whole bar clear of the status bar / notch on native */
+.native .topbar {
+  padding-top: calc(12px + env(safe-area-inset-top));
+  padding-left: calc(12px + env(safe-area-inset-left));
+  padding-right: calc(12px + env(safe-area-inset-right));
+}
