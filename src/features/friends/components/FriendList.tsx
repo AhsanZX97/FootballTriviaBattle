@@ -1,6 +1,7 @@
 import { useEffect, useState, useSyncExternalStore } from 'react'
 import { friendsStore } from '../store'
 import type { Relationship } from '../../../types/friends'
+import './FriendList.css'
 
 type Props = {
   /** Phase 3 wires this to directed matchmaking; until then the Challenge
@@ -53,7 +54,7 @@ export function FriendList({ onChallenge }: Props) {
         <input
           className="friend-list__search-input"
           type="text"
-          placeholder="Search username…"
+          placeholder="SEARCH PLAYER"
           aria-label="Search for a player by username"
           value={query}
           onChange={(e) => setQuery(e.target.value)}

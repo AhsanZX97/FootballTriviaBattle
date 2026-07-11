@@ -10,7 +10,9 @@ import { authStore } from './features/auth/store'
 import { presenceStore } from './features/friends/presenceStore'
 import { friendsStore } from './features/friends/store'
 import { ChallengeOverlay } from './features/friends/components/ChallengeOverlay'
+import { ChallengeCountdown } from './features/friends/components/ChallengeCountdown'
 import { FriendsPopup } from './features/friends/components/FriendsPopup'
+import type { MatchReadySession } from './features/lobby/store'
 import { playTheme, stopTheme } from './services/sound'
 import { isNative } from './services/platform'
 
@@ -24,6 +26,8 @@ function App() {
   // Friends picker opened from the lobby's FRIENDLY MATCH button. App owns it so
   // the lobby screen stays free of the friends/presence module graph.
   const [friendsPickerOpen, setFriendsPickerOpen] = useState(false)
+  // An accepted challenge waits here through the 3-2-1 overlay, then starts.
+  const [challengeMatch, setChallengeMatch] = useState<MatchReadySession | null>(null)
 
   // theme plays over the menus, stops for the match, resumes on the way back
   useEffect(() => {
@@ -31,14 +35,11 @@ function App() {
     else playTheme()
   }, [screen])
 
-  // A friend challenge (from either side) resolves to a live match here: adopt
-  // the presence socket as the match socket and jump straight into the match.
+  // A friend challenge (from either side) resolves to a live match: hold the
+  // session so the 3-2-1 overlay can play (same pre-match beat as quick match),
+  // then start it. The presence socket is already this session's match socket.
   useEffect(() => {
-    return presenceStore.onMatchReady((session) => {
-      matchStore.start1v1(session)
-      setMatchExit('intro')
-      setScreen('match')
-    })
+    return presenceStore.onMatchReady((session) => setChallengeMatch(session))
   }, [])
 
   // Wire the two friends stores together without either importing the other:
@@ -148,6 +149,17 @@ function App() {
           onChallenge={(friendId, username) => {
             void presenceStore.challenge(friendId, username)
             setFriendsPickerOpen(false)
+          }}
+        />
+      )}
+      {challengeMatch && screen !== 'match' && (
+        <ChallengeCountdown
+          session={challengeMatch}
+          onDone={() => {
+            matchStore.start1v1(challengeMatch)
+            setMatchExit('intro')
+            setScreen('match')
+            setChallengeMatch(null)
           }}
         />
       )}

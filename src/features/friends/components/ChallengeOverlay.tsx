@@ -51,15 +51,25 @@ export function ChallengeOverlay() {
       )}
 
       {outgoing && !incoming && (
-        <div className="challenge-banner" role="status">
-          <span className="challenge-banner__text">Waiting for {outgoing.friendName}…</span>
-          <button
-            type="button"
-            className="challenge-banner__cancel"
-            onClick={() => presenceStore.cancelOutgoing()}
-          >
-            CANCEL
-          </button>
+        <div className="challenge" role="dialog" aria-modal="true" aria-label="Waiting for opponent">
+          <div className="challenge__panel">
+            <p className="challenge__headline">
+              <span className="challenge__ball challenge__ball--spin" aria-hidden>
+                ⚽
+              </span>
+              Waiting for <strong>{outgoing.friendName}</strong>
+              <span className="challenge__dots" aria-hidden />
+            </p>
+            <div className="challenge__actions">
+              <button
+                type="button"
+                className="challenge__btn challenge__btn--decline"
+                onClick={() => presenceStore.cancelOutgoing()}
+              >
+                CANCEL
+              </button>
+            </div>
+          </div>
         </div>
       )}
 

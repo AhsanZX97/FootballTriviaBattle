@@ -40,6 +40,44 @@
   margin-bottom: 10px;
 }
 
+/* spinning ball while waiting for the friend to answer */
+.challenge__ball--spin {
+  animation: challenge-spin 1.1s linear infinite;
+}
+
+@keyframes challenge-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .challenge__ball--spin {
+    animation: none;
+  }
+}
+
+/* animated "…" after the friend's name */
+.challenge__dots::after {
+  content: '';
+  animation: challenge-dots 1.2s steps(4, end) infinite;
+}
+
+@keyframes challenge-dots {
+  0% {
+    content: '';
+  }
+  25% {
+    content: '.';
+  }
+  50% {
+    content: '..';
+  }
+  75% {
+    content: '...';
+  }
+}
+
 .challenge__actions {
   display: flex;
   gap: 10px;
@@ -67,40 +105,6 @@
   background: #c8313a;
 }
 
-/* Outgoing "waiting for X…" banner — pinned near the bottom, non-modal. */
-.challenge-banner {
-  position: fixed;
-  left: 50%;
-  bottom: 24px;
-  transform: translateX(-50%);
-  z-index: 300;
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  padding: 12px 16px;
-  background: linear-gradient(#123a24, #0a2416);
-  border-radius: 999px;
-  box-shadow: inset 0 0 0 2px rgba(255, 207, 26, 0.35), 0 0 0 3px #0a0a0a, 3px 3px 0 3px rgba(0, 0, 0, 0.85);
-}
-
-.challenge-banner__text {
-  color: #fff;
-  font-family: 'Press Start 2P', ui-monospace, Consolas, monospace;
-  font-size: 10px;
-}
-
-.challenge-banner__cancel {
-  padding: 6px 10px;
-  border: none;
-  background: #c8313a;
-  color: #fff;
-  font-family: 'Press Start 2P', ui-monospace, Consolas, monospace;
-  font-size: 8px;
-  letter-spacing: 0.06em;
-  cursor: pointer;
-  border-radius: 4px;
-}
-
 /* Transient failure notice (offline / declined / withdrew). */
 .challenge-notice {
   position: fixed;
@@ -120,7 +124,6 @@
   cursor: pointer;
 }
 
-.native .challenge-banner,
 .native .challenge-notice {
   bottom: calc(24px + env(safe-area-inset-bottom));
 }
