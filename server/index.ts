@@ -168,6 +168,8 @@ async function settleAndAward(entry: RoomEntry, reason: SettleReason) {
       status,
       { aUserId: entry.connections.a.userId, bUserId: entry.connections.b.userId },
       reason,
+      entry.room.shootout.kicks.length,
+      { a: entry.room.shootout.userScore, b: entry.room.shootout.cpuScore },
     )
     console.log(
       `[awards] settling reason=${reason} status=${status}` +

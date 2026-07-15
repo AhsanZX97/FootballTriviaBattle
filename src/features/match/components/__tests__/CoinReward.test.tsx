@@ -3,9 +3,9 @@ import { render } from '@testing-library/react'
 import { CoinReward } from '../CoinReward'
 
 describe('CoinReward', () => {
-  it('shows the spinning coin and "+N" for a positive gain', () => {
+  it('shows the spinning coin and "+ N" for a positive gain', () => {
     const { container, getByText } = render(<CoinReward amount={3} />)
-    expect(getByText('+3')).not.toBeNull()
+    expect(getByText('+ 3')).not.toBeNull()
     expect(container.querySelector('.coin-reward__coin')).not.toBeNull()
   })
 
