@@ -1,4 +1,6 @@
 import type { AuthState } from '../../types/auth'
+import type { Customization, CustomizationSlot } from '../../types/customization'
+import { defaultCustomization } from '../../types/customization'
 import { getItem, removeItem, setItem } from '../../services/storage'
 import { loginWithUsername, supabase } from '../../services/supabase'
 
@@ -12,6 +14,9 @@ export interface AuthStore {
   /** Applied when a coin balance update arrives out-of-band (1v1 `coinsAwarded`
    * message, or a CPU-win RPC response) without a full profile refetch. */
   applyCoinsUpdate(balance: number): void
+  /** Reflects a slot the shop has already equipped server-side, so the change
+   * shows without a full profile refetch. */
+  applyCustomizationUpdate(slot: CustomizationSlot, itemId: string): void
   /** Emails an 8-digit recovery code (OTP-code flow — no deep link/redirect
    * needed, unlike Supabase's default reset-link email). Never reveals
    * whether the address has an account: a failure here is a real send
@@ -36,6 +41,9 @@ interface AuthSession {
 interface ProfileRow {
   username: string
   coins: number
+  gk_skin: string
+  ball_skin: string
+  goal_sound: string
 }
 
 type AuthChangeCallback = (event: string, session: AuthSession | null) => void | Promise<void>
@@ -87,8 +95,20 @@ const initialState = (cachedCoins: number): AuthState => ({
   username: null,
   email: null,
   coins: cachedCoins,
+  customization: defaultCustomization(),
   error: null,
 })
+
+/** Tolerates a profile row from before 0003_customization.sql (or a failed
+ * fetch) by falling back to the stock set rather than leaving slots undefined. */
+function readCustomization(profile: ProfileRow | null): Customization {
+  const stock = defaultCustomization()
+  return {
+    gkSkin: profile?.gk_skin ?? stock.gkSkin,
+    ballSkin: profile?.ball_skin ?? stock.ballSkin,
+    goalSound: profile?.goal_sound ?? stock.goalSound,
+  }
+}
 
 function validateUsername(username: string): string | null {
   if (username.length < 3 || username.length > 16 || !USERNAME_PATTERN.test(username)) {
@@ -144,13 +164,21 @@ export function createAuthStore(
   async function handleSessionChange(session: AuthSession | null): Promise<void> {
     if (!session) {
       storage.removeItem(COINS_CACHE_KEY)
-      set({ status: 'signedOut', userId: null, username: null, email: null, coins: 0, error: null })
+      set({
+        status: 'signedOut',
+        userId: null,
+        username: null,
+        email: null,
+        coins: 0,
+        customization: defaultCustomization(),
+        error: null,
+      })
       return
     }
 
     const { data: profile } = await supabaseClient
       .from('profiles')
-      .select('username, coins')
+      .select('username, coins, gk_skin, ball_skin, goal_sound')
       .eq('id', session.user.id)
       .single()
     const coins = profile?.coins ?? 0
@@ -161,6 +189,7 @@ export function createAuthStore(
       username: profile?.username ?? null,
       email: session.user.email,
       coins,
+      customization: readCustomization(profile),
       error: null,
     })
   }
@@ -232,6 +261,10 @@ export function createAuthStore(
     storage.setItem(COINS_CACHE_KEY, String(balance))
   }
 
+  function applyCustomizationUpdate(slot: CustomizationSlot, itemId: string): void {
+    set({ customization: { ...state.customization, [slot]: itemId } })
+  }
+
   async function requestPasswordReset(email: string): Promise<void> {
     set({ error: null })
     const emailError = validateEmail(email)
@@ -276,6 +309,7 @@ export function createAuthStore(
     signOut,
     clearError,
     applyCoinsUpdate,
+    applyCustomizationUpdate,
     requestPasswordReset,
     confirmPasswordReset,
   }

@@ -1,15 +1,19 @@
 import { describe, expect, it, vi, beforeEach } from 'vitest'
 import { render, screen, fireEvent } from '@testing-library/react'
 import type { AuthState } from '../../../types/auth'
+import { defaultCustomization } from '../../../types/customization'
 
-let authState: AuthState = {
+const signedOut = (): AuthState => ({
   status: 'signedOut',
   userId: null,
   username: null,
   email: null,
   coins: 0,
+  customization: defaultCustomization(),
   error: null,
-}
+})
+
+let authState: AuthState = signedOut()
 const signOut = vi.fn(async () => {})
 vi.mock('../../auth/store', () => ({
   authStore: {
@@ -22,14 +26,7 @@ vi.mock('../../auth/store', () => ({
 import { IntroScreen } from '../IntroScreen'
 
 beforeEach(() => {
-  authState = {
-    status: 'signedOut',
-    userId: null,
-    username: null,
-    email: null,
-    coins: 0,
-    error: null,
-  }
+  authState = signedOut()
   signOut.mockClear()
 })
 
@@ -49,12 +46,12 @@ describe('IntroScreen', () => {
 
   it('shows Sign Out instead of Sign In when signed in', () => {
     authState = {
+      ...signedOut(),
       status: 'signedIn',
       userId: 'u1',
       username: 'Ahsan',
       email: 'a@b.com',
       coins: 5,
-      error: null,
     }
     render(<IntroScreen />)
     expect(screen.getByRole('button', { name: /sign out/i })).toBeDefined()
@@ -63,21 +60,24 @@ describe('IntroScreen', () => {
 
   it('calls authStore.signOut when Sign Out is clicked', () => {
     authState = {
+      ...signedOut(),
       status: 'signedIn',
       userId: 'u1',
       username: 'Ahsan',
       email: 'a@b.com',
       coins: 5,
-      error: null,
     }
     render(<IntroScreen />)
     fireEvent.click(screen.getByRole('button', { name: /sign out/i }))
     expect(signOut).toHaveBeenCalled()
   })
 
-  it('renders the Shop button disabled', () => {
-    render(<IntroScreen />)
+  it('calls onShop when the Shop button is clicked', () => {
+    const onShop = vi.fn()
+    render(<IntroScreen onShop={onShop} />)
     const shopButton = screen.getByRole('button', { name: /shop/i })
-    expect(shopButton.hasAttribute('disabled')).toBe(true)
+    expect(shopButton.hasAttribute('disabled')).toBe(false)
+    fireEvent.click(shopButton)
+    expect(onShop).toHaveBeenCalled()
   })
 })

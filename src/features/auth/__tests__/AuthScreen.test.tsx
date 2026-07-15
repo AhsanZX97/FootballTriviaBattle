@@ -1,6 +1,7 @@
 import { describe, expect, it, vi } from 'vitest'
 import { render, screen, fireEvent, act } from '@testing-library/react'
 import type { AuthState } from '../../../types/auth'
+import { defaultCustomization } from '../../../types/customization'
 import type { AuthStore } from '../store'
 import { AuthScreen } from '../AuthScreen'
 
@@ -10,6 +11,7 @@ const initialState: AuthState = {
   username: null,
   email: null,
   coins: 0,
+  customization: defaultCustomization(),
   error: null,
 }
 
@@ -34,6 +36,8 @@ function createFakeStore(initial: Partial<AuthState> = {}) {
     signOut: vi.fn(async () => {}),
     clearError: () => setState({ error: null }),
     applyCoinsUpdate: (balance) => setState({ coins: balance }),
+    applyCustomizationUpdate: (slot, itemId) =>
+      setState({ customization: { ...state.customization, [slot]: itemId } }),
     requestPasswordReset: vi.fn(async () => {}),
     confirmPasswordReset: vi.fn(async () => {}),
   }

@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest'
 import { render, screen } from '@testing-library/react'
 import type { AuthState } from '../../../../types/auth'
+import { defaultCustomization } from '../../../../types/customization'
 import type { AuthStore } from '../../../auth/store'
 import { CoinCounter } from '../CoinCounter'
 
@@ -13,6 +14,7 @@ function createFakeStore(state: AuthState): AuthStore {
     signOut: async () => {},
     clearError: () => {},
     applyCoinsUpdate: () => {},
+    applyCustomizationUpdate: () => {},
     requestPasswordReset: async () => {},
     confirmPasswordReset: async () => {},
   }
@@ -24,6 +26,7 @@ const signedOut: AuthState = {
   username: null,
   email: null,
   coins: 0,
+  customization: defaultCustomization(),
   error: null,
 }
 
@@ -42,12 +45,12 @@ describe('CoinCounter', () => {
     render(
       <CoinCounter
         store={createFakeStore({
+          ...signedOut,
           status: 'signedIn',
           userId: 'u1',
           username: 'Ahsan',
           email: 'a@b.com',
           coins: 42,
-          error: null,
         })}
       />,
     )

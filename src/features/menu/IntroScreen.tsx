@@ -12,7 +12,7 @@ type Props = {
   onOneVOne?: () => void
   /** Called when a signed-out player taps Sign In, taking them to the auth screen. */
   onSignIn?: () => void
-  /** Shop is greyed out / non-functional for now — kept as a hook for later. */
+  /** Opens the shop popup (skins, balls, goal sounds). */
   onShop?: () => void
 }
 
@@ -36,13 +36,7 @@ export function IntroScreen({ onPlay, onOneVOne, onSignIn, onShop }: Props) {
           <span className="intro__play-label">1 v CPU</span>
         </button>
 
-        <button
-          type="button"
-          className="intro__play intro__play--secondary intro__play--disabled"
-          disabled
-          onClick={onShop}
-          title="Coming soon"
-        >
+        <button type="button" className="intro__play intro__play--secondary" onClick={onShop}>
           <span className="intro__play-label">SHOP</span>
         </button>
 

@@ -12,6 +12,7 @@ import { friendsStore } from './features/friends/store'
 import { ChallengeOverlay } from './features/friends/components/ChallengeOverlay'
 import { ChallengeCountdown } from './features/friends/components/ChallengeCountdown'
 import { FriendsPopup } from './features/friends/components/FriendsPopup'
+import { ShopPopup } from './features/shop/components/ShopPopup'
 import type { MatchReadySession } from './features/lobby/store'
 import { playTheme, stopTheme } from './services/sound'
 import { isNative } from './services/platform'
@@ -26,6 +27,9 @@ function App() {
   // Friends picker opened from the lobby's FRIENDLY MATCH button. App owns it so
   // the lobby screen stays free of the friends/presence module graph.
   const [friendsPickerOpen, setFriendsPickerOpen] = useState(false)
+  // Shop opened from the intro menu. App owns it for the same reason as the
+  // friends picker — the intro screen stays free of the shop's module graph.
+  const [shopOpen, setShopOpen] = useState(false)
   // An accepted challenge waits here through the 3-2-1 overlay, then starts.
   const [challengeMatch, setChallengeMatch] = useState<MatchReadySession | null>(null)
 
@@ -59,6 +63,8 @@ function App() {
     }
     // the lobby-only friends picker shouldn't survive a screen change
     if (screen !== 'lobby') setFriendsPickerOpen(false)
+    // nor should the intro-only shop
+    if (screen !== 'intro') setShopOpen(false)
   }, [screen])
 
   // Android hardware back button (native only). Registered once; a ref feeds it
@@ -67,6 +73,11 @@ function App() {
   useEffect(() => {
     screenRef.current = screen
   }, [screen])
+  // Same trick for the shop: back should dismiss it rather than quit the game.
+  const shopOpenRef = useRef(shopOpen)
+  useEffect(() => {
+    shopOpenRef.current = shopOpen
+  }, [shopOpen])
   useEffect(() => {
     if (!isNative) return
     let handle: { remove: () => void } | undefined
@@ -74,7 +85,8 @@ function App() {
     void import('@capacitor/app').then(({ App: CapApp }) => {
       void CapApp.addListener('backButton', () => {
         const s = screenRef.current
-        if (s === 'intro') void CapApp.exitApp()
+        if (s === 'intro' && shopOpenRef.current) setShopOpen(false)
+        else if (s === 'intro') void CapApp.exitApp()
         else if (s === 'lobby' || s === 'auth') setScreen('intro')
         // in a match the on-screen buttons own every exit
       }).then((h) => {
@@ -134,6 +146,7 @@ function App() {
           setScreen('lobby')
         }}
         onSignIn={() => setScreen('auth')}
+        onShop={() => setShopOpen(true)}
       />
     )
   }
@@ -152,6 +165,7 @@ function App() {
           }}
         />
       )}
+      {shopOpen && screen === 'intro' && <ShopPopup onClose={() => setShopOpen(false)} />}
       {challengeMatch && screen !== 'match' && (
         <ChallengeCountdown
           session={challengeMatch}

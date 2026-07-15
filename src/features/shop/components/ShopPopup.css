@@ -1,0 +1,138 @@
+/* Deliberately mirrors FriendsPopup.css — the two modals are one system, so any
+   change to the panel/tab skin should land in both. */
+
+/* Full-screen dimming backdrop centring the panel. Above the App-level floats
+   (z 100) so it covers the coin/sound/profile bar while open. */
+.shop-popup {
+  position: fixed;
+  inset: 0;
+  z-index: 200;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+  background: rgba(0, 0, 0, 0.6);
+}
+
+.shop-popup__panel {
+  display: flex;
+  flex-direction: column;
+  width: min(94%, 440px);
+  max-height: min(88dvh, 640px);
+  background: linear-gradient(#123a24, #0a2416);
+  border-radius: 6px;
+  box-shadow:
+    inset 0 0 0 3px rgba(255, 207, 26, 0.4),
+    0 0 0 4px #0a0a0a,
+    6px 6px 0 4px rgba(0, 0, 0, 0.85);
+}
+
+.shop-popup__head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 16px 10px;
+}
+
+.shop-popup__title {
+  margin: 0;
+  color: #ffcf1a;
+  font-family: 'Press Start 2P', ui-monospace, Consolas, monospace;
+  font-size: 16px;
+  letter-spacing: 0.06em;
+  text-shadow: 2px 2px 0 #000;
+}
+
+.shop-popup__close {
+  padding: 4px 8px;
+  border: none;
+  background: none;
+  color: #cfd8e6;
+  font-family: 'Press Start 2P', ui-monospace, Consolas, monospace;
+  font-size: 14px;
+  cursor: pointer;
+  text-shadow: 2px 2px 0 #000;
+}
+
+@media (hover: hover) {
+  .shop-popup__close:hover {
+    color: #fff;
+  }
+}
+
+.shop-popup__tabs {
+  display: flex;
+  gap: 4px;
+  padding: 0 16px;
+}
+
+.shop-popup__tab {
+  flex: 1;
+  padding: 10px 6px;
+  border: none;
+  background: #0a2416;
+  color: #7fa38c;
+  font-family: 'Press Start 2P', ui-monospace, Consolas, monospace;
+  font-size: 10px;
+  letter-spacing: 0.04em;
+  cursor: pointer;
+  border-radius: 4px 4px 0 0;
+  box-shadow: inset 0 0 0 2px rgba(0, 0, 0, 0.5);
+}
+
+.shop-popup__tab.is-active {
+  background: linear-gradient(#ffd84d, #f5b716);
+  color: #3a2a08;
+  text-shadow: 1px 1px 0 rgba(255, 255, 255, 0.35);
+}
+
+.shop-popup__body {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  padding: 12px 16px 16px;
+  background: rgba(0, 0, 0, 0.18);
+  font-family: 'Press Start 2P', ui-monospace, Consolas, monospace;
+}
+
+.shop-popup__error {
+  margin: 0 0 12px;
+  color: #ff8b8b;
+  font-size: 9px;
+  line-height: 1.5;
+  text-shadow: 1px 1px 0 #000;
+}
+
+/* Placeholder while every catalogue is empty. Min-height keeps the panel from
+   collapsing to a sliver, so the modal holds its shape across tab switches. */
+.shop-popup__empty {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 160px;
+  margin: 0;
+  color: #9fc3ad;
+  font-size: 9px;
+  line-height: 1.6;
+  text-align: center;
+}
+
+.shop-popup__grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(96px, 1fr));
+  gap: 8px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.shop-popup__item {
+  padding: 10px 6px;
+  background: #0a2416;
+  color: #cfe6d8;
+  font-size: 9px;
+  line-height: 1.5;
+  text-align: center;
+  border-radius: 3px;
+  box-shadow: inset 0 0 0 2px rgba(0, 0, 0, 0.5);
+}
