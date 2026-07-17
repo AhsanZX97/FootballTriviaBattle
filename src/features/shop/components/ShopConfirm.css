@@ -1,0 +1,102 @@
+/* Mirrors ChallengeOverlay.css's panel + action buttons: this is the app's
+   confirmation look. Sits above the shop popup (z 200) on the same layer as the
+   challenge modal. */
+.shop-confirm {
+  position: fixed;
+  inset: 0;
+  z-index: 300;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+  background: rgba(0, 0, 0, 0.65);
+}
+
+.shop-confirm__panel {
+  width: min(94%, 380px);
+  padding: 22px 20px;
+  text-align: center;
+  background: linear-gradient(#123a24, #0a2416);
+  border-radius: 6px;
+  box-shadow:
+    inset 0 0 0 3px rgba(255, 207, 26, 0.4),
+    0 0 0 4px #0a0a0a,
+    6px 6px 0 4px rgba(0, 0, 0, 0.85);
+}
+
+.shop-confirm__headline {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  margin: 0 0 18px;
+  color: #fff;
+  font-family: 'Press Start 2P', ui-monospace, Consolas, monospace;
+  font-size: 12px;
+  line-height: 1.6;
+}
+
+.shop-confirm__headline strong {
+  color: #ffcf1a;
+  /* names come from file names and can be long ("GOOOOOOOOOOAL") — let them
+     wrap rather than push the panel wider */
+  overflow-wrap: anywhere;
+}
+
+.shop-confirm__price {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  color: #ffcf1a;
+}
+
+.shop-confirm__owned {
+  display: block;
+  width: 100%;
+  color: #2fae4e;
+  font-size: 9px;
+  letter-spacing: 0.06em;
+}
+
+.shop-confirm__error {
+  margin: 0 0 14px;
+  color: #ff8b8b;
+  font-family: 'Press Start 2P', ui-monospace, Consolas, monospace;
+  font-size: 9px;
+  line-height: 1.5;
+  text-shadow: 1px 1px 0 #000;
+}
+
+.shop-confirm__actions {
+  display: flex;
+  gap: 10px;
+}
+
+.shop-confirm__btn {
+  flex: 1;
+  padding: 12px 8px;
+  border: none;
+  font-family: 'Press Start 2P', ui-monospace, Consolas, monospace;
+  font-size: 10px;
+  letter-spacing: 0.04em;
+  cursor: pointer;
+  border-radius: 4px;
+  color: #fff;
+  box-shadow: 0 0 0 2px #0a0a0a, 2px 2px 0 2px rgba(0, 0, 0, 0.7);
+}
+
+.shop-confirm__btn--go {
+  background: #2fae4e;
+  text-shadow: 1px 1px 0 rgba(0, 0, 0, 0.4);
+}
+
+.shop-confirm__btn--go:disabled {
+  background: #4a5a4e;
+  color: #9aa0aa;
+  cursor: not-allowed;
+}
+
+.shop-confirm__btn--cancel {
+  background: #c8313a;
+}

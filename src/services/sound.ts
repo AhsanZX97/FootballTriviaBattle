@@ -6,6 +6,7 @@ import netRippleSrc from '../assets/sounds/net ripple.ogg'
 import startWhistleSrc from '../assets/sounds/start whistle.mp3'
 import finalWhistleSrc from '../assets/sounds/final ref whistle.mp3'
 import countdownSrc from '../assets/sounds/321 countdown.mp3'
+import { GOAL_SOUND_SOURCES } from './shopCatalogue'
 import { getItem, setItem } from './storage'
 
 export type SoundName =
@@ -38,6 +39,10 @@ const LEVELS: Partial<Record<SoundName, number>> = {
   startWhistle: 0.5,
   finalWhistle: 0.5,
 }
+
+/** Bought goal stings are dry one-shots rather than crowd ambience, so they sit
+ * above the stock cheer's 0.5 to land with the same weight. */
+const GOAL_SOUND_LEVEL = 0.8
 
 function clamp01(v: number): number {
   return Math.min(1, Math.max(0, Number.isFinite(v) ? v : 1))
@@ -74,22 +79,74 @@ export function setMasterVolume(v: number) {
 // fire-and-forget.
 let crowd: HTMLAudioElement | null = null
 // StrictMode double-runs effects in dev; a tiny debounce keeps whistles and
-// crowd sounds from doubling up without touching the callers.
-const lastPlayed = new Map<SoundName, number>()
+// crowd sounds from doubling up without touching the callers. Keyed by sound
+// name, or by item id for goal celebrations.
+const lastPlayed = new Map<string, number>()
 
-export function play(name: SoundName) {
-  if (master === 0) return
+/** Shared playback path for every one-shot: master gate, debounce, mix level,
+ * and (for the long reactions) crowd tracking so fadeOutCrowd can catch them. */
+function playSource(
+  key: string,
+  src: string,
+  level: number,
+  isCrowd: boolean,
+): HTMLAudioElement | null {
+  if (master === 0) return null
   const now = Date.now()
-  if (now - (lastPlayed.get(name) ?? -Infinity) < 100) return
-  lastPlayed.set(name, now)
-  const audio = new Audio(SOURCES[name])
-  audio.volume = master * (LEVELS[name] ?? 1)
-  // ponytail: autoplay-blocked or unsupported playback just stays silent
+  if (now - (lastPlayed.get(key) ?? -Infinity) < 100) return null
+  lastPlayed.set(key, now)
+  const audio = new Audio(src)
+  audio.volume = master * level
+  // autoplay-blocked or unsupported playback just stays silent
   audio.play()?.catch(() => {})
-  if (name === 'cheer' || name === 'shock') {
+  if (isCrowd) {
     crowd?.pause()
     crowd = audio
   }
+  return audio
+}
+
+export function play(name: SoundName) {
+  playSource(name, SOURCES[name], LEVELS[name] ?? 1, name === 'cheer' || name === 'shock')
+}
+
+/**
+ * The goal celebration for the player's equipped `goalSound` item, falling back
+ * to the stock cheer for 'default' (or any id without bundled audio — e.g. a
+ * profile equipped on a newer build than this one). Tracked as a crowd sound
+ * either way, so the match screen's fade-out still catches it.
+ */
+export function playGoalCelebration(itemId: string) {
+  const src = GOAL_SOUND_SOURCES[itemId]
+  if (!src) {
+    play('cheer')
+    return
+  }
+  playSource(itemId, src, GOAL_SOUND_LEVEL, true)
+}
+
+// Shop previews get their own channel: they must restart on a repeated tap of
+// the same tile (so the debounce above would be wrong) and must not be caught
+// by fadeOutCrowd, which belongs to the match.
+let previewAudio: HTMLAudioElement | null = null
+
+/** Stop whatever the shop is previewing. Safe to call when nothing is playing. */
+export function stopPreview(): void {
+  previewAudio?.pause()
+  previewAudio = null
+}
+
+/** Preview a goal sound in the shop. Only one preview plays at a time — picking
+ * another tile (or replaying the same one) cuts the previous off. */
+export function previewGoalSound(itemId: string): void {
+  stopPreview()
+  if (master === 0) return
+  const src = GOAL_SOUND_SOURCES[itemId]
+  if (!src) return
+  const audio = new Audio(src)
+  audio.volume = master * GOAL_SOUND_LEVEL
+  audio.play()?.catch(() => {})
+  previewAudio = audio
 }
 
 /** Fade the current crowd reaction out instead of cutting a 30s cheer dead. */

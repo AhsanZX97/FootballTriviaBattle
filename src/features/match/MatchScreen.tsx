@@ -5,7 +5,8 @@ import { matchStore, QUESTION_TIME_SECONDS } from './store'
 import { PitchScene, type SceneFeedback } from './components/PitchScene'
 import { CoinReward } from './components/CoinReward'
 import { PreMatchCountdown } from '../lobby/components/PreMatchCountdown'
-import { fadeOutCrowd, play } from '../../services/sound'
+import { fadeOutCrowd, play, playGoalCelebration } from '../../services/sound'
+import { authStore } from '../auth/store'
 import { useBottomBanner } from '../../services/ads'
 import { Sprite } from '../../components/Sprite'
 import './MatchScreen.css'
@@ -57,6 +58,7 @@ function KickDots({ kicks, side }: { kicks: Kick[]; side: 'user' | 'cpu' }) {
 
 export function MatchScreen({ onExit, onMainMenu }: Props) {
   const state = useSyncExternalStore(matchStore.subscribe, matchStore.getState)
+  const auth = useSyncExternalStore(authStore.subscribe, authStore.getState)
   const [feedback, setFeedback] = useState<SceneFeedback | null>(null)
   const [feedbackIsMine, setFeedbackIsMine] = useState(false)
   const [timeLeft, setTimeLeft] = useState(QUESTION_TIME_SECONDS)
@@ -67,6 +69,7 @@ export function MatchScreen({ onExit, onMainMenu }: Props) {
   const myTurn = state.shootout.stage === 'shoot'
   const is1v1 = state.mode === '1v1'
   const opponentLabel = is1v1 ? (state.opponentName ?? 'OPPONENT') : 'CPU'
+  const goalSound = auth.customization.goalSound
 
   // countdown — paused while feedback plays and once the match is over. During
   // an opponent's turn it just ticks cosmetically: the server owns their real timeout.
@@ -86,19 +89,23 @@ export function MatchScreen({ onExit, onMainMenu }: Props) {
   // sound track for the feedback animation: kick when the ball launches, the
   // crowd + net when it lands. Cleanup fades the (30s-long) crowd file out as
   // the next question appears, and kills pending sounds if the screen unmounts.
+  //
+  // 'goal' is the only outcome where the player scores, so it's the one the
+  // shop's goal celebration replaces; a save still gets the stock cheer.
   useEffect(() => {
     if (!feedback) return
     const kickT = setTimeout(() => play('kick'), KICK_SOUND_MS)
     const landT = setTimeout(() => {
       if (feedback === 'goal' || feedback === 'concede') play('netRipple')
-      play(feedback === 'goal' || feedback === 'save' ? 'cheer' : 'shock')
+      if (feedback === 'goal') playGoalCelebration(goalSound)
+      else play(feedback === 'save' ? 'cheer' : 'shock')
     }, LAND_MS[feedback])
     return () => {
       clearTimeout(kickT)
       clearTimeout(landT)
       fadeOutCrowd()
     }
-  }, [feedback])
+  }, [feedback, goalSound])
 
   // kickoff / full-time whistles. phase re-enters 'active' after each rematch,
   // so both matches get a kickoff whistle; `!!result` flips exactly once per match.

@@ -24,14 +24,15 @@ export const defaultCustomization = (): Customization => ({
   goalSound: DEFAULT_ITEM_ID,
 })
 
-/** A purchasable/equippable cosmetic in one slot. The catalogue is empty until
- * the first items ship, so nothing renders these yet. */
+/** A purchasable/equippable cosmetic in one slot. */
 export interface ShopItem {
   id: string
-  /** Shown on the item tile. */
+  /** Shown on the item tile — the sound files' own names. */
   name: string
   slot: CustomizationSlot
-  /** In coins. 0 for items every player starts with. */
+  /** In coins. */
   price: number
 }
 
+/** Result code from `purchase_item`. */
+export type PurchaseResult = 'ok' | 'already_owned' | 'insufficient_coins' | 'not_found' | 'error'
