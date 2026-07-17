@@ -124,10 +124,11 @@ describe('previewGoalSound', () => {
     expect(created[0].pause).toHaveBeenCalled()
   })
 
-  it('ignores an id with no bundled audio', () => {
+  it('previews the stock cheer for the default item', () => {
     setMasterVolume(1)
-    previewGoalSound('nope')
-    expect(created).toHaveLength(0)
+    previewGoalSound('default')
+    expect(created).toHaveLength(1)
+    expect(created[0].src).toBe(cheerSrc)
   })
 
   it('stays silent when muted', () => {

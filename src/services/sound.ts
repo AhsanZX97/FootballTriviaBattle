@@ -136,15 +136,16 @@ export function stopPreview(): void {
   previewAudio = null
 }
 
-/** Preview a goal sound in the shop. Only one preview plays at a time — picking
- * another tile (or replaying the same one) cuts the previous off. */
+/** Preview a goal sound. Only one preview plays at a time — picking another row
+ * (or replaying the same one) cuts the previous off. Resolves 'default' to the
+ * stock cheer, at the cheer's own level, so a preview is always what you would
+ * actually hear on a goal. */
 export function previewGoalSound(itemId: string): void {
   stopPreview()
   if (master === 0) return
-  const src = GOAL_SOUND_SOURCES[itemId]
-  if (!src) return
-  const audio = new Audio(src)
-  audio.volume = master * GOAL_SOUND_LEVEL
+  const custom = GOAL_SOUND_SOURCES[itemId]
+  const audio = new Audio(custom ?? cheerSrc)
+  audio.volume = master * (custom ? GOAL_SOUND_LEVEL : (LEVELS.cheer ?? 1))
   audio.play()?.catch(() => {})
   previewAudio = audio
 }

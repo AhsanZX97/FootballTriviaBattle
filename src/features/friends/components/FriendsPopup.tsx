@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { friendsStore } from '../store'
 import { useSuppressBanner } from '../../../services/ads'
 import { FriendList } from './FriendList'
+import { CustomizePanel } from '../../shop/components/CustomizePanel'
 import './FriendsPopup.css'
 
 type Tab = 'friends' | 'customize'
@@ -12,8 +13,9 @@ type Props = {
   onChallenge?: (friendId: string, username: string) => void
 }
 
-/** Modal shell for the friends system. Friend List tab is live; Customize is a
- * disabled placeholder for later. Refreshes the friend/request lists on open. */
+/** Modal shell for the player's account: their friends, and the Customize tab
+ * for equipping what they own (buying lives in the shop). Refreshes the
+ * friend/request lists on open. */
 export function FriendsPopup({ onClose, onChallenge }: Props) {
   const [tab, setTab] = useState<Tab>('friends')
 
@@ -62,17 +64,16 @@ export function FriendsPopup({ onClose, onChallenge }: Props) {
           <button
             type="button"
             role="tab"
-            aria-selected={false}
-            className="friends-popup__tab friends-popup__tab--disabled"
-            disabled
-            title="Coming soon"
+            aria-selected={tab === 'customize'}
+            className={`friends-popup__tab${tab === 'customize' ? ' is-active' : ''}`}
+            onClick={() => setTab('customize')}
           >
             CUSTOMIZE
           </button>
         </div>
 
         <div className="friends-popup__body">
-          {tab === 'friends' && <FriendList onChallenge={onChallenge} />}
+          {tab === 'friends' ? <FriendList onChallenge={onChallenge} /> : <CustomizePanel />}
         </div>
       </div>
     </div>
