@@ -88,12 +88,14 @@
 /* ball on the penalty spot. Width derives from --keeper-w (not its own flat
    %) so it can't drift out of proportion the next time the keeper is resized
    — that drift is what made the ball look oversized after --keeper-w was
-   halved but the ball's size wasn't. 0.35 keeps it looking right against the
-   keeper's standing idle pose. */
+   halved but the ball's size wasn't. 0.45 (bumped from 0.35) reads at
+   roughly the clarity of the shop/customize thumbnail instead of shrinking
+   to a barely-legible dot; applies to every skin equally since this is the
+   only place ball width is set. */
 .scene__ball {
   left: 50%;
   top: 80%;
-  width: calc(var(--keeper-w) * 0.35);
+  width: calc(var(--keeper-w) * 0.45);
   aspect-ratio: 1;
   background: url(../../../assets/ball.png) center / contain no-repeat;
 }
@@ -116,6 +118,68 @@
   to {
     background: url(../../../assets/ball-spin-strip.png) 100% 0 / 400% 100% no-repeat;
   }
+}
+
+/* Skinned ball: a purchased/equipped World Cup ball (BALL_SKIN_SOURCES in
+   src/services/shopCatalogue.ts). PitchScene sets --ball-thumb/--ball-spin
+   from the catalogue art; unrecognized/'default' ids skip this class
+   entirely and keep the stock ball.png/ball-spin-strip.png above.
+   Compounded with .scene__ball (not just .scene__ball--skinned alone) so
+   these rules out-specificity the stock ones below regardless of source
+   order — same-specificity selectors would otherwise let whichever rule
+   comes later in the file win, which is exactly what silently sent every
+   skinned ball back to the stock spin animation before this compounding. */
+.scene__ball.scene__ball--skinned {
+  background: var(--ball-thumb) center / contain no-repeat;
+}
+
+/* --ball-spin is a 2x2 grid (4 frames, reading order TL/TR/BL/BR) rather than
+   ball-spin-strip.png's horizontal strip, so it can't reuse scene-ball-spin's
+   single background-position-x sweep across one segment — each frame needs
+   its own explicit stop. steps(1) holds each corner for its full quarter
+   instead of sliding smoothly toward the next one. */
+@keyframes scene-ball-spin-grid {
+  0% {
+    background: var(--ball-spin) 0% 0 / 200% 200% no-repeat;
+  }
+  25% {
+    background: var(--ball-spin) 100% 0 / 200% 200% no-repeat;
+  }
+  50% {
+    background: var(--ball-spin) 0% 100% / 200% 200% no-repeat;
+  }
+  75% {
+    background: var(--ball-spin) 100% 100% / 200% 200% no-repeat;
+  }
+}
+
+/* Same four outcome rules as the stock ball above (duration/delay/iteration
+   counts must match exactly, so the skinned ball lands on the same frame at
+   the same moment), just swapping the spin keyframes + step count for the
+   grid's. The mirrored-travel transform on miss/concede already applies —
+   it targets .scene__ball, which this element still is. */
+.scene--goal .scene__ball.scene__ball--skinned {
+  animation:
+    scene-ball-spin-grid 0.2s steps(1) var(--suspense) 3.5,
+    scene-ball-goal 0.7s steps(7) var(--suspense) forwards;
+}
+
+.scene--miss .scene__ball.scene__ball--skinned {
+  animation:
+    scene-ball-spin-grid 0.2s steps(1) var(--suspense) 3.5,
+    scene-ball-miss 0.7s steps(7) var(--suspense) forwards;
+}
+
+.scene--save .scene__ball.scene__ball--skinned {
+  animation:
+    scene-ball-spin-grid 0.2s steps(1) var(--suspense) 2.5,
+    scene-ball-save 0.5s steps(5) var(--suspense) forwards;
+}
+
+.scene--concede .scene__ball.scene__ball--skinned {
+  animation:
+    scene-ball-spin-grid 0.2s steps(1) var(--suspense) 3.5,
+    scene-ball-concede 0.7s steps(7) var(--suspense) forwards;
 }
 
 /* striker just left of and behind the ball (back view, right-footed), in the

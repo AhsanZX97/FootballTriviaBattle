@@ -36,6 +36,18 @@
   image-rendering: pixelated;
 }
 
+/* Ball skins etc: a plain thumbnail beside the row, not an action — no
+   button semantics, no hover/active affordance. */
+.shop-items__preview--static {
+  cursor: default;
+}
+
+.shop-items__preview-img--thumb {
+  width: 32px;
+  height: 32px;
+  image-rendering: auto;
+}
+
 @media (hover: hover) {
   .shop-items__preview:hover {
     box-shadow: inset 0 0 0 2px rgba(255, 207, 26, 0.5);

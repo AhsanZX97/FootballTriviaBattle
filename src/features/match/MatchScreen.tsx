@@ -320,7 +320,12 @@ export function MatchScreen({ onExit, onMainMenu }: Props) {
 
       {feedback ? (
         // animation screen: scene replaces the question until the kick resolves
-        <PitchScene stage={shootout.stage} feedback={feedback} opponentLabel={opponentLabel} />
+        <PitchScene
+          stage={shootout.stage}
+          feedback={feedback}
+          opponentLabel={opponentLabel}
+          ballSkin={auth.customization.ballSkin}
+        />
       ) : showQuestion ? (
         <>
           <div className={`match__timer${timeLeft <= 3 ? ' match__timer--low' : ''}`}>
@@ -350,7 +355,7 @@ export function MatchScreen({ onExit, onMainMenu }: Props) {
       ) : (
         // 1v1 spectating (or the brief gap while my own kick is in flight to the server)
         <>
-          <PitchScene stage={shootout.stage} feedback={null} />
+          <PitchScene stage={shootout.stage} feedback={null} ballSkin={auth.customization.ballSkin} />
           {!myTurn && <p className="match__waiting">WAITING FOR {opponentLabel}…</p>}
         </>
       )}

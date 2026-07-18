@@ -40,10 +40,22 @@ describe('shop store', () => {
     expect(items.goalSound.every((i) => i.price === 100)).toBe(true)
   })
 
-  it('has no skins to sell yet', () => {
+  it('has no keeper skins to sell yet', () => {
     const store = createShopStore(makeDeps())
     expect(store.getState().items.gkSkin).toEqual([])
-    expect(store.getState().items.ballSkin).toEqual([])
+  })
+
+  it('exposes the ball skin catalogue', () => {
+    const store = createShopStore(makeDeps())
+    const { items } = store.getState()
+    expect(items.ballSkin.map((i) => i.name)).toEqual([
+      '2010 WC Ball',
+      '2014 WC Ball',
+      '2018 WC Ball',
+      '2022 WC Ball',
+      '2026 WC Ball',
+    ])
+    expect(items.ballSkin.every((i) => i.price === 150)).toBe(true)
   })
 
   it('owns nothing before the owned list loads', () => {

@@ -4,9 +4,21 @@ import gooalSrc from '../assets/sounds/Goal Celebrations/gooal.mp3'
 import goooalSrc from '../assets/sounds/Goal Celebrations/GOOOOOOOOOOAL.mp3'
 import siuuuuSrc from '../assets/sounds/Goal Celebrations/SIUUUU.mp3'
 import videoGameSrc from '../assets/sounds/Goal Celebrations/video game sound.mp3'
+import wcBall2010Src from '../assets/sprites/ball/2010 WC Ball.png'
+import wcBall2010SpinSrc from '../assets/sprites/ball/2010 WC Ball_spin.png'
+import wcBall2014Src from '../assets/sprites/ball/2014 WC Ball.png'
+import wcBall2014SpinSrc from '../assets/sprites/ball/2014 WC Ball_spin.png'
+import wcBall2018Src from '../assets/sprites/ball/2018 WC Ball.png'
+import wcBall2018SpinSrc from '../assets/sprites/ball/2018 WC Ball_spin.png'
+import wcBall2022Src from '../assets/sprites/ball/2022 WC Ball.png'
+import wcBall2022SpinSrc from '../assets/sprites/ball/2022 WC Ball_spin.png'
+import wcBall2026Src from '../assets/sprites/ball/2026 WC Ball.png'
+import wcBall2026SpinSrc from '../assets/sprites/ball/2026 WC Ball_spin.png'
 
 /** Every goal celebration costs the same for now. */
 const GOAL_SOUND_PRICE = 100
+/** Every ball skin costs the same for now. */
+const BALL_SKIN_PRICE = 150
 
 /**
  * The shop catalogue. Client-side because each item id has to map to a bundled
@@ -24,6 +36,11 @@ export const CATALOGUE: ShopItem[] = [
   { id: 'goooooooooal', name: 'GOOOOOOOOOOAL', slot: 'goalSound', price: GOAL_SOUND_PRICE },
   { id: 'siuuuu', name: 'SIUUUU', slot: 'goalSound', price: GOAL_SOUND_PRICE },
   { id: 'video_game_sound', name: 'video game sound', slot: 'goalSound', price: GOAL_SOUND_PRICE },
+  { id: 'wc_ball_2010', name: '2010 WC Ball', slot: 'ballSkin', price: BALL_SKIN_PRICE },
+  { id: 'wc_ball_2014', name: '2014 WC Ball', slot: 'ballSkin', price: BALL_SKIN_PRICE },
+  { id: 'wc_ball_2018', name: '2018 WC Ball', slot: 'ballSkin', price: BALL_SKIN_PRICE },
+  { id: 'wc_ball_2022', name: '2022 WC Ball', slot: 'ballSkin', price: BALL_SKIN_PRICE },
+  { id: 'wc_ball_2026', name: '2026 WC Ball', slot: 'ballSkin', price: BALL_SKIN_PRICE },
 ]
 
 /** Audio for each goal-sound item. Keyed by the catalogue id above; an id with
@@ -34,6 +51,18 @@ export const GOAL_SOUND_SOURCES: Record<string, string> = {
   goooooooooal: goooalSrc,
   siuuuu: siuuuuSrc,
   video_game_sound: videoGameSrc,
+}
+
+/** Art for each ball-skin item. `thumb` is the resting/shop-tile image; `spin`
+ * is a 2x2 grid (4 frames, reading order TL/TR/BL/BR) used for the in-flight
+ * spin animation. Keyed by the catalogue id above; an id with no entry here
+ * falls back to the stock ball. */
+export const BALL_SKIN_SOURCES: Record<string, { thumb: string; spin: string }> = {
+  wc_ball_2010: { thumb: wcBall2010Src, spin: wcBall2010SpinSrc },
+  wc_ball_2014: { thumb: wcBall2014Src, spin: wcBall2014SpinSrc },
+  wc_ball_2018: { thumb: wcBall2018Src, spin: wcBall2018SpinSrc },
+  wc_ball_2022: { thumb: wcBall2022Src, spin: wcBall2022SpinSrc },
+  wc_ball_2026: { thumb: wcBall2026Src, spin: wcBall2026SpinSrc },
 }
 
 export function catalogueFor(slot: ShopItem['slot']): ShopItem[] {

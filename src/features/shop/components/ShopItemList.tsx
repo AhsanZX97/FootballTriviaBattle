@@ -11,6 +11,9 @@ type Props = {
   equippedId: string
   /** Preview button. Only sounds are previewable; omit for visual slots. */
   onPreview?: (item: ShopItem) => void
+  /** Static thumbnail beside the row, e.g. a ball skin's art. Mutually
+   * exclusive with `onPreview` — pass at most one. */
+  iconFor?: (item: ShopItem) => string | undefined
   /**
    * Shop mode: the whole row is the target and opens the buy/equip confirm.
    * Mutually exclusive with `onEquip` — pass exactly one.
@@ -28,12 +31,22 @@ type Props = {
  *
  * The preview control is always its own button beside the row's main body
  * rather than nested inside it — a button can't contain a button. */
-export function ShopItemList({ items, owned, equippedId, onPreview, onSelect, onEquip, busy }: Props) {
+export function ShopItemList({
+  items,
+  owned,
+  equippedId,
+  onPreview,
+  iconFor,
+  onSelect,
+  onEquip,
+  busy,
+}: Props) {
   return (
     <ul className="shop-items">
       {items.map((item) => {
         const isOwned = owned.includes(item.id)
         const isEquipped = equippedId === item.id
+        const icon = iconFor?.(item)
 
         const body = onEquip ? (
           // Customize mode: static row, because the EQUIP button is the target.
@@ -84,6 +97,11 @@ export function ShopItemList({ items, owned, equippedId, onPreview, onSelect, on
               >
                 <img className="shop-items__preview-img" src={volumeIcon} alt="" />
               </button>
+            )}
+            {icon && (
+              <span className="shop-items__preview shop-items__preview--static" aria-hidden>
+                <img className="shop-items__preview-img shop-items__preview-img--thumb" src={icon} alt="" />
+              </span>
             )}
             {body}
           </li>

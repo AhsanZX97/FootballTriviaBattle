@@ -65,6 +65,15 @@ async function renderSounds(api: Partial<CustomizationApi> = {}) {
   return made
 }
 
+/** Render on the BALL sub-tab with the owned-items load settled. */
+async function renderBalls(api: Partial<CustomizationApi> = {}) {
+  const made = makeStore(api)
+  render(<CustomizePanel store={made.store} />)
+  await waitFor(() => expect(made.api.listOwnedItems).toHaveBeenCalled())
+  fireEvent.click(screen.getByRole('tab', { name: 'BALL' }))
+  return made
+}
+
 beforeEach(() => {
   vi.clearAllMocks()
   authListeners.clear()
@@ -152,6 +161,20 @@ describe('CustomizePanel default row', () => {
     await renderSounds()
     expect(screen.getByText('DEFAULT')).toBeDefined()
     expect(screen.getByText('EQUIPPED')).toBeDefined()
+  })
+})
+
+describe('CustomizePanel ball skins', () => {
+  it('lists an owned ball skin with a thumbnail and equips it', async () => {
+    const { api } = await renderBalls({ listOwnedItems: vi.fn(async () => ['wc_ball_2010']) })
+    await screen.findByText('2010 WC Ball')
+
+    const row = screen.getByText('2010 WC Ball').closest('li')
+    expect(row?.querySelector('img')).not.toBeNull()
+
+    fireEvent.click(equipButtonFor('2010 WC Ball'))
+
+    await waitFor(() => expect(api.setCustomization).toHaveBeenCalledWith('ballSkin', 'wc_ball_2010'))
   })
 })
 

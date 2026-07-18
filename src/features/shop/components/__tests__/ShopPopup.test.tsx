@@ -88,9 +88,6 @@ describe('ShopPopup tabs', () => {
   it('shows the empty state for the slots with no items yet', () => {
     render(<ShopPopup onClose={() => {}} store={makeStore().store} />)
     expect(screen.getByText(/no keeper skins yet/i)).toBeDefined()
-
-    fireEvent.click(screen.getByRole('tab', { name: 'BALL' }))
-    expect(screen.getByText(/no ball skins yet/i)).toBeDefined()
   })
 
   it('lists the five goal sounds with their price', async () => {
@@ -99,6 +96,18 @@ describe('ShopPopup tabs', () => {
       expect(screen.getByRole('button', { name })).toBeDefined()
     }
     expect(screen.getAllByText('100')).toHaveLength(5)
+  })
+
+  it('lists the ball skins with their price and a thumbnail', () => {
+    render(<ShopPopup onClose={() => {}} store={makeStore().store} />)
+    fireEvent.click(screen.getByRole('tab', { name: 'BALL' }))
+
+    for (const name of ['2010 WC Ball', '2014 WC Ball', '2018 WC Ball', '2022 WC Ball', '2026 WC Ball']) {
+      expect(screen.getByRole('button', { name })).toBeDefined()
+    }
+    expect(screen.getAllByText('150')).toHaveLength(5)
+    const row = screen.getByRole('button', { name: '2010 WC Ball' })
+    expect(row.closest('li')?.querySelector('img')).not.toBeNull()
   })
 
   it('calls onClose from the close button', () => {
