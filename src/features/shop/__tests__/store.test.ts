@@ -40,9 +40,11 @@ describe('shop store', () => {
     expect(items.goalSound.every((i) => i.price === 100)).toBe(true)
   })
 
-  it('has no keeper skins to sell yet', () => {
+  it('exposes the keeper skin catalogue', () => {
     const store = createShopStore(makeDeps())
-    expect(store.getState().items.gkSkin).toEqual([])
+    const { items } = store.getState()
+    expect(items.gkSkin.map((i) => i.name)).toEqual(['Manuel Neuer'])
+    expect(items.gkSkin.every((i) => i.price === 200)).toBe(true)
   })
 
   it('exposes the ball skin catalogue', () => {

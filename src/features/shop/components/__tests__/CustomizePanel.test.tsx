@@ -178,6 +178,25 @@ describe('CustomizePanel ball skins', () => {
   })
 })
 
+describe('CustomizePanel keeper skins', () => {
+  it('lists an owned keeper skin with a thumbnail and equips it', async () => {
+    const made = makeStore({ listOwnedItems: vi.fn(async () => ['gk_manuel_neuer']) })
+    render(<CustomizePanel store={made.store} />)
+    await waitFor(() => expect(made.api.listOwnedItems).toHaveBeenCalled())
+    // SKIN is the opening tab, so no need to switch to it.
+    await screen.findByText('Manuel Neuer')
+
+    const row = screen.getByText('Manuel Neuer').closest('li')
+    expect(row?.querySelector('img')).not.toBeNull()
+
+    fireEvent.click(equipButtonFor('Manuel Neuer'))
+
+    await waitFor(() =>
+      expect(made.api.setCustomization).toHaveBeenCalledWith('gkSkin', 'gk_manuel_neuer'),
+    )
+  })
+})
+
 describe('CustomizePanel preview', () => {
   it('previews an owned sound', async () => {
     await renderSounds({ listOwnedItems: vi.fn(async () => ['siuuuu']) })

@@ -1,6 +1,6 @@
 import { useState, type CSSProperties } from 'react'
 import type { Stage } from '../../../types/match'
-import { BALL_SKIN_SOURCES } from '../../../services/shopCatalogue'
+import { BALL_SKIN_SOURCES, GK_SKIN_SOURCES } from '../../../services/shopCatalogue'
 import './PitchScene.css'
 
 /** How the keeper reacts to being beaten — picked at random per goal. */
@@ -24,11 +24,17 @@ type Props = {
   /** Equipped ballSkin item id (auth.customization.ballSkin). 'default' or an
    * id with no bundled art falls back to the stock ball. */
   ballSkin?: string
+  /** Equipped gkSkin item id (auth.customization.gkSkin). Only ever applies to
+   * OUR OWN keeper — stage 'keep', i.e. we're the one defending. The
+   * opponent's keeper (stage 'shoot') always renders the stock look; we have
+   * no idea (and no need to know) what they have equipped. 'default' or an id
+   * with no bundled art falls back to the stock keeper. */
+  gkSkin?: string
 }
 
 // ponytail: emoji actors over the bg.jpg goal. Same props contract the sprite
 // version will keep — see Plans/Sprite Transfer Plan.md for the swap.
-export function PitchScene({ stage, feedback, opponentLabel = 'CPU', ballSkin }: Props) {
+export function PitchScene({ stage, feedback, opponentLabel = 'CPU', ballSkin, gkSkin }: Props) {
   // ponytail: the scene mounts fresh for every animation, so a lazy useState
   // initializer gives one stable random pick per goal
   const [variant] = useState(
@@ -39,6 +45,12 @@ export function PitchScene({ stage, feedback, opponentLabel = 'CPU', ballSkin }:
   const ballStyle = skin
     ? ({ '--ball-thumb': `url(${skin.thumb})`, '--ball-spin': `url(${skin.spin})` } as CSSProperties)
     : undefined
+  // stage 'keep' = we're the one on the goal line; anything else is the
+  // opponent's keeper, which never wears our equipped skin.
+  const keeper = stage === 'keep' && gkSkin ? GK_SKIN_SOURCES[gkSkin] : undefined
+  const keeperStyle = keeper
+    ? ({ '--gk-idle': `url(${keeper.idle})`, '--gk-dive': `url(${keeper.dive})` } as CSSProperties)
+    : undefined
   return (
     <div
       className={`scene${feedback ? ` scene--${feedback}` : ''}${feedback === 'goal' ? ` scene--goal-${variant}` : ''}`}
@@ -47,7 +59,10 @@ export function PitchScene({ stage, feedback, opponentLabel = 'CPU', ballSkin }:
     >
       {/* stage mirrors the background's center/cover sizing so % positions land on the bg.jpg goal */}
       <div className="scene__stage">
-        <span className="scene__keeper" />
+        <span
+          className={`scene__keeper${keeper ? ' scene__keeper--skinned' : ''}`}
+          style={keeperStyle}
+        />
         <span
           className={`scene__ball${skin ? ' scene__ball--skinned' : ''}`}
           style={ballStyle}

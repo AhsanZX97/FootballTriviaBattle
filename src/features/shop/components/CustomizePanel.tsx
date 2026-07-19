@@ -7,7 +7,7 @@ import {
   type ShopItem,
 } from '../../../types/customization'
 import { previewGoalSound, stopPreview } from '../../../services/sound'
-import { BALL_SKIN_SOURCES } from '../../../services/shopCatalogue'
+import { BALL_SKIN_SOURCES, GK_SKIN_SOURCES } from '../../../services/shopCatalogue'
 import { ShopItemList } from './ShopItemList'
 import './CustomizePanel.css'
 
@@ -79,7 +79,13 @@ export function CustomizePanel({ store = shopStore }: Props) {
         owned={rows.map((r) => r.id)}
         equippedId={equippedId}
         onPreview={slot === 'goalSound' ? (item) => previewGoalSound(item.id) : undefined}
-        iconFor={slot === 'ballSkin' ? (item) => BALL_SKIN_SOURCES[item.id]?.thumb : undefined}
+        iconFor={
+          slot === 'ballSkin'
+            ? (item) => BALL_SKIN_SOURCES[item.id]?.thumb
+            : slot === 'gkSkin'
+              ? (item) => GK_SKIN_SOURCES[item.id]?.thumb
+              : undefined
+        }
         onEquip={(item) => void store.equip(slot, item.id)}
         busy={shop.equipping}
       />

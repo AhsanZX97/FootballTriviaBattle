@@ -63,6 +63,75 @@
   }
 }
 
+/* Skinned keeper: a purchased/equipped keeper (GK_SKIN_SOURCES in
+   src/services/shopCatalogue.ts). PitchScene sets --gk-idle from the
+   catalogue's idle sheet; unrecognized/'default' ids — and the opponent's
+   keeper, which never carries our own equipped skin — keep the stock
+   gk-idle-strip.png above.
+   Manuel Neuer's idle sheet is a 4-col x 3-row GRID (unlike the stock strip's
+   flat 16-wide row), so it can't reuse a single background-position-x sweep —
+   same reason .scene__ball--skinned needed its own -grid keyframes for the
+   ball's 2x2 sheet. Unlike the ball's spin (a short finite play), this loops
+   forever, which rules out that trick's usual background-position-x sweep +
+   steps(N-1) shortcut: under `infinite` the sweep's very last stop only ever
+   holds for a zero-duration instant right at the wrap, so animating x and y
+   as two independent sweeping steps() would silently drop the entire bottom
+   row. Explicit per-frame keyframes (one stop per cell, in reading order)
+   sidestep that — every one of the 12 frames gets an equal, non-zero hold.
+   Compounded with .scene__keeper (not just .scene__keeper--skinned alone) so
+   this out-specificities the stock rule above regardless of source order,
+   same pattern as .scene__ball--skinned. */
+.scene__keeper.scene__keeper--skinned {
+  /* Neuer's per-frame proportions (321x311) aren't quite the stock sheet's
+     (134x127) — reset aspect-ratio so frames don't stretch to the wrong box. */
+  aspect-ratio: 321 / 311;
+  background: var(--gk-idle) 0% 0% / 400% 300% no-repeat;
+  animation: scene-keeper-idle-grid 1.56s steps(1) infinite;
+}
+
+/* 4-col x 3-row grid, 12 frames, reading order (left-to-right, top-to-bottom).
+   steps(1) holds each stop for its full 1/12 slice instead of sliding smoothly
+   toward the next one — same trick scene-ball-spin-grid uses for the ball's
+   2x2 sheet, just with 12 stops instead of 4. */
+@keyframes scene-keeper-idle-grid {
+  0% {
+    background-position: 0% 0%;
+  }
+  8.3333% {
+    background-position: 33.3333% 0%;
+  }
+  16.6667% {
+    background-position: 66.6667% 0%;
+  }
+  25% {
+    background-position: 100% 0%;
+  }
+  33.3333% {
+    background-position: 0% 50%;
+  }
+  41.6667% {
+    background-position: 33.3333% 50%;
+  }
+  50% {
+    background-position: 66.6667% 50%;
+  }
+  58.3333% {
+    background-position: 100% 50%;
+  }
+  66.6667% {
+    background-position: 0% 100%;
+  }
+  75% {
+    background-position: 33.3333% 100%;
+  }
+  83.3333% {
+    background-position: 66.6667% 100%;
+  }
+  91.6667% {
+    background-position: 100% 100%;
+  }
+}
+
 /* 6-frame dive strip (gk-dive-strip.png, 94x83/frame, feet bottom-aligned;
    crouch -> flying extension -> landing. Sliced from the spaced source by
    connected-component detection (each keeper is its own island), so no even
@@ -82,6 +151,29 @@
     width: calc(var(--keeper-w) * 1.184);
     aspect-ratio: 94 / 83;
     background: url(../../../assets/gk-dive-strip.png) 100% 0 / 600% 100% no-repeat;
+  }
+}
+
+/* Skinned dive: same handoff as scene-keeper-dive-frames above, but reading
+   --gk-dive (GK_SKIN_SOURCES[id].dive) at Neuer's own cell size (402x371)
+   instead of the stock sheet's (94x83). That source art's frames came out of
+   the editor spaced unevenly and colliding — repacked into this evenly-spaced,
+   bottom-anchored 6-frame strip via connected-component detection, same
+   approach the stock sheet used (see the comment above and the
+   GK_SKIN_SOURCES doc comment in shopCatalogue.ts). 1.2523 = 402/321: same
+   role as the stock keyframes' 0.701 = 94/134 — renders the dive at the same
+   native pixel scale as Neuer's own idle sheet (keeper-w / idle-frame-width),
+   so he doesn't change size when the sheet swaps. */
+@keyframes scene-keeper-dive-frames-skinned {
+  from {
+    width: calc(var(--keeper-w) * 1.2523);
+    aspect-ratio: 402 / 371;
+    background: var(--gk-dive) 0% 0 / 600% 100% no-repeat;
+  }
+  to {
+    width: calc(var(--keeper-w) * 1.2523);
+    aspect-ratio: 402 / 371;
+    background: var(--gk-dive) 100% 0 / 600% 100% no-repeat;
   }
 }
 
@@ -332,6 +424,16 @@
     scene-keeper-save 0.5s steps(5) var(--suspense) forwards;
 }
 
+/* Same handoff, grid idle + Neuer's own repacked dive sheet instead of the
+   stock strips. */
+.scene--save .scene__keeper.scene__keeper--skinned {
+  transform: translate(-50%, -100%) scaleX(-1);
+  animation:
+    scene-keeper-idle-grid var(--suspense) steps(1),
+    scene-keeper-dive-frames-skinned 0.6s steps(5) var(--suspense) forwards,
+    scene-keeper-save 0.5s steps(5) var(--suspense) forwards;
+}
+
 @keyframes scene-keeper-save {
   to {
     left: 40%;
@@ -359,6 +461,16 @@
   animation:
     scene-keeper-idle var(--suspense) steps(15),
     scene-keeper-dive-frames 0.6s steps(5) var(--suspense) forwards,
+    scene-keeper-concede 0.7s steps(7) var(--suspense) forwards;
+}
+
+/* Same handoff, grid idle + Neuer's own repacked dive sheet — see the --save
+   variant above. */
+.scene--concede .scene__keeper.scene__keeper--skinned {
+  transform: translate(-50%, -100%) scaleX(-1);
+  animation:
+    scene-keeper-idle-grid var(--suspense) steps(1),
+    scene-keeper-dive-frames-skinned 0.6s steps(5) var(--suspense) forwards,
     scene-keeper-concede 0.7s steps(7) var(--suspense) forwards;
 }
 

@@ -85,9 +85,13 @@ describe('ShopPopup tabs', () => {
     expect(screen.getByRole('tab', { name: 'SOUNDS' })).toBeDefined()
   })
 
-  it('shows the empty state for the slots with no items yet', () => {
+  it('lists the keeper skin with its price and a thumbnail', () => {
     render(<ShopPopup onClose={() => {}} store={makeStore().store} />)
-    expect(screen.getByText(/no keeper skins yet/i)).toBeDefined()
+
+    expect(screen.getByRole('button', { name: 'Manuel Neuer' })).toBeDefined()
+    expect(screen.getByText('200')).toBeDefined()
+    const row = screen.getByRole('button', { name: 'Manuel Neuer' })
+    expect(row.closest('li')?.querySelector('img')).not.toBeNull()
   })
 
   it('lists the five goal sounds with their price', async () => {

@@ -325,6 +325,7 @@ export function MatchScreen({ onExit, onMainMenu }: Props) {
           feedback={feedback}
           opponentLabel={opponentLabel}
           ballSkin={auth.customization.ballSkin}
+          gkSkin={auth.customization.gkSkin}
         />
       ) : showQuestion ? (
         <>
@@ -355,7 +356,12 @@ export function MatchScreen({ onExit, onMainMenu }: Props) {
       ) : (
         // 1v1 spectating (or the brief gap while my own kick is in flight to the server)
         <>
-          <PitchScene stage={shootout.stage} feedback={null} ballSkin={auth.customization.ballSkin} />
+          <PitchScene
+            stage={shootout.stage}
+            feedback={null}
+            ballSkin={auth.customization.ballSkin}
+            gkSkin={auth.customization.gkSkin}
+          />
           {!myTurn && <p className="match__waiting">WAITING FOR {opponentLabel}…</p>}
         </>
       )}

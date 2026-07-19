@@ -3,7 +3,7 @@ import { shopStore, type ShopStore } from '../store'
 import { authStore } from '../../auth/store'
 import type { CustomizationSlot, ShopItem } from '../../../types/customization'
 import { previewGoalSound, stopPreview } from '../../../services/sound'
-import { BALL_SKIN_SOURCES } from '../../../services/shopCatalogue'
+import { BALL_SKIN_SOURCES, GK_SKIN_SOURCES } from '../../../services/shopCatalogue'
 import { ShopItemList } from './ShopItemList'
 import { ShopConfirm } from './ShopConfirm'
 import './ShopPopup.css'
@@ -116,7 +116,13 @@ export function ShopPopup({ onClose, store = shopStore }: Props) {
                 owned={shop.owned}
                 equippedId={equippedId}
                 onPreview={slot === 'goalSound' ? (item) => previewGoalSound(item.id) : undefined}
-                iconFor={slot === 'ballSkin' ? (item) => BALL_SKIN_SOURCES[item.id]?.thumb : undefined}
+                iconFor={
+                  slot === 'ballSkin'
+                    ? (item) => BALL_SKIN_SOURCES[item.id]?.thumb
+                    : slot === 'gkSkin'
+                      ? (item) => GK_SKIN_SOURCES[item.id]?.thumb
+                      : undefined
+                }
                 onSelect={(item) => {
                   store.clearError()
                   setSelected(item)
