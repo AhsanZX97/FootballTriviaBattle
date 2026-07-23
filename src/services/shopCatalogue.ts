@@ -7,6 +7,15 @@ import videoGameSrc from '../assets/sounds/Goal Celebrations/video game sound.mp
 import gkManuelNeuerThumbSrc from '../assets/gk/Manuel Neuer_thumb.png'
 import gkManuelNeuerIdleSrc from '../assets/gk/Manuel Neuer.png'
 import gkManuelNeuerDiveSrc from '../assets/gk/Manuel Neuer_dive.png'
+import gkIkerCasillasThumbSrc from '../assets/gk/Iker Casillas_thumb.png'
+import gkIkerCasillasIdleSrc from '../assets/gk/Iker Casillas.png'
+import gkIkerCasillasDiveSrc from '../assets/gk/Iker Casillas_dive.png'
+import gkVozinhaThumbSrc from '../assets/gk/Vozinha_thumb.png'
+import gkVozinhaIdleSrc from '../assets/gk/Vozinha.png'
+import gkVozinhaDiveSrc from '../assets/gk/Vozinha_dive.png'
+import gkTerStegenThumbSrc from '../assets/gk/ter Stegen_thumb.png'
+import gkTerStegenIdleSrc from '../assets/gk/ter Stegen.png'
+import gkTerStegenDiveSrc from '../assets/gk/ter Stegen_dive.png'
 import wcBall2010Src from '../assets/sprites/ball/2010 WC Ball.png'
 import wcBall2010SpinSrc from '../assets/sprites/ball/2010 WC Ball_spin.png'
 import wcBall2014Src from '../assets/sprites/ball/2014 WC Ball.png'
@@ -47,6 +56,9 @@ export const CATALOGUE: ShopItem[] = [
   { id: 'wc_ball_2022', name: '2022 WC Ball', slot: 'ballSkin', price: BALL_SKIN_PRICE },
   { id: 'wc_ball_2026', name: '2026 WC Ball', slot: 'ballSkin', price: BALL_SKIN_PRICE },
   { id: 'gk_manuel_neuer', name: 'Manuel Neuer', slot: 'gkSkin', price: GK_SKIN_PRICE },
+  { id: 'gk_iker_casillas', name: 'Iker Casillas', slot: 'gkSkin', price: GK_SKIN_PRICE },
+  { id: 'gk_vozinha', name: 'Vozinha', slot: 'gkSkin', price: GK_SKIN_PRICE },
+  { id: 'gk_ter_stegen', name: 'ter Stegen', slot: 'gkSkin', price: GK_SKIN_PRICE },
 ]
 
 /** Audio for each goal-sound item. Keyed by the catalogue id above; an id with
@@ -73,15 +85,42 @@ export const BALL_SKIN_SOURCES: Record<string, { thumb: string; spin: string }> 
 
 /** Art for each keeper-skin item. `thumb` is the resting/shop-tile image — the
  * idle sheet's first frame, cropped to its own file. `idle` is the full idle
- * sheet used for the in-match animation (a 4-col x 3-row grid; see
- * PitchScene.css's scene-keeper-idle-grid keyframes). `dive` is a 6-frame
- * horizontal strip, evenly packed and bottom-anchored per cell (402x371) —
- * repacked from the source art's unevenly-spaced frames via connected-
- * component detection, the same approach the stock gk-dive-strip.png used.
- * Keyed by the catalogue id above; an id with no entry here falls back to the
- * stock keeper. */
-export const GK_SKIN_SOURCES: Record<string, { thumb: string; idle: string; dive: string }> = {
-  gk_manuel_neuer: { thumb: gkManuelNeuerThumbSrc, idle: gkManuelNeuerIdleSrc, dive: gkManuelNeuerDiveSrc },
+ * sheet used for the in-match animation, a grid (4x3 for Neuer, 4x4 for the
+ * rest — each source came in with a different frame count). `dive` is a
+ * horizontal strip, evenly packed and bottom-anchored per cell — repacked
+ * from each source's unevenly-spaced (sometimes colliding) frames via
+ * connected-component detection, the same approach the stock
+ * gk-dive-strip.png used. Frame count varies by keeper too (5 or 6).
+ * `cssId` selects the matching keyframes/box-size rule in PitchScene.css
+ * (`.scene__keeper--<cssId>`) — every keeper's grid shape, cell size and dive
+ * frame count differs enough that each needs its own rule; there's no single
+ * generic one to parameterize. Keyed by the catalogue id above; an id with no
+ * entry here falls back to the stock keeper. */
+export const GK_SKIN_SOURCES: Record<string, { thumb: string; idle: string; dive: string; cssId: string }> = {
+  gk_manuel_neuer: {
+    thumb: gkManuelNeuerThumbSrc,
+    idle: gkManuelNeuerIdleSrc,
+    dive: gkManuelNeuerDiveSrc,
+    cssId: 'neuer',
+  },
+  gk_iker_casillas: {
+    thumb: gkIkerCasillasThumbSrc,
+    idle: gkIkerCasillasIdleSrc,
+    dive: gkIkerCasillasDiveSrc,
+    cssId: 'casillas',
+  },
+  gk_vozinha: {
+    thumb: gkVozinhaThumbSrc,
+    idle: gkVozinhaIdleSrc,
+    dive: gkVozinhaDiveSrc,
+    cssId: 'vozinha',
+  },
+  gk_ter_stegen: {
+    thumb: gkTerStegenThumbSrc,
+    idle: gkTerStegenIdleSrc,
+    dive: gkTerStegenDiveSrc,
+    cssId: 'terstegen',
+  },
 }
 
 export function catalogueFor(slot: ShopItem['slot']): ShopItem[] {

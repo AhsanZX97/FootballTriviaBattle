@@ -43,7 +43,12 @@ describe('shop store', () => {
   it('exposes the keeper skin catalogue', () => {
     const store = createShopStore(makeDeps())
     const { items } = store.getState()
-    expect(items.gkSkin.map((i) => i.name)).toEqual(['Manuel Neuer'])
+    expect(items.gkSkin.map((i) => i.name)).toEqual([
+      'Manuel Neuer',
+      'Iker Casillas',
+      'Vozinha',
+      'ter Stegen',
+    ])
     expect(items.gkSkin.every((i) => i.price === 200)).toBe(true)
   })
 

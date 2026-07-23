@@ -1,0 +1,307 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<title>GK animation test</title>
+<!-- Reuses the real match CSS directly (raw dev-server path) so sizing/animation
+     can't drift from what actually ships in PitchScene. Dev-only page —
+     delete this whole public/test/ folder when done eyeballing. -->
+<link rel="stylesheet" href="/src/features/match/components/PitchScene.css" />
+<style>
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    background: #0a2416;
+    font-family: ui-monospace, Consolas, monospace;
+    color: #cfe6d8;
+    padding-bottom: 40px;
+  }
+  header {
+    position: sticky;
+    top: 0;
+    z-index: 10;
+    background: #08160e;
+    padding: 10px 16px;
+    border-bottom: 2px solid #ffcf1a;
+  }
+  header h1 {
+    margin: 0 0 6px;
+    font-size: 14px;
+    color: #ffcf1a;
+  }
+  header p {
+    margin: 0;
+    font-size: 10px;
+    color: #7fa38c;
+  }
+
+  h2.section {
+    margin: 20px 16px 8px;
+    font-size: 13px;
+    color: #fff;
+  }
+
+  .gk-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 14px;
+    padding: 0 16px;
+  }
+
+  .gk-card {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+    width: 200px;
+  }
+  .gk-card h3 {
+    margin: 0;
+    font-size: 10px;
+    color: #fff;
+    text-align: center;
+  }
+  .gk-card .meta {
+    margin: 0;
+    font-size: 8px;
+    color: #7fa38c;
+    text-align: center;
+    line-height: 1.4;
+  }
+
+  /* Fixed-size window onto a TRUE-scale (1280x720, matching bg.jpg's native
+     resolution) goal stage — cropped tight around the keeper instead of
+     showing the whole empty goal, so cards can sit side by side instead of
+     each eating a full viewport-width strip. The keeper is rendered at
+     EXACTLY the same pixel scale --keeper-w produces in a real 1280-wide
+     match viewport; only the surrounding empty grass is cropped away. */
+  .mini-viewport {
+    position: relative;
+    width: 200px;
+    height: 200px;
+    overflow: hidden;
+    background: #1b5e34;
+    outline: 1px dashed rgba(255, 207, 26, 0.3);
+    flex-shrink: 0;
+  }
+  /* goal-line marker at the viewport's own 51%, matching .scene__keeper's
+     top:51% anchor — lines up with the keeper's feet in every card */
+  .mini-viewport::after {
+    content: '';
+    position: absolute;
+    left: 0;
+    right: 0;
+    top: 51%;
+    border-top: 1px dashed rgba(255, 255, 255, 0.35);
+  }
+
+  /* .scene is normally position:fixed/inset:0 covering the viewport — pinned
+     here to a fixed 1280x720 (true scale) and shifted so the keeper's anchor
+     point (640px, 367px within that stage) lands on the mini-viewport's own
+     50%/51% center, whatever the viewport's actual small size is. */
+  .scene.test-embed {
+    position: absolute;
+    inset: auto;
+    left: calc(50% - 640px);
+    top: calc(51% - 367px);
+    width: 1280px;
+    height: 720px;
+    overflow: visible;
+  }
+  .test-embed .scene__stage {
+    width: 1280px;
+  }
+
+  /* Dive demo classes: loop the same per-keeper dive-frames keyframes the
+     real save/concede outcomes use, just standalone + looping (no diagonal
+     travel, no idle lead-in) so every frame is easy to eyeball on repeat. */
+  .test-dive-stock {
+    animation: scene-keeper-dive-frames 1s steps(5) infinite alternate;
+  }
+  .test-dive-neuer {
+    animation: scene-keeper-dive-frames-neuer 1s steps(5) infinite alternate;
+  }
+  .test-dive-casillas {
+    animation: scene-keeper-dive-frames-casillas 1s steps(4) infinite alternate;
+  }
+  .test-dive-vozinha {
+    animation: scene-keeper-dive-frames-vozinha 1s steps(4) infinite alternate;
+  }
+  .test-dive-terstegen {
+    animation: scene-keeper-dive-frames-terstegen 1s steps(4) infinite alternate;
+  }
+
+  footer {
+    padding: 20px 16px 0;
+    font-size: 10px;
+    color: #7fa38c;
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <h1>GK ANIMATION TEST — idle &amp; dive, at match-screen size</h1>
+  <p>Each card is a 200x200 cropped window onto a true-scale (1280x720) goal stage — the keeper renders at the exact pixel size --keeper-w produces in a real match, just with the empty grass cropped away.</p>
+</header>
+
+<h2 class="section">IDLE</h2>
+<div class="gk-row">
+
+  <div class="gk-card">
+    <h3>Stock (baseline)</h3>
+    <p class="meta">gk-idle-strip.png<br />134x127/frame, 16-frame strip</p>
+    <div class="mini-viewport">
+      <div class="scene test-embed">
+        <div class="scene__stage">
+          <span class="scene__keeper"></span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="gk-card">
+    <h3>Manuel Neuer</h3>
+    <p class="meta">321x311 native<br />4x3 grid (12 frames)</p>
+    <div class="mini-viewport">
+      <div class="scene test-embed">
+        <div class="scene__stage">
+          <span
+            class="scene__keeper scene__keeper--skinned scene__keeper--neuer"
+            style="--gk-idle: url('/src/assets/gk/Manuel%20Neuer.png')"
+          ></span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="gk-card">
+    <h3>Iker Casillas</h3>
+    <p class="meta">322x306 native<br />4x4 grid (16 frames)</p>
+    <div class="mini-viewport">
+      <div class="scene test-embed">
+        <div class="scene__stage">
+          <span
+            class="scene__keeper scene__keeper--skinned scene__keeper--casillas"
+            style="--gk-idle: url('/src/assets/gk/Iker%20Casillas.png')"
+          ></span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="gk-card">
+    <h3>Vozinha</h3>
+    <p class="meta">313x313 native<br />4x4 grid (16 frames)</p>
+    <div class="mini-viewport">
+      <div class="scene test-embed">
+        <div class="scene__stage">
+          <span
+            class="scene__keeper scene__keeper--skinned scene__keeper--vozinha"
+            style="--gk-idle: url('/src/assets/gk/Vozinha.png')"
+          ></span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="gk-card">
+    <h3>ter Stegen</h3>
+    <p class="meta">323x305 native<br />4x4 grid (16 frames)</p>
+    <div class="mini-viewport">
+      <div class="scene test-embed">
+        <div class="scene__stage">
+          <span
+            class="scene__keeper scene__keeper--skinned scene__keeper--terstegen"
+            style="--gk-idle: url('/src/assets/gk/ter%20Stegen.png')"
+          ></span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<h2 class="section">DIVE</h2>
+<div class="gk-row">
+
+  <div class="gk-card">
+    <h3>Stock (baseline)</h3>
+    <p class="meta">94x83/frame, 6 frames<br />scale x1.184</p>
+    <div class="mini-viewport">
+      <div class="scene test-embed">
+        <div class="scene__stage">
+          <span class="scene__keeper test-dive-stock"></span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="gk-card">
+    <h3>Manuel Neuer</h3>
+    <p class="meta">402x371 cell, 6 frames<br />scale x1.2523</p>
+    <div class="mini-viewport">
+      <div class="scene test-embed">
+        <div class="scene__stage">
+          <span
+            class="scene__keeper test-dive-neuer"
+            style="--gk-dive: url('/src/assets/gk/Manuel%20Neuer_dive.png')"
+          ></span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="gk-card">
+    <h3>Iker Casillas</h3>
+    <p class="meta">447x400 cell, 5 frames<br />scale x1.2504 (was x1.3893)</p>
+    <div class="mini-viewport">
+      <div class="scene test-embed">
+        <div class="scene__stage">
+          <span
+            class="scene__keeper test-dive-casillas"
+            style="--gk-dive: url('/src/assets/gk/Iker%20Casillas_dive.png')"
+          ></span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="gk-card">
+    <h3>Vozinha</h3>
+    <p class="meta">495x439 cell, 5 frames<br />scale x1.3 (was x1.5815)</p>
+    <div class="mini-viewport">
+      <div class="scene test-embed">
+        <div class="scene__stage">
+          <span
+            class="scene__keeper test-dive-vozinha"
+            style="--gk-dive: url('/src/assets/gk/Vozinha_dive.png')"
+          ></span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="gk-card">
+    <h3>ter Stegen</h3>
+    <p class="meta">461x418 cell, 5 frames<br />scale x1.2855 (was x1.4283)</p>
+    <div class="mini-viewport">
+      <div class="scene test-embed">
+        <div class="scene__stage">
+          <span
+            class="scene__keeper test-dive-terstegen"
+            style="--gk-dive: url('/src/assets/gk/ter%20Stegen_dive.png')"
+          ></span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<footer>
+  Temporary test page — delete public/test/ once done eyeballing.
+</footer>
+
+</body>
+</html>

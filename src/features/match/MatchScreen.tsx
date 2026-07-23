@@ -61,6 +61,9 @@ export function MatchScreen({ onExit, onMainMenu }: Props) {
   const auth = useSyncExternalStore(authStore.subscribe, authStore.getState)
   const [feedback, setFeedback] = useState<SceneFeedback | null>(null)
   const [feedbackIsMine, setFeedbackIsMine] = useState(false)
+  // stage the animating kick happened in — the store's shootout.stage has
+  // already flipped to the next kicker by the time an opponent kick animates
+  const [feedbackStage, setFeedbackStage] = useState<Stage>('shoot')
   const [timeLeft, setTimeLeft] = useState(QUESTION_TIME_SECONDS)
   const kicksSeenRef = useRef(0)
 
@@ -78,6 +81,7 @@ export function MatchScreen({ onExit, onMainMenu }: Props) {
     if (timeLeft <= 0) {
       if (!is1v1 || myTurn) {
         setFeedbackIsMine(true)
+        setFeedbackStage(state.shootout.stage)
         setFeedback(feedbackOf(state.shootout.stage, false)) // timeout = miss/concede
       }
       return
@@ -147,6 +151,7 @@ export function MatchScreen({ onExit, onMainMenu }: Props) {
     if (!is1v1 || kicks.length <= prevSeen || state.lastKickBy !== 'opponent') return
     const kick = kicks[kicks.length - 1]
     setFeedbackIsMine(false)
+    setFeedbackStage(kick.stage)
     setFeedback(feedbackOf(kick.stage, kick.correct))
   }, [state.shootout.kicks, is1v1, state.lastKickBy])
 
@@ -321,7 +326,7 @@ export function MatchScreen({ onExit, onMainMenu }: Props) {
       {feedback ? (
         // animation screen: scene replaces the question until the kick resolves
         <PitchScene
-          stage={shootout.stage}
+          stage={feedbackStage}
           feedback={feedback}
           opponentLabel={opponentLabel}
           ballSkin={auth.customization.ballSkin}
@@ -344,6 +349,7 @@ export function MatchScreen({ onExit, onMainMenu }: Props) {
                   className="match__answer"
                   onClick={() => {
                     setFeedbackIsMine(true)
+                    setFeedbackStage(shootout.stage)
                     setFeedback(feedbackOf(shootout.stage, answer === question.correctAnswer))
                   }}
                 >

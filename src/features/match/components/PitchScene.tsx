@@ -60,7 +60,7 @@ export function PitchScene({ stage, feedback, opponentLabel = 'CPU', ballSkin, g
       {/* stage mirrors the background's center/cover sizing so % positions land on the bg.jpg goal */}
       <div className="scene__stage">
         <span
-          className={`scene__keeper${keeper ? ' scene__keeper--skinned' : ''}`}
+          className={`scene__keeper${keeper ? ` scene__keeper--skinned scene__keeper--${keeper.cssId}` : ''}`}
           style={keeperStyle}
         />
         <span

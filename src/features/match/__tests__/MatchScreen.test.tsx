@@ -20,6 +20,7 @@ vi.mock('../../../services/trivia/questionSource', () => ({
 
 import { matchStore, QUESTION_TIME_SECONDS } from '../store'
 import { MatchScreen, FEEDBACK_MS } from '../MatchScreen'
+import { authStore } from '../../auth/store'
 
 beforeEach(() => {
   vi.useFakeTimers()
@@ -153,6 +154,28 @@ describe('MatchScreen', () => {
     fireEvent.click(screen.getByRole('button', { name: /main menu/i }))
     expect(close).toHaveBeenCalled()
     expect(onMainMenu).toHaveBeenCalled()
+  })
+
+  it('keeps the equipped GK skin during the opponent-kick feedback while defending in 1v1', () => {
+    authStore.applyCustomizationUpdate('gkSkin', 'gk_manuel_neuer')
+    let handleMessage: ((m: ServerMessage) => void) | undefined
+    const socket: MultiplayerSocket = {
+      send: () => {},
+      onMessage: (h) => {
+        handleMessage = h
+        return () => {}
+      },
+      onClose: () => () => {},
+      close: () => {},
+    }
+    matchStore.start1v1({ socket, opponentName: 'Bob', youGoFirst: false, questions: sample })
+    render(<MatchScreen />)
+    // opponent kicks while we defend: the store flips stage to 'shoot' at once,
+    // but the animation depicts the 'keep' kick, so our keeper stays skinned
+    act(() => handleMessage?.({ type: 'kickResolved', by: 'opponent', scored: false }))
+    expect(screen.getByText(/saved!/i)).toBeDefined()
+    expect(document.querySelector('.scene__keeper')?.className).toContain('scene__keeper--skinned')
+    authStore.applyCustomizationUpdate('gkSkin', 'default')
   })
 
   it('lifts the dark overlay while spectating the opponent in 1v1', () => {

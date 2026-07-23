@@ -85,11 +85,13 @@ describe('ShopPopup tabs', () => {
     expect(screen.getByRole('tab', { name: 'SOUNDS' })).toBeDefined()
   })
 
-  it('lists the keeper skin with its price and a thumbnail', () => {
+  it('lists the keeper skins with their price and a thumbnail', () => {
     render(<ShopPopup onClose={() => {}} store={makeStore().store} />)
 
-    expect(screen.getByRole('button', { name: 'Manuel Neuer' })).toBeDefined()
-    expect(screen.getByText('200')).toBeDefined()
+    for (const name of ['Manuel Neuer', 'Iker Casillas', 'Vozinha', 'ter Stegen']) {
+      expect(screen.getByRole('button', { name })).toBeDefined()
+    }
+    expect(screen.getAllByText('200')).toHaveLength(4)
     const row = screen.getByRole('button', { name: 'Manuel Neuer' })
     expect(row.closest('li')?.querySelector('img')).not.toBeNull()
   })
