@@ -73,11 +73,13 @@ export function MatchScreen({ onExit, onMainMenu }: Props) {
   const is1v1 = state.mode === '1v1'
   const opponentLabel = is1v1 ? (state.opponentName ?? 'OPPONENT') : 'CPU'
   const goalSound = auth.customization.goalSound
+  // 1v1: the keeper we shoot against wears the opponent's equipped skin
+  const opponentGkSkin = is1v1 ? (state.opponentGkSkin ?? undefined) : undefined
 
   // warm the equipped skins' sprite sheets before the first animation needs them
   useEffect(() => {
-    preloadSceneArt(auth.customization.ballSkin, auth.customization.gkSkin)
-  }, [auth.customization.ballSkin, auth.customization.gkSkin])
+    preloadSceneArt(auth.customization.ballSkin, auth.customization.gkSkin, opponentGkSkin)
+  }, [auth.customization.ballSkin, auth.customization.gkSkin, opponentGkSkin])
 
   // countdown — paused while feedback plays and once the match is over. During
   // an opponent's turn it just ticks cosmetically: the server owns their real timeout.
@@ -339,6 +341,7 @@ export function MatchScreen({ onExit, onMainMenu }: Props) {
           opponentLabel={opponentLabel}
           ballSkin={auth.customization.ballSkin}
           gkSkin={auth.customization.gkSkin}
+          opponentGkSkin={opponentGkSkin}
         />
       ) : showQuestion ? (
         <>
@@ -375,6 +378,7 @@ export function MatchScreen({ onExit, onMainMenu }: Props) {
             feedback={null}
             ballSkin={auth.customization.ballSkin}
             gkSkin={auth.customization.gkSkin}
+            opponentGkSkin={opponentGkSkin}
           />
           {!myTurn && <p className="match__waiting">WAITING FOR {opponentLabel}…</p>}
         </>

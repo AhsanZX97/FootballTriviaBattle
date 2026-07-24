@@ -52,6 +52,9 @@ interface Connection {
   userId: string | null
   /** Server-fetched profile username for an authed connection; overrides any client-sent name. */
   username: string | null
+  /** Server-fetched equipped gkSkin item id ('default' or a catalogue id).
+   * Null for anonymous connections — shown to the opponent as the stock keeper. */
+  gkSkin: string | null
   /**
    * Resolves once an authed connection's profile-username fetch has settled
    * (immediately for anonymous connections). `handleQueue` awaits this so a
@@ -59,6 +62,9 @@ interface Connection {
    * ahead of the profile fetch and fall back to a blank/spoofable name.
    */
   profileReady: Promise<void>
+  /** userIds this connection watches for online/offline pushes (their friends).
+   * Null until the client sends 'watchPresence'. */
+  presenceWatch: Set<string> | null
 }
 
 interface RoomEntry {
@@ -108,22 +114,24 @@ function supabaseHeaders(): Record<string, string> {
 
 /**
  * Server-authoritative profile lookup — an authed connection's queue name
- * comes from here, never from the client, so it can't be spoofed. Returns
- * null (never throws) if Supabase isn't configured or the request fails;
- * callers fall back to treating the player as if anonymous for naming.
+ * (and equipped keeper skin, shown to their opponent) comes from here, never
+ * from the client, so neither can be spoofed. Returns null (never throws) if
+ * Supabase isn't configured or the request fails; callers fall back to
+ * treating the player as if anonymous.
  */
-async function fetchProfileUsername(userId: string): Promise<string | null> {
+async function fetchProfile(userId: string): Promise<{ username: string; gkSkin: string | null } | null> {
   if (!SUPABASE_URL || !SUPABASE_SERVICE_ROLE_KEY) return null
   try {
     const res = await fetch(
-      `${SUPABASE_URL}/rest/v1/profiles?id=eq.${encodeURIComponent(userId)}&select=username`,
+      `${SUPABASE_URL}/rest/v1/profiles?id=eq.${encodeURIComponent(userId)}&select=username,gk_skin`,
       { headers: supabaseHeaders() },
     )
     if (!res.ok) return null
-    const rows = (await res.json()) as Array<{ username: string }>
-    return rows[0]?.username ?? null
+    const rows = (await res.json()) as Array<{ username: string; gk_skin: string | null }>
+    const row = rows[0]
+    return row ? { username: row.username, gkSkin: row.gk_skin } : null
   } catch (err) {
-    console.error('[auth] failed to fetch profile username', err)
+    console.error('[auth] failed to fetch profile', err)
     return null
   }
 }
@@ -255,12 +263,14 @@ function startMatch(x: Connection, y: Connection, xGoesFirst: boolean) {
   send(roomConnections.a.ws, {
     type: 'matched',
     opponentName: roomConnections.b.name,
+    opponentGkSkin: roomConnections.b.gkSkin ?? undefined,
     youGoFirst: true,
     questions,
   })
   send(roomConnections.b.ws, {
     type: 'matched',
     opponentName: roomConnections.a.name,
+    opponentGkSkin: roomConnections.a.gkSkin ?? undefined,
     youGoFirst: false,
     questions,
   })
@@ -333,6 +343,8 @@ function addPresence(connection: Connection) {
   if (!set) {
     set = new Set()
     connectionsByUser.set(connection.userId, set)
+    // first connection for this user — they just came online
+    broadcastPresence(connection.userId, true)
   }
   set.add(connection)
 }
@@ -342,7 +354,34 @@ function removePresence(connection: Connection) {
   const set = connectionsByUser.get(connection.userId)
   if (!set) return
   set.delete(connection)
-  if (set.size === 0) connectionsByUser.delete(connection.userId)
+  if (set.size === 0) {
+    connectionsByUser.delete(connection.userId)
+    // last connection gone — they're fully offline
+    broadcastPresence(connection.userId, false)
+  }
+}
+
+/** Push an online/offline transition to every connection watching this user. */
+function broadcastPresence(userId: string, online: boolean) {
+  for (const connection of connectionsById.values()) {
+    if (connection.presenceWatch?.has(userId)) {
+      send(connection.ws, { type: 'presenceChanged', userId, online })
+    }
+  }
+}
+
+/** Replace the connection's watch list and answer with who's online right now.
+ * Like notifyFriends this trusts the client's ids (they're the caller's own
+ * friends); it only ever reveals online-ness, and the list is capped so one
+ * message can't register an unbounded watch set. */
+function handleWatchPresence(connection: Connection, userIds: string[]) {
+  if (!connection.userId || !Array.isArray(userIds)) return
+  const ids = userIds.filter((id): id is string => typeof id === 'string').slice(0, 100)
+  connection.presenceWatch = new Set(ids)
+  send(connection.ws, {
+    type: 'presenceSnapshot',
+    online: ids.filter((id) => connectionsByUser.has(id)),
+  })
 }
 
 // --- friend challenges ---
@@ -412,7 +451,7 @@ async function handleChallenge(connection: Connection, targetUserId: string) {
   })
 }
 
-function handleChallengeAccept(connection: Connection, challengeId: string) {
+async function handleChallengeAccept(connection: Connection, challengeId: string) {
   const challenge = challenges.get(challengeId)
   if (!challenge || challenge.targetConnId !== connection.id) return
   challenges.remove(challengeId)
@@ -421,6 +460,14 @@ function handleChallengeAccept(connection: Connection, challengeId: string) {
   const challenger = connectionsById.get(challenge.challengerConnId)
   if (!challenger || challenger.roomId) {
     // Challenger disconnected or got into another match while we deliberated.
+    send(connection.ws, { type: 'challengeCanceled', challengeId })
+    return
+  }
+  // The target never goes through handleQueue, so their profile (name + gkSkin)
+  // may still be in flight from the handshake — settle it before matching.
+  await connection.profileReady
+  if (connection.roomId || !connectionsById.has(challenger.id) || challenger.roomId) {
+    // Either side got claimed while the profile settled.
     send(connection.ws, { type: 'challengeCanceled', challengeId })
     return
   }
@@ -505,7 +552,7 @@ function handleMessage(connection: Connection, message: ClientMessage) {
       void handleChallenge(connection, message.targetUserId)
       return
     case 'challengeAccept':
-      handleChallengeAccept(connection, message.challengeId)
+      void handleChallengeAccept(connection, message.challengeId)
       return
     case 'challengeDecline':
       handleChallengeDecline(connection, message.challengeId)
@@ -515,6 +562,9 @@ function handleMessage(connection: Connection, message: ClientMessage) {
       return
     case 'notifyFriends':
       handleNotifyFriends(connection, message.userIds)
+      return
+    case 'watchPresence':
+      handleWatchPresence(connection, message.userIds)
       return
   }
 }
@@ -581,17 +631,20 @@ wss.on('connection', (ws, req) => {
     roomId: null,
     userId: auth?.userId ?? null,
     username: null,
+    gkSkin: null,
     profileReady: Promise.resolve(),
+    presenceWatch: null,
   }
   console.log(
     `[auth] connection ${connection.id} ${connection.userId ? `authed as ${connection.userId}` : 'anonymous'}`,
   )
   if (connection.userId) {
-    connection.profileReady = fetchProfileUsername(connection.userId).then((username) => {
-      connection.username = username
+    connection.profileReady = fetchProfile(connection.userId).then((profile) => {
+      connection.username = profile?.username ?? null
+      connection.gkSkin = profile?.gkSkin ?? null
       // Default display name for challenge matches (quick-match overrides it in
       // handleQueue). Lets an invite carry a real name without queueing first.
-      if (username) connection.name = username
+      if (profile?.username) connection.name = profile.username
     })
   }
   connectionsByWs.set(ws, connection)

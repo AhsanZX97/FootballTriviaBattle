@@ -20,13 +20,15 @@ function warm(src?: string) {
 warm(stockDiveSheet)
 warm(stockSpinSheet)
 
-export function preloadSceneArt(ballSkin?: string, gkSkin?: string) {
+export function preloadSceneArt(ballSkin?: string, ...gkSkins: Array<string | undefined>) {
   const ball = ballSkin ? BALL_SKIN_SOURCES[ballSkin] : undefined
-  const keeper = gkSkin ? GK_SKIN_SOURCES[gkSkin] : undefined
   warm(ball?.thumb)
   warm(ball?.spin)
-  warm(keeper?.idle)
-  warm(keeper?.dive)
+  for (const gkSkin of gkSkins) {
+    const keeper = gkSkin ? GK_SKIN_SOURCES[gkSkin] : undefined
+    warm(keeper?.idle)
+    warm(keeper?.dive)
+  }
 }
 
 /** How the keeper reacts to being beaten — picked at random per goal. */
@@ -51,16 +53,26 @@ type Props = {
    * id with no bundled art falls back to the stock ball. */
   ballSkin?: string
   /** Equipped gkSkin item id (auth.customization.gkSkin). Only ever applies to
-   * OUR OWN keeper — stage 'keep', i.e. we're the one defending. The
-   * opponent's keeper (stage 'shoot') always renders the stock look; we have
-   * no idea (and no need to know) what they have equipped. 'default' or an id
-   * with no bundled art falls back to the stock keeper. */
+   * OUR OWN keeper — stage 'keep', i.e. we're the one defending. 'default' or
+   * an id with no bundled art falls back to the stock keeper. */
   gkSkin?: string
+  /** The opponent's equipped gkSkin item id (server-read from their profile,
+   * via 'matched'). Dresses the keeper we shoot against — stage 'shoot'.
+   * Absent (vs CPU / anonymous opponent), 'default' or an id with no bundled
+   * art falls back to the stock keeper. */
+  opponentGkSkin?: string
 }
 
 // ponytail: emoji actors over the bg.jpg goal. Same props contract the sprite
 // version will keep — see Plans/Sprite Transfer Plan.md for the swap.
-export function PitchScene({ stage, feedback, opponentLabel = 'CPU', ballSkin, gkSkin }: Props) {
+export function PitchScene({
+  stage,
+  feedback,
+  opponentLabel = 'CPU',
+  ballSkin,
+  gkSkin,
+  opponentGkSkin,
+}: Props) {
   // ponytail: the scene mounts fresh for every animation, so a lazy useState
   // initializer gives one stable random pick per goal
   const [variant] = useState(
@@ -71,9 +83,10 @@ export function PitchScene({ stage, feedback, opponentLabel = 'CPU', ballSkin, g
   const ballStyle = skin
     ? ({ '--ball-thumb': `url(${skin.thumb})`, '--ball-spin': `url(${skin.spin})` } as CSSProperties)
     : undefined
-  // stage 'keep' = we're the one on the goal line; anything else is the
-  // opponent's keeper, which never wears our equipped skin.
-  const keeper = stage === 'keep' && gkSkin ? GK_SKIN_SOURCES[gkSkin] : undefined
+  // stage 'keep' = we're the one on the goal line, wearing our own skin;
+  // stage 'shoot' = the opponent's keeper, wearing theirs.
+  const keeperSkinId = stage === 'keep' ? gkSkin : opponentGkSkin
+  const keeper = keeperSkinId ? GK_SKIN_SOURCES[keeperSkinId] : undefined
   const keeperStyle = keeper
     ? ({ '--gk-idle': `url(${keeper.idle})`, '--gk-dive': `url(${keeper.dive})` } as CSSProperties)
     : undefined

@@ -10,6 +10,8 @@ import { randomName } from './randomName'
 export interface MatchReadySession {
   socket: MultiplayerSocket
   opponentName: string
+  /** Opponent's equipped keeper skin id from 'matched'; null = stock keeper. */
+  opponentGkSkin: string | null
   youGoFirst: boolean
   questions: Question[]
 }
@@ -19,6 +21,7 @@ export interface LobbyState {
   name: string
   nameError: string | null
   opponentName: string | null
+  opponentGkSkin: string | null
   youGoFirst: boolean | null
   questions: Question[]
 }
@@ -32,6 +35,7 @@ const initialState = (): LobbyState => ({
   name: randomName(),
   nameError: null,
   opponentName: null,
+  opponentGkSkin: null,
   youGoFirst: null,
   questions: [],
 })
@@ -105,6 +109,7 @@ export function createLobbyStore(connectFn: ConnectFn = connectWithAuth) {
           set({
             phase: 'found',
             opponentName: message.opponentName,
+            opponentGkSkin: message.opponentGkSkin ?? null,
             youGoFirst: message.youGoFirst,
             questions: message.questions,
           })
@@ -146,7 +151,14 @@ export function createLobbyStore(connectFn: ConnectFn = connectWithAuth) {
     connectAttempt++
     detachClose()
     socket = null
-    set({ phase: 'idle', nameError: null, opponentName: null, youGoFirst: null, questions: [] })
+    set({
+      phase: 'idle',
+      nameError: null,
+      opponentName: null,
+      opponentGkSkin: null,
+      youGoFirst: null,
+      questions: [],
+    })
   }
 
   return { getState, getSocket, subscribe, setName, rerollName, quickMatch, cancel, reset }

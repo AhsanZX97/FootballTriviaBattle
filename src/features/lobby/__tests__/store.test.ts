@@ -120,6 +120,34 @@ describe('quickMatch', () => {
     })
   })
 
+  it("keeps the opponent's keeper skin from matched", async () => {
+    const fake = createFakeSocket()
+    const store = createLobbyStore(() => fake.socket)
+    store.setName('Alice')
+    await store.quickMatch()
+
+    fake.emit({
+      type: 'matched',
+      opponentName: 'Bob',
+      opponentGkSkin: 'gk_vozinha',
+      youGoFirst: true,
+      questions: [],
+    })
+
+    expect(store.getState().opponentGkSkin).toBe('gk_vozinha')
+  })
+
+  it('leaves opponentGkSkin null when matched carries none (anonymous opponent)', async () => {
+    const fake = createFakeSocket()
+    const store = createLobbyStore(() => fake.socket)
+    store.setName('Alice')
+    await store.quickMatch()
+
+    fake.emit({ type: 'matched', opponentName: 'Bob', youGoFirst: true, questions: [] })
+
+    expect(store.getState().opponentGkSkin).toBeNull()
+  })
+
   it('reverts to idle with a name error and closes the socket on a server error', async () => {
     const fake = createFakeSocket()
     const store = createLobbyStore(() => fake.socket)

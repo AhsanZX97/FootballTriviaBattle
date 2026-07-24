@@ -98,6 +98,30 @@
   white-space: nowrap;
 }
 
+/* dot + name; min-width lets the name keep its ellipsis inside the flex row */
+.friend-list__identity {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+}
+
+.friend-list__dot {
+  width: 8px;
+  height: 8px;
+  flex-shrink: 0;
+  border-radius: 50%;
+  background: #5c6f64;
+  box-shadow: 0 0 0 2px rgba(0, 0, 0, 0.45);
+}
+
+.friend-list__dot--online {
+  background: #3ee06a;
+  box-shadow:
+    0 0 0 2px rgba(0, 0, 0, 0.45),
+    0 0 6px rgba(62, 224, 106, 0.8);
+}
+
 .friend-list__row-actions {
   display: flex;
   align-items: center;

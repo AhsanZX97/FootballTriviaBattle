@@ -71,6 +71,7 @@ function readySession(overrides: Partial<MatchReadySession> = {}, fake = createF
     session: {
       socket: fake.socket,
       opponentName: 'Bob',
+      opponentGkSkin: null,
       youGoFirst: true,
       questions: sample,
       ...overrides,
@@ -212,6 +213,12 @@ describe('matchStore 1v1 mode', () => {
     const { session } = readySession({ youGoFirst: false })
     matchStore.start1v1(session)
     expect(matchStore.getState().shootout.stage).toBe('keep')
+  })
+
+  it("keeps the opponent's keeper skin from the session", () => {
+    const { session } = readySession({ opponentGkSkin: 'gk_vozinha' })
+    matchStore.start1v1(session)
+    expect(matchStore.getState().opponentGkSkin).toBe('gk_vozinha')
   })
 
   it('marks a kick pending on submitAnswer1v1 without touching the shootout yet', () => {

@@ -29,6 +29,7 @@ export function LobbyScreen({ onBack, onMatchReady, onFriendlyMatch }: Props) {
       onMatchReady?.({
         socket,
         opponentName: state.opponentName,
+        opponentGkSkin: state.opponentGkSkin,
         youGoFirst: state.youGoFirst,
         questions: state.questions,
       })

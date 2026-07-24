@@ -17,13 +17,26 @@ export type ClientMessage =
   // Nudge the given users to re-fetch their friends (I just changed a
   // friendship with them — sent/accepted/declined/removed).
   | { type: 'notifyFriends'; userIds: string[] }
+  // Watch these users' online status (my friends). Replaces any previous watch
+  // list; the server answers with `presenceSnapshot` and pushes
+  // `presenceChanged` on later transitions.
+  | { type: 'watchPresence'; userIds: string[] }
 
 /** Why a challenge couldn't be delivered/started. */
 export type ChallengeFailReason = 'offline' | 'busy' | 'declined' | 'expired' | 'gone'
 
 export type ServerMessage =
   | { type: 'queued' }
-  | { type: 'matched'; opponentName: string; youGoFirst: boolean; questions: Question[] }
+  | {
+      type: 'matched'
+      opponentName: string
+      /** Opponent's equipped gkSkin item id, server-read from their profile.
+       * Absent for anonymous opponents (or when Supabase isn't configured) —
+       * treat as the stock keeper. */
+      opponentGkSkin?: string
+      youGoFirst: boolean
+      questions: Question[]
+    }
   | { type: 'kickResolved'; by: 'you' | 'opponent'; scored: boolean }
   | { type: 'rematchVotes'; count: 1 }
   | { type: 'rematchStart'; youGoFirst: boolean; questions: Question[] }
@@ -42,6 +55,11 @@ export type ServerMessage =
   /** A friend changed a friendship with you — re-fetch the friends list so the
    * request badge / list updates live instead of only on the next open. */
   | { type: 'friendsChanged' }
+  // --- presence (online indicators) ---
+  /** Answer to `watchPresence`: which of the watched users are online now. */
+  | { type: 'presenceSnapshot'; online: string[] }
+  /** A watched user came online / went fully offline (last connection closed). */
+  | { type: 'presenceChanged'; userId: string; online: boolean }
 
 /**
  * Connection-level lobby state — not sent over the wire. The "starting /

@@ -132,6 +132,28 @@ describe('presence store', () => {
     expect(handler.mock.calls[0]![0]).toMatchObject({ socket: fake.socket, opponentName: 'Bob', youGoFirst: true })
   })
 
+  it("carries the opponent's keeper skin (or null) into the match session", async () => {
+    const { seam } = createFakeAuth('signedOut')
+    const fake = createFakeSocket()
+    const store = createPresenceStore({ connectFn: () => fake.socket, auth: seam })
+    await store.connect()
+    const handler = vi.fn()
+    store.onMatchReady(handler)
+    fake.emit({
+      type: 'matched',
+      opponentName: 'Bob',
+      opponentGkSkin: 'gk_vozinha',
+      youGoFirst: true,
+      questions: [] as Question[],
+    })
+    expect(handler.mock.calls[0]![0]).toMatchObject({ opponentGkSkin: 'gk_vozinha' })
+
+    // reconnect and match again without a skin — must land as null, not undefined
+    await store.connect()
+    fake.emit(matched('Bob'))
+    expect(handler.mock.calls[1]![0].opponentGkSkin).toBeNull()
+  })
+
   it('notifyFriends sends the userIds to the server', async () => {
     const { seam } = createFakeAuth('signedOut')
     const fake = createFakeSocket()
@@ -149,6 +171,71 @@ describe('presence store', () => {
     store.onFriendsChanged(handler)
     fake.emit({ type: 'friendsChanged' })
     expect(handler).toHaveBeenCalledTimes(1)
+  })
+
+  it('watchPresence sends the watch list once connected', async () => {
+    const { seam } = createFakeAuth('signedOut')
+    const fake = createFakeSocket()
+    const store = createPresenceStore({ connectFn: () => fake.socket, auth: seam })
+    await store.connect()
+    store.watchPresence(['f1', 'f2'])
+    expect(fake.sent).toContainEqual({ type: 'watchPresence', userIds: ['f1', 'f2'] })
+  })
+
+  it('does not resend an unchanged watch list', async () => {
+    const { seam } = createFakeAuth('signedOut')
+    const fake = createFakeSocket()
+    const store = createPresenceStore({ connectFn: () => fake.socket, auth: seam })
+    await store.connect()
+    store.watchPresence(['f1', 'f2'])
+    store.watchPresence(['f1', 'f2'])
+    expect(fake.sent.filter((m) => m.type === 'watchPresence')).toHaveLength(1)
+  })
+
+  it('holds the watch list until a socket connects, then sends it', async () => {
+    const { seam } = createFakeAuth('signedOut')
+    const fake = createFakeSocket()
+    const store = createPresenceStore({ connectFn: () => fake.socket, auth: seam })
+    store.watchPresence(['f1'])
+    expect(fake.sent).toHaveLength(0)
+    await store.connect()
+    expect(fake.sent).toContainEqual({ type: 'watchPresence', userIds: ['f1'] })
+  })
+
+  it('records online friends from presenceSnapshot and presenceChanged', async () => {
+    const { seam } = createFakeAuth('signedOut')
+    const fake = createFakeSocket()
+    const store = createPresenceStore({ connectFn: () => fake.socket, auth: seam })
+    await store.connect()
+    fake.emit({ type: 'presenceSnapshot', online: ['f1'] })
+    expect(store.getState().onlineFriends).toEqual(['f1'])
+    fake.emit({ type: 'presenceChanged', userId: 'f2', online: true })
+    expect(store.getState().onlineFriends).toEqual(['f1', 'f2'])
+    fake.emit({ type: 'presenceChanged', userId: 'f1', online: false })
+    expect(store.getState().onlineFriends).toEqual(['f2'])
+  })
+
+  it('does not duplicate an already-online friend on presenceChanged', async () => {
+    const { seam } = createFakeAuth('signedOut')
+    const fake = createFakeSocket()
+    const store = createPresenceStore({ connectFn: () => fake.socket, auth: seam })
+    await store.connect()
+    fake.emit({ type: 'presenceSnapshot', online: ['f1'] })
+    fake.emit({ type: 'presenceChanged', userId: 'f1', online: true })
+    expect(store.getState().onlineFriends).toEqual(['f1'])
+  })
+
+  it('clears online friends and re-sends the watch list on reconnect', async () => {
+    const { seam } = createFakeAuth('signedOut')
+    const fake = createFakeSocket()
+    const store = createPresenceStore({ connectFn: () => fake.socket, auth: seam })
+    await store.connect()
+    store.watchPresence(['f1'])
+    fake.emit({ type: 'presenceSnapshot', online: ['f1'] })
+    fake.emitClose()
+    expect(store.getState().onlineFriends).toEqual([])
+    await store.connect()
+    expect(fake.sent.filter((m) => m.type === 'watchPresence')).toHaveLength(2)
   })
 
   it('tears down and clears state on sign-out', async () => {

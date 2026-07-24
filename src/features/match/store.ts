@@ -25,6 +25,9 @@ export interface MatchState {
   error?: string
   // 1v1-only — unused (left at their defaults) in 'cpu' mode.
   opponentName: string | null
+  /** Opponent's equipped keeper skin id; null = stock keeper (anonymous
+   * opponent, or one with nothing equipped). */
+  opponentGkSkin: string | null
   rematchVotes: number
   rematchIVoted: boolean
   opponentLeft: boolean
@@ -50,6 +53,7 @@ const initialState: MatchState = {
   questionIndex: 0,
   shootout: createInitialState(),
   opponentName: null,
+  opponentGkSkin: null,
   rematchVotes: 0,
   rematchIVoted: false,
   opponentLeft: false,
@@ -198,6 +202,7 @@ function createMatchStore() {
       phase: 'active',
       questions: session.questions,
       opponentName: session.opponentName,
+      opponentGkSkin: session.opponentGkSkin,
       shootout: { ...createInitialState(), stage: session.youGoFirst ? 'shoot' : 'keep' },
     })
   }

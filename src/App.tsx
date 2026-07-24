@@ -54,6 +54,15 @@ function App() {
     return presenceStore.onFriendsChanged(() => void friendsStore.refresh())
   }, [])
 
+  // Keep the presence watch list in step with the friends list so the online
+  // dots track live (watchPresence no-ops when the ids haven't changed).
+  useEffect(() => {
+    const push = () =>
+      presenceStore.watchPresence(friendsStore.getState().friends.map((f) => f.id))
+    push()
+    return friendsStore.subscribe(push)
+  }, [])
+
   // The presence socket hands itself to the match on a challenge, so it needs
   // re-opening whenever we're back on a menu screen and still signed in (the
   // initial connect is driven by the auth store; this covers post-match).

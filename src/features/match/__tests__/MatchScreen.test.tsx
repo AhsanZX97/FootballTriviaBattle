@@ -142,7 +142,7 @@ describe('MatchScreen', () => {
       onClose: () => () => {},
       close,
     }
-    matchStore.start1v1({ socket, opponentName: 'Bob', youGoFirst: true, questions: sample })
+    matchStore.start1v1({ socket, opponentName: 'Bob', opponentGkSkin: null, youGoFirst: true, questions: sample })
     act(() => {
       for (let i = 0; i < 5; i++) {
         handleMessage?.({ type: 'kickResolved', by: 'you', scored: true })
@@ -168,7 +168,7 @@ describe('MatchScreen', () => {
       onClose: () => () => {},
       close: () => {},
     }
-    matchStore.start1v1({ socket, opponentName: 'Bob', youGoFirst: false, questions: sample })
+    matchStore.start1v1({ socket, opponentName: 'Bob', opponentGkSkin: null, youGoFirst: false, questions: sample })
     render(<MatchScreen />)
     // opponent kicks while we defend: the store flips stage to 'shoot' at once,
     // but the animation depicts the 'keep' kick, so our keeper stays skinned
@@ -185,7 +185,7 @@ describe('MatchScreen', () => {
       onClose: () => () => {},
       close: () => {},
     }
-    matchStore.start1v1({ socket, opponentName: 'Bob', youGoFirst: false, questions: sample })
+    matchStore.start1v1({ socket, opponentName: 'Bob', opponentGkSkin: null, youGoFirst: false, questions: sample })
     render(<MatchScreen />)
     expect(screen.getByText(/waiting for bob/i)).toBeDefined()
     expect(document.querySelector('main.match')?.className).toContain('match--scene')

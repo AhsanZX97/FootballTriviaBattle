@@ -1,5 +1,6 @@
 import { useEffect, useState, useSyncExternalStore } from 'react'
 import { friendsStore } from '../store'
+import { presenceStore } from '../presenceStore'
 import type { Relationship } from '../../../types/friends'
 import './FriendList.css'
 
@@ -26,6 +27,7 @@ function addButtonFor(rel: Relationship): { label: string; disabled: boolean } {
 
 export function FriendList({ onChallenge }: Props) {
   const state = useSyncExternalStore(friendsStore.subscribe, friendsStore.getState)
+  const presence = useSyncExternalStore(presenceStore.subscribe, presenceStore.getState)
   const [query, setQuery] = useState('')
 
   // Debounce the search so we don't fire a request per keystroke.
@@ -132,15 +134,30 @@ export function FriendList({ onChallenge }: Props) {
               </p>
             ) : (
               <ul className="friend-list__items">
-                {state.friends.map((f) => (
+                {state.friends.map((f) => {
+                  const online = presence.onlineFriends.includes(f.id)
+                  return (
                   <li key={f.id} className="friend-list__row">
-                    <span className="friend-list__name">{f.username}</span>
+                    <span className="friend-list__identity">
+                      <span
+                        className={`friend-list__dot${online ? ' friend-list__dot--online' : ''}`}
+                        role="img"
+                        aria-label={online ? 'Online' : 'Offline'}
+                      />
+                      <span className="friend-list__name">{f.username}</span>
+                    </span>
                     <span className="friend-list__row-actions">
                       <button
                         type="button"
                         className="friend-list__action"
-                        disabled={!onChallenge}
-                        title={onChallenge ? undefined : 'Coming soon'}
+                        disabled={!onChallenge || !online}
+                        title={
+                          !onChallenge
+                            ? 'Coming soon'
+                            : online
+                              ? undefined
+                              : `${f.username} is offline`
+                        }
                         onClick={() => onChallenge?.(f.id, f.username)}
                       >
                         CHALLENGE
@@ -155,7 +172,8 @@ export function FriendList({ onChallenge }: Props) {
                       </button>
                     </span>
                   </li>
-                ))}
+                  )
+                })}
               </ul>
             )}
           </section>

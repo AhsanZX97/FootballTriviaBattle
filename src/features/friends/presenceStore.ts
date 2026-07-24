@@ -26,6 +26,9 @@ export interface PresenceState {
   /** Transient message (friend offline / declined / withdrew). Cleared on the
    * next action or via clearNotice. */
   notice: string | null
+  /** userIds of watched friends currently online. Empty while disconnected —
+   * "unknown" renders the same as offline. */
+  onlineFriends: string[]
 }
 
 type Listener = () => void
@@ -46,6 +49,7 @@ const initialState = (): PresenceState => ({
   outgoing: null,
   incoming: null,
   notice: null,
+  onlineFriends: [],
 })
 
 function failNotice(name: string, reason: ChallengeFailReason): string {
@@ -83,6 +87,8 @@ export function createPresenceStore(
   let reconnectTimer: ReturnType<typeof setTimeout> | null = null
   /** True while we want a live presence connection (signed in, not in a match). */
   let desired = false
+  /** Friend userIds whose online status we want. Re-sent on every (re)connect. */
+  let watchedIds: string[] = []
 
   const getState = () => state
   const subscribe = (l: Listener): (() => void) => {
@@ -165,19 +171,28 @@ export function createPresenceStore(
       case 'friendsChanged':
         friendsChangedHandlers.forEach((h) => h())
         return
+      case 'presenceSnapshot':
+        set({ onlineFriends: message.online })
+        return
+      case 'presenceChanged': {
+        const rest = state.onlineFriends.filter((id) => id !== message.userId)
+        set({ onlineFriends: message.online ? [...rest, message.userId] : rest })
+        return
+      }
       case 'matched': {
         const s = socket
         if (!s) return
         const session: MatchReadySession = {
           socket: s,
           opponentName: message.opponentName,
+          opponentGkSkin: message.opponentGkSkin ?? null,
           youGoFirst: message.youGoFirst,
           questions: message.questions,
         }
         // hand our socket to the match and stand down until we're back on the menu
         desired = false
         detachSocket()
-        set({ connected: false, outgoing: null, incoming: null })
+        set({ connected: false, outgoing: null, incoming: null, onlineFriends: [] })
         matchReadyHandlers.forEach((h) => h(session))
         return
       }
@@ -204,12 +219,27 @@ export function createPresenceStore(
       offMessage = s.onMessage(handleMessage)
       offClose = s.onClose(() => {
         detachSocket()
-        set({ connected: false, incoming: null, outgoing: null })
+        // online status is unknown while disconnected — show everyone offline
+        set({ connected: false, incoming: null, outgoing: null, onlineFriends: [] })
         scheduleReconnect()
       })
       set({ connected: true })
+      if (watchedIds.length > 0) s.send({ type: 'watchPresence', userIds: watchedIds })
     })
     return connecting
+  }
+
+  /** Watch these friends' online status. Remembered across reconnects; a
+   * no-op when the list hasn't changed. Never opens a socket by itself —
+   * the snapshot arrives once the auth-driven connect lands. */
+  function watchPresence(userIds: string[]): void {
+    const unchanged =
+      userIds.length === watchedIds.length && userIds.every((id, i) => id === watchedIds[i])
+    if (unchanged) return
+    watchedIds = [...userIds]
+    if (socket && watchedIds.length > 0) {
+      socket.send({ type: 'watchPresence', userIds: watchedIds })
+    }
   }
 
   async function challenge(friendId: string, friendName: string): Promise<void> {
@@ -280,6 +310,7 @@ export function createPresenceStore(
     declineIncoming,
     clearNotice,
     notifyFriends,
+    watchPresence,
   }
 }
 
