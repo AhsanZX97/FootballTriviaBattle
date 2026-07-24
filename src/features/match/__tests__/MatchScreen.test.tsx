@@ -156,6 +156,31 @@ describe('MatchScreen', () => {
     expect(onMainMenu).toHaveBeenCalled()
   })
 
+  it('shows MATCH ABANDONED, not YOU LOSE, when the opponent leaves a level match', () => {
+    let handleMessage: ((m: ServerMessage) => void) | undefined
+    const socket: MultiplayerSocket = {
+      send: () => {},
+      onMessage: (h) => {
+        handleMessage = h
+        return () => {}
+      },
+      onClose: () => () => {},
+      close: () => {},
+    }
+    matchStore.start1v1({ socket, opponentName: 'Bob', opponentGkSkin: null, youGoFirst: true, questions: sample })
+    // level 1-1 mid-match, then Bob quits
+    act(() => {
+      handleMessage?.({ type: 'kickResolved', by: 'you', scored: true })
+      handleMessage?.({ type: 'kickResolved', by: 'opponent', scored: true })
+      handleMessage?.({ type: 'opponentLeft' })
+    })
+    render(<MatchScreen />)
+    expect(screen.getByText(/match abandoned/i)).toBeDefined()
+    expect(screen.queryByText(/you lose/i)).toBeNull()
+    expect(screen.getByText('1 – 1')).toBeDefined()
+    expect(screen.getByText(/bob left/i)).toBeDefined()
+  })
+
   it('keeps the equipped GK skin during the opponent-kick feedback while defending in 1v1', () => {
     authStore.applyCustomizationUpdate('gkSkin', 'gk_manuel_neuer')
     let handleMessage: ((m: ServerMessage) => void) | undefined

@@ -12,6 +12,8 @@ const initialState: AuthState = {
   email: null,
   coins: 0,
   customization: defaultCustomization(),
+  dailyRewardStreak: 0,
+  lastDailyRewardDate: null,
   error: null,
 }
 
@@ -36,6 +38,7 @@ function createFakeStore(initial: Partial<AuthState> = {}) {
     signOut: vi.fn(async () => {}),
     clearError: () => setState({ error: null }),
     applyCoinsUpdate: (balance) => setState({ coins: balance }),
+    claimDailyReward: vi.fn(async () => null),
     applyCustomizationUpdate: (slot, itemId) =>
       setState({ customization: { ...state.customization, [slot]: itemId } }),
     requestPasswordReset: vi.fn(async () => {}),

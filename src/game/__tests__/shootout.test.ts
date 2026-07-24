@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import type { ShootoutState } from '../../types/match'
-import { applyAnswer, createInitialState, isMatchOver, nextStage } from '../shootout'
+import { applyAnswer, createInitialState, getResult, isMatchOver, nextStage } from '../shootout'
 
 const play = (answers: boolean[]): ShootoutState =>
   answers.reduce<ShootoutState>((s, a) => applyAnswer(s, a), createInitialState())
@@ -74,5 +74,27 @@ describe('applyAnswer', () => {
   it('is a no-op once the match is over', () => {
     const won = play(Array(10).fill(true))
     expect(applyAnswer(won, false)).toBe(won)
+  })
+})
+
+describe('getResult', () => {
+  it('returns null while the match is still playing', () => {
+    expect(getResult(createInitialState())).toBe(null)
+  })
+
+  it('reports a completed win with its scores', () => {
+    const s = play(Array(10).fill(true))
+    expect(getResult(s)).toEqual({ outcome: 'win', userScore: 5, cpuScore: 0 })
+  })
+
+  it('is a win when a forfeit sets status won on level scores', () => {
+    // opponent left mid-match: status flips to 'won' but the 1-1 score stands
+    const s: ShootoutState = { ...createInitialState(), userScore: 1, cpuScore: 1, status: 'won' }
+    expect(getResult(s)).toEqual({ outcome: 'win', userScore: 1, cpuScore: 1 })
+  })
+
+  it('is a loss when a forfeit sets status lost even while leading', () => {
+    const s: ShootoutState = { ...createInitialState(), userScore: 2, cpuScore: 1, status: 'lost' }
+    expect(getResult(s)?.outcome).toBe('lose')
   })
 })

@@ -30,9 +30,12 @@ vi.mock('../../auth/store', () => ({
   },
 }))
 
-const rpc = vi.fn<(fn: string) => Promise<{ data: unknown; error: { message: string } | null }>>()
+const rpc =
+  vi.fn<(fn: string, params?: unknown) => Promise<{ data: unknown; error: { message: string } | null }>>()
 vi.mock('../../../services/supabase', () => ({
-  supabase: { rpc: (fn: string) => rpc(fn) },
+  // Rest-forward so each call's arity is preserved: award_cpu_win is called
+  // with just the fn name, record_cpu_match with a params object.
+  supabase: { rpc: (...args: [string, unknown?]) => rpc(...args) },
 }))
 
 import { matchStore } from '../store'
@@ -177,14 +180,42 @@ describe('matchStore', () => {
     expect(applyCoinsUpdate).not.toHaveBeenCalled()
   })
 
-  it('does not award a coin on a CPU loss', async () => {
+  it('does not award a coin on a CPU loss, but still records the result', async () => {
     authState.status = 'signedIn'
     await matchStore.start()
     for (let i = 0; i < 10; i++) matchStore.submitAnswer(false) // lose 0-5
 
     await Promise.resolve()
     expect(matchStore.getState().shootout.status).toBe('lost')
-    expect(rpc).not.toHaveBeenCalled()
+    expect(rpc).not.toHaveBeenCalledWith('award_cpu_win')
+    expect(rpc).toHaveBeenCalledWith('record_cpu_match', {
+      p_outcome: 'loss',
+      p_user_score: 0,
+      p_opponent_score: 5,
+    })
+  })
+
+  it('records a CPU win with the final score when signed in', async () => {
+    authState.status = 'signedIn'
+    await matchStore.start()
+    for (let i = 0; i < 10; i++) matchStore.submitAnswer(true) // win 5-0
+
+    await vi.waitFor(() =>
+      expect(rpc).toHaveBeenCalledWith('record_cpu_match', {
+        p_outcome: 'win',
+        p_user_score: 5,
+        p_opponent_score: 0,
+      }),
+    )
+  })
+
+  it('does not record a CPU result when signed out', async () => {
+    authState.status = 'signedOut'
+    await matchStore.start()
+    for (let i = 0; i < 10; i++) matchStore.submitAnswer(true) // win 5-0
+
+    await Promise.resolve()
+    expect(rpc).not.toHaveBeenCalledWith('record_cpu_match', expect.anything())
   })
 
   it('silently ignores a rate-limited (null balance) CPU award response', async () => {
@@ -313,7 +344,7 @@ describe('matchStore 1v1 mode', () => {
     expect(matchStore.getState().phase).toBe('active')
   })
 
-  it('forces a win and flags opponentLeft when the opponent disconnects mid-match', () => {
+  it('marks the match abandoned (forfeit win) when the opponent disconnects mid-match', () => {
     const { session, fake } = readySession()
     matchStore.start1v1(session)
 
@@ -321,6 +352,7 @@ describe('matchStore 1v1 mode', () => {
 
     const s = matchStore.getState()
     expect(s.opponentLeft).toBe(true)
+    expect(s.matchAbandoned).toBe(true)
     expect(s.shootout.status).toBe('won')
   })
 
@@ -334,6 +366,8 @@ describe('matchStore 1v1 mode', () => {
 
     expect(matchStore.getState().shootout).toBe(before)
     expect(matchStore.getState().opponentLeft).toBe(true)
+    // the result stood on its own — leaving afterwards doesn't make it an abandonment
+    expect(matchStore.getState().matchAbandoned).toBe(false)
   })
 
   it('sends leave and resets to idle cpu-mode defaults', () => {

@@ -1,0 +1,153 @@
+.daily-challenges {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.daily-challenges__heading {
+  margin: 4px 0 0;
+  color: #ffcf1a;
+  font-family: 'Press Start 2P', ui-monospace, Consolas, monospace;
+  font-size: 11px;
+  letter-spacing: 0.05em;
+  text-shadow: 2px 2px 0 #000;
+}
+
+.daily-challenges__list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.daily-challenge {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 12px;
+  background: rgba(0, 0, 0, 0.28);
+  border-radius: 5px;
+  box-shadow: inset 0 0 0 2px rgba(0, 0, 0, 0.5);
+}
+
+.daily-challenge--done {
+  box-shadow: inset 0 0 0 2px rgba(124, 252, 124, 0.4);
+}
+
+.daily-challenge__info {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  flex: 1;
+  min-width: 0;
+}
+
+.daily-challenge__title {
+  color: #ffcf1a;
+  font-family: 'Press Start 2P', ui-monospace, Consolas, monospace;
+  font-size: 9px;
+  letter-spacing: 0.03em;
+  text-shadow: 1px 1px 0 #000;
+}
+
+.daily-challenge__desc {
+  color: #cfe6d6;
+  font-family: 'Press Start 2P', ui-monospace, Consolas, monospace;
+  font-size: 7px;
+  line-height: 1.5;
+}
+
+.daily-challenge__bar {
+  position: relative;
+  height: 8px;
+  border-radius: 4px;
+  background: rgba(0, 0, 0, 0.55);
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.08);
+  overflow: hidden;
+}
+
+.daily-challenge__bar-fill {
+  position: absolute;
+  inset: 0 auto 0 0;
+  background: linear-gradient(#ffd84d, #f5b716);
+  transition: width 0.3s ease;
+}
+
+.daily-challenge--done .daily-challenge__bar-fill {
+  background: linear-gradient(#8fe98f, #5fc85f);
+}
+
+.daily-challenge__count {
+  color: #9fb8a8;
+  font-family: 'Press Start 2P', ui-monospace, Consolas, monospace;
+  font-size: 7px;
+}
+
+.daily-challenge__side {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  flex-shrink: 0;
+}
+
+.daily-challenge__reward {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  color: #ffcf1a;
+  font-family: 'Press Start 2P', ui-monospace, Consolas, monospace;
+  font-size: 9px;
+  text-shadow: 1px 1px 0 #000;
+}
+
+.daily-challenge__coin {
+  width: 15px;
+  height: 15px;
+  image-rendering: auto;
+}
+
+.daily-challenge__claim {
+  padding: 7px 12px;
+  border: none;
+  border-radius: 4px;
+  background: linear-gradient(#ffd84d, #f5b716);
+  color: #3a2a08;
+  font-family: 'Press Start 2P', ui-monospace, Consolas, monospace;
+  font-size: 8px;
+  letter-spacing: 0.04em;
+  cursor: pointer;
+  text-shadow: 1px 1px 0 rgba(255, 255, 255, 0.35);
+  box-shadow: 0 2px 0 #b8850c;
+}
+
+.daily-challenge__claim:active {
+  transform: translateY(1px);
+  box-shadow: 0 1px 0 #b8850c;
+}
+
+.daily-challenge__claim:disabled {
+  background: #274634;
+  color: #6d8a79;
+  cursor: default;
+  text-shadow: none;
+  box-shadow: none;
+}
+
+.daily-challenge__claimed {
+  color: #7cfc7c;
+  font-family: 'Press Start 2P', ui-monospace, Consolas, monospace;
+  font-size: 8px;
+  text-shadow: 1px 1px 0 #000;
+}
+
+.daily-challenges__note {
+  margin: 0;
+  text-align: center;
+  color: #9fb8a8;
+  font-family: 'Press Start 2P', ui-monospace, Consolas, monospace;
+  font-size: 8px;
+  line-height: 1.6;
+}

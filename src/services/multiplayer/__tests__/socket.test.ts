@@ -115,6 +115,18 @@ describe('connect', () => {
     expect(onClose).toHaveBeenCalledOnce()
   })
 
+  it('fires an onClose handler registered after the socket already closed', () => {
+    // The lobby detaches its close handler at handoff, so a drop during the
+    // pre-match countdown lands with no handler; the match must still learn of
+    // it when start1v1 attaches its own. Otherwise the match screen freezes.
+    const socket = connect('ws://test')
+    lastSocket.close()
+
+    const onClose = vi.fn()
+    socket.onClose(onClose)
+    expect(onClose).toHaveBeenCalledOnce()
+  })
+
   it('appends the token as a query param when one is given', () => {
     connect('ws://test', 'jwt-abc')
     expect(lastSocket.url).toBe('ws://test?token=jwt-abc')

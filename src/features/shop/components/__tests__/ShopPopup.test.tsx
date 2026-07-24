@@ -73,6 +73,8 @@ beforeEach(() => {
     email: 'a@b.com',
     coins: 500,
     customization: defaultCustomization(),
+    dailyRewardStreak: 0,
+    lastDailyRewardDate: null,
     error: null,
   }
 })

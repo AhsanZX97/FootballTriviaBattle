@@ -2,6 +2,7 @@ import type { AuthState } from '../../types/auth'
 import type { Customization, CustomizationSlot } from '../../types/customization'
 import { defaultCustomization } from '../../types/customization'
 import { getItem, removeItem, setItem } from '../../services/storage'
+import { dailyKey } from '../../services/dailyChallenges'
 import { loginWithUsername, supabase } from '../../services/supabase'
 
 export interface AuthStore {
@@ -14,6 +15,10 @@ export interface AuthStore {
   /** Applied when a coin balance update arrives out-of-band (1v1 `coinsAwarded`
    * message, or a CPU-win RPC response) without a full profile refetch. */
   applyCoinsUpdate(balance: number): void
+  /** Claims today's daily login reward via the server RPC. Resolves with the
+   * granted reward and resulting streak (or `alreadyClaimed`), or null on
+   * failure / when signed out. Updates coins + streak state on success. */
+  claimDailyReward(): Promise<DailyRewardResult | null>
   /** Reflects a slot the shop has already equipped server-side, so the change
    * shows without a full profile refetch. */
   applyCustomizationUpdate(slot: CustomizationSlot, itemId: string): void
@@ -31,6 +36,16 @@ export interface AuthStore {
 const COINS_CACHE_KEY = 'ftb.coins'
 const USERNAME_PATTERN = /^[A-Za-z0-9_]+$/
 
+/** Shape of the `claim_daily_reward` RPC's jsonb result. */
+export interface DailyRewardResult {
+  alreadyClaimed: boolean
+  coins: number
+  /** Day-in-cycle (1..7) that was (or already had been) claimed. */
+  streak: number
+  /** Coins granted by this claim; 0 when already claimed. */
+  reward: number
+}
+
 /** Session shape this store needs — a structural subset of supabase-js's `Session`. */
 interface AuthSession {
   access_token: string
@@ -44,6 +59,8 @@ interface ProfileRow {
   gk_skin: string
   ball_skin: string
   goal_sound: string
+  daily_reward_streak: number
+  last_daily_reward_date: string | null
 }
 
 type AuthChangeCallback = (event: string, session: AuthSession | null) => void | Promise<void>
@@ -96,6 +113,8 @@ const initialState = (cachedCoins: number): AuthState => ({
   email: null,
   coins: cachedCoins,
   customization: defaultCustomization(),
+  dailyRewardStreak: 0,
+  lastDailyRewardDate: null,
   error: null,
 })
 
@@ -171,6 +190,8 @@ export function createAuthStore(
         email: null,
         coins: 0,
         customization: defaultCustomization(),
+        dailyRewardStreak: 0,
+        lastDailyRewardDate: null,
         error: null,
       })
       return
@@ -178,7 +199,7 @@ export function createAuthStore(
 
     const { data: profile } = await supabaseClient
       .from('profiles')
-      .select('username, coins, gk_skin, ball_skin, goal_sound')
+      .select('username, coins, gk_skin, ball_skin, goal_sound, daily_reward_streak, last_daily_reward_date')
       .eq('id', session.user.id)
       .single()
     const coins = profile?.coins ?? 0
@@ -190,6 +211,8 @@ export function createAuthStore(
       email: session.user.email,
       coins,
       customization: readCustomization(profile),
+      dailyRewardStreak: profile?.daily_reward_streak ?? 0,
+      lastDailyRewardDate: profile?.last_daily_reward_date ?? null,
       error: null,
     })
   }
@@ -261,6 +284,31 @@ export function createAuthStore(
     storage.setItem(COINS_CACHE_KEY, String(balance))
   }
 
+  async function claimDailyReward(): Promise<DailyRewardResult | null> {
+    if (state.status !== 'signedIn') return null
+    try {
+      const { data, error } = await supabaseClient.rpc('claim_daily_reward')
+      if (error || data == null || typeof data !== 'object') return null
+      const row = data as { already_claimed?: boolean; coins?: number; streak?: number; reward?: number }
+      if (typeof row.coins !== 'number' || typeof row.streak !== 'number') return null
+      const result: DailyRewardResult = {
+        alreadyClaimed: row.already_claimed === true,
+        coins: row.coins,
+        streak: row.streak,
+        reward: typeof row.reward === 'number' ? row.reward : 0,
+      }
+      storage.setItem(COINS_CACHE_KEY, String(result.coins))
+      set({
+        coins: result.coins,
+        dailyRewardStreak: result.streak,
+        lastDailyRewardDate: dailyKey(),
+      })
+      return result
+    } catch {
+      return null
+    }
+  }
+
   function applyCustomizationUpdate(slot: CustomizationSlot, itemId: string): void {
     set({ customization: { ...state.customization, [slot]: itemId } })
   }
@@ -309,6 +357,7 @@ export function createAuthStore(
     signOut,
     clearError,
     applyCoinsUpdate,
+    claimDailyReward,
     applyCustomizationUpdate,
     requestPasswordReset,
     confirmPasswordReset,

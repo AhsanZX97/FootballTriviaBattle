@@ -1,5 +1,5 @@
 import type { MatchResult, ShootoutState, Stage } from '../types/match'
-import { decideResult, scoreOf } from './scoring'
+import { scoreOf } from './scoring'
 
 /** Kicks each side gets in the standard phase before sudden death. */
 export const KICKS_PER_SIDE = 5
@@ -16,8 +16,17 @@ export function isMatchOver(state: ShootoutState): boolean {
   return state.status !== 'playing'
 }
 
+/**
+ * Outcome comes from `status`, never from comparing scores: a forfeit (1v1
+ * opponent left) ends the match with whatever scores stood — even level ones.
+ */
 export function getResult(state: ShootoutState): MatchResult | null {
-  return isMatchOver(state) ? decideResult(state.userScore, state.cpuScore) : null
+  if (!isMatchOver(state)) return null
+  return {
+    outcome: state.status === 'won' ? 'win' : 'lose',
+    userScore: state.userScore,
+    cpuScore: state.cpuScore,
+  }
 }
 
 /**

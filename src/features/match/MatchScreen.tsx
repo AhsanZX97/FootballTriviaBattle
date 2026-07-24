@@ -192,7 +192,9 @@ export function MatchScreen({ onExit, onMainMenu }: Props) {
       return (
         <main className="match match--message">
           <CoinReward amount={state.coinsAwarded} />
-          <p className="match__result">{result.outcome === 'win' ? 'YOU WIN' : 'YOU LOSE'}</p>
+          <p className="match__result">
+            {state.matchAbandoned ? 'MATCH ABANDONED' : result.outcome === 'win' ? 'YOU WIN' : 'YOU LOSE'}
+          </p>
           <p className="match__final-score">
             {result.userScore} – {result.cpuScore}
           </p>

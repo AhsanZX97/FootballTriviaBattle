@@ -1,0 +1,151 @@
+.stats-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  font-family: 'Press Start 2P', ui-monospace, Consolas, monospace;
+}
+
+.stats-panel__error {
+  margin: 0;
+  color: #ff8b8b;
+  font-size: 9px;
+  line-height: 1.5;
+  text-shadow: 1px 1px 0 #000;
+}
+
+/* Wins / Losses / Win rate, three even columns. */
+.stats-panel__record {
+  display: flex;
+  gap: 6px;
+}
+
+.stats-panel__stat {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  padding: 12px 4px;
+  background: #0a2416;
+  border-radius: 4px;
+  box-shadow: inset 0 0 0 2px rgba(255, 207, 26, 0.18);
+}
+
+.stats-panel__num {
+  color: #fff;
+  font-size: 18px;
+  text-shadow: 2px 2px 0 #000;
+}
+
+.stats-panel__num--win {
+  color: #3ee06a;
+}
+
+.stats-panel__num--loss {
+  color: #ff6b6b;
+}
+
+.stats-panel__label {
+  color: #9fc3ad;
+  font-size: 8px;
+  letter-spacing: 0.08em;
+}
+
+.stats-panel__heading {
+  margin: 0;
+  color: #ffcf1a;
+  font-size: 10px;
+  letter-spacing: 0.08em;
+  text-shadow: 1px 1px 0 #000;
+}
+
+.stats-panel__hint {
+  margin: 0;
+  color: #9fc3ad;
+  font-size: 9px;
+  line-height: 1.6;
+}
+
+.stats-panel__list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.stats-panel__row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 12px;
+  background: #0a2416;
+  border-radius: 4px;
+  box-shadow: inset 0 0 0 2px rgba(255, 207, 26, 0.12);
+}
+
+/* A thin coloured edge so a win/loss reads at a glance down the list. */
+.stats-panel__row--win {
+  box-shadow: inset 3px 0 0 0 #2fae4e, inset 0 0 0 2px rgba(255, 207, 26, 0.12);
+}
+
+.stats-panel__row--loss {
+  box-shadow: inset 3px 0 0 0 #c8313a, inset 0 0 0 2px rgba(255, 207, 26, 0.12);
+}
+
+.stats-panel__badge {
+  flex-shrink: 0;
+  width: 22px;
+  height: 22px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 3px;
+  font-size: 11px;
+  color: #fff;
+  box-shadow: 0 0 0 2px #0a0a0a;
+}
+
+.stats-panel__badge--win {
+  background: #2fae4e;
+}
+
+.stats-panel__badge--loss {
+  background: #c8313a;
+}
+
+/* Takes the middle space; min-width:0 lets the name ellipsize in the flex row. */
+.stats-panel__opponent {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.stats-panel__vs {
+  color: #fff;
+  font-size: 10px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.stats-panel__note {
+  color: #7fa38c;
+  font-size: 7px;
+  letter-spacing: 0.04em;
+}
+
+.stats-panel__score {
+  flex-shrink: 0;
+  color: #ffcf1a;
+  font-size: 12px;
+  text-shadow: 1px 1px 0 #000;
+}
+
+.stats-panel__dash {
+  margin: 0 4px;
+  color: #7fa38c;
+}

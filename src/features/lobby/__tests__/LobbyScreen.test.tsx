@@ -10,6 +10,8 @@ const signedOutState = (): AuthState => ({
   email: null,
   coins: 0,
   customization: defaultCustomization(),
+  dailyRewardStreak: 0,
+  lastDailyRewardDate: null,
   error: null,
 })
 

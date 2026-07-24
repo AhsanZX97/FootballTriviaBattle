@@ -1,4 +1,4 @@
-import type { MatchResult, ScoringTeam, Stage } from '../types/match'
+import type { ScoringTeam, Stage } from '../types/match'
 
 /**
  * Who scores on a single resolved kick:
@@ -8,12 +8,4 @@ import type { MatchResult, ScoringTeam, Stage } from '../types/match'
 export function scoreOf(stage: Stage, correct: boolean): ScoringTeam {
   if (stage === 'shoot') return correct ? 'user' : null
   return correct ? null : 'cpu'
-}
-
-export function decideResult(userScore: number, cpuScore: number): MatchResult {
-  return {
-    outcome: userScore > cpuScore ? 'win' : 'lose',
-    userScore,
-    cpuScore,
-  }
 }

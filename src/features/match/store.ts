@@ -6,6 +6,7 @@ import type { MatchReadySession } from '../lobby/store'
 import { applyAnswer, createInitialState, isMatchOver } from '../../game/shootout'
 import { getQuestions } from '../../services/trivia/questionSource'
 import { authStore } from '../auth/store'
+import { challengesStore } from '../challenges/store'
 import { supabase } from '../../services/supabase'
 
 /** Seconds per question. Single source of truth so it can be made user-selectable later. */
@@ -31,6 +32,10 @@ export interface MatchState {
   rematchVotes: number
   rematchIVoted: boolean
   opponentLeft: boolean
+  /** True when the opponent left while the match was still being played — the
+   * "result" is a forfeit in my favour, shown as an abandonment rather than a
+   * win/loss earned on the pitch. Stays false if they left after full time. */
+  matchAbandoned: boolean
   /** Set when the socket closes unexpectedly (server died / our own network
    * dropped) — distinct from opponentLeft, which the server relays before a
    * clean disconnect. Reconnection is out of scope; this just avoids a freeze. */
@@ -57,6 +62,7 @@ const initialState: MatchState = {
   rematchVotes: 0,
   rematchIVoted: false,
   opponentLeft: false,
+  matchAbandoned: false,
   connectionLost: false,
   pendingKick: false,
   lastKickBy: null,
@@ -120,17 +126,47 @@ function createMatchStore() {
     }
   }
 
+  /** Best-effort vs-CPU history write — logs every finished CPU game (win or
+   * loss) for the stat tab. Unlike the coin award it isn't rate-limited, and a
+   * failure here is silent so it never blocks the result screen. */
+  async function recordCpuResult(outcome: 'win' | 'loss', userScore: number, cpuScore: number) {
+    if (authStore.getState().status !== 'signedIn') return
+    try {
+      await supabase.rpc('record_cpu_match', {
+        p_outcome: outcome,
+        p_user_score: userScore,
+        p_opponent_score: cpuScore,
+      })
+    } catch {
+      // best-effort; network/RPC failures never surface to the player
+    }
+  }
+
   /** Resolve the current kick. `correct === false` also covers a timeout. CPU mode only. */
   function submitAnswer(correct: boolean) {
     if (state.phase !== 'active' || isMatchOver(state.shootout)) return
+    // Capture the stage before it flips: a correct answer on 'shoot' is a scored
+    // penalty (for the daily challenge), on 'keep' it's a save.
+    const wasShoot = state.shootout.stage === 'shoot'
     const shootout = applyAnswer(state.shootout, correct)
     // ponytail: index wraps so a long sudden death never runs the pool dry;
     // swap for a no-repeat draw if question reuse becomes noticeable.
     const questionIndex = (state.questionIndex + 1) % state.questions.length
     set({ shootout, questionIndex })
+    challengesStore.recordAnswer(correct, wasShoot)
     // isMatchOver guard above means this only ever fires once, on the
-    // playing -> won transition.
-    if (shootout.status === 'won') void awardCpuWinIfSignedIn()
+    // playing -> won/lost transition.
+    if (isMatchOver(shootout)) {
+      if (shootout.status === 'won') {
+        void awardCpuWinIfSignedIn()
+        challengesStore.recordCpuWin()
+      }
+      void recordCpuResult(
+        shootout.status === 'won' ? 'win' : 'loss',
+        shootout.userScore,
+        shootout.cpuScore,
+      )
+    }
   }
 
   function nextQuestionIndex() {
@@ -145,12 +181,19 @@ function createMatchStore() {
         // 'opponent' result flips through the same "keep"-stage inversion
         // the server uses (see server/room.ts's toEngineCorrect).
         const correct = message.by === 'you' ? message.scored : !message.scored
+        const wasShoot = state.shootout.stage === 'shoot'
+        const wasPlaying = state.shootout.status === 'playing'
+        const shootout = applyAnswer(state.shootout, correct)
         set({
-          shootout: applyAnswer(state.shootout, correct),
+          shootout,
           questionIndex: nextQuestionIndex(),
           lastKickBy: message.by,
           pendingKick: message.by === 'you' ? false : state.pendingKick,
         })
+        // Only my own kicks count as answered questions / scored penalties.
+        if (message.by === 'you') challengesStore.recordAnswer(correct, wasShoot)
+        // A kick that ends the match in my favour is a 1v1 win.
+        if (wasPlaying && shootout.status === 'won') challengesStore.record1v1Win()
         return
       }
       case 'rematchVotes':
@@ -168,14 +211,19 @@ function createMatchStore() {
           coinsAwarded: null,
         })
         return
-      case 'opponentLeft':
+      case 'opponentLeft': {
+        // Leaving mid-match forfeits it to me (mirrors the server's forfeit);
+        // leaving after the final kick changes nothing about the result.
+        const abandoned = !isMatchOver(state.shootout)
         set({
           opponentLeft: true,
-          shootout: isMatchOver(state.shootout)
-            ? state.shootout
-            : { ...state.shootout, status: 'won' },
+          matchAbandoned: abandoned,
+          shootout: abandoned ? { ...state.shootout, status: 'won' } : state.shootout,
         })
+        // A mid-match forfeit is a win in my favour — counts for the daily challenge.
+        if (abandoned) challengesStore.record1v1Win()
         return
+      }
       case 'coinsAwarded':
         authStore.applyCoinsUpdate(message.balance)
         if (message.amount > 0) set({ coinsAwarded: message.amount })

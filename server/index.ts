@@ -43,6 +43,13 @@ const KICK_TIMEOUT_MS = 20_000
 // never answered). Kept short so a stale invite doesn't linger on either side.
 const CHALLENGE_TIMEOUT_MS = 30_000
 
+// Heartbeat: ping every connection on this interval and terminate any that
+// didn't pong since the previous tick. A dirty disconnect (network drop,
+// killed app) sends no close frame, so without this the connection — and the
+// friend's green "online" dot — would linger until the OS TCP timeout, which
+// can be minutes. This bounds it to at most two intervals.
+const HEARTBEAT_INTERVAL_MS = 30_000
+
 interface Connection {
   id: string
   name: string
@@ -65,6 +72,9 @@ interface Connection {
   /** userIds this connection watches for online/offline pushes (their friends).
    * Null until the client sends 'watchPresence'. */
   presenceWatch: Set<string> | null
+  /** Heartbeat liveness: cleared on each ping, set again by the pong. Still
+   * false at the next tick means the peer is gone — terminate. */
+  isAlive: boolean
 }
 
 interface RoomEntry {
@@ -161,6 +171,66 @@ async function incrementCoins(userId: string, amount: number): Promise<number | 
 }
 
 /**
+ * Server-authoritative match-history write via the service-role-only
+ * `record_1v1_match` RPC. One row per authed player, scores/outcome already
+ * framed from that player's perspective. Never throws — a failed history write
+ * must never block or crash the match it's logging.
+ */
+async function recordMatchHistory(
+  userId: string,
+  opponentName: string,
+  outcome: 'win' | 'loss',
+  userScore: number,
+  opponentScore: number,
+  byDisconnect: boolean,
+): Promise<void> {
+  if (!SUPABASE_URL || !SUPABASE_SERVICE_ROLE_KEY) return
+  try {
+    const res = await fetch(`${SUPABASE_URL}/rest/v1/rpc/record_1v1_match`, {
+      method: 'POST',
+      headers: { ...supabaseHeaders(), 'content-type': 'application/json' },
+      body: JSON.stringify({
+        p_user_id: userId,
+        p_opponent_name: opponentName,
+        p_outcome: outcome,
+        p_user_score: userScore,
+        p_opponent_score: opponentScore,
+        p_by_disconnect: byDisconnect,
+      }),
+    })
+    if (!res.ok) {
+      console.error(`[history] record_1v1_match RPC rejected: HTTP ${res.status} ${await res.text()}`)
+    }
+  } catch (err) {
+    console.error('[history] record_1v1_match RPC failed', err)
+  }
+}
+
+/**
+ * Log a finished 1v1 to each authed player's match history. `shootoutStatus`
+ * is relative to slot 'a' (already flipped for a forfeit by room.ts), so slot
+ * 'a' wins iff status === 'won'; slot 'b' gets the mirror. A non-'completed'
+ * reason means the match ended by disconnect/quit. Anonymous players (null
+ * userId) are skipped. Fire-and-forget alongside the coin award.
+ */
+function recordMatchOutcomes(entry: RoomEntry, reason: SettleReason) {
+  const status = entry.room.shootout.status
+  if (status === 'playing') return
+  const aWon = status === 'won'
+  const byDisconnect = reason !== 'completed'
+  const aScore = entry.room.shootout.userScore
+  const bScore = entry.room.shootout.cpuScore
+  const a = entry.connections.a
+  const b = entry.connections.b
+  if (a.userId) {
+    void recordMatchHistory(a.userId, b.name, aWon ? 'win' : 'loss', aScore, bScore, byDisconnect)
+  }
+  if (b.userId) {
+    void recordMatchHistory(b.userId, a.name, aWon ? 'loss' : 'win', bScore, aScore, byDisconnect)
+  }
+}
+
+/**
  * Settles a finished match exactly once (guarded by `entry.settled`) and
  * pushes `coinsAwarded` to whichever authed player(s) earned a non-zero
  * amount. Fire-and-forget from callers: never throws, and runs after the
@@ -172,6 +242,9 @@ async function settleAndAward(entry: RoomEntry, reason: SettleReason) {
   try {
     const status = entry.room.shootout.status
     if (status === 'playing') return
+    // Log the result to both players' history regardless of the coin payout
+    // (an early forfeit pays nobody but still counts as a win/loss).
+    recordMatchOutcomes(entry, reason)
     const awards = settleMatch(
       status,
       { aUserId: entry.connections.a.userId, bUserId: entry.connections.b.userId },
@@ -634,6 +707,7 @@ wss.on('connection', (ws, req) => {
     gkSkin: null,
     profileReady: Promise.resolve(),
     presenceWatch: null,
+    isAlive: true,
   }
   console.log(
     `[auth] connection ${connection.id} ${connection.userId ? `authed as ${connection.userId}` : 'anonymous'}`,
@@ -650,6 +724,11 @@ wss.on('connection', (ws, req) => {
   connectionsByWs.set(ws, connection)
   connectionsById.set(connection.id, connection)
   addPresence(connection)
+
+  // Browsers answer pings automatically — no client code involved.
+  ws.on('pong', () => {
+    connection.isAlive = true
+  })
 
   ws.on('message', (data) => {
     let message: ClientMessage
@@ -671,6 +750,23 @@ wss.on('connection', (ws, req) => {
     if (entry) handleLeave(connection.roomId!, entry, connection)
   })
 })
+
+// Sweep for dead peers: anyone who hasn't ponged since the last tick gets
+// terminated, which fires their 'close' handler — presence broadcast, room
+// forfeit, and challenge cleanup all follow the normal disconnect path.
+const heartbeatTimer = setInterval(() => {
+  for (const [ws, connection] of connectionsByWs) {
+    if (!connection.isAlive) {
+      console.log(`[heartbeat] terminating unresponsive connection ${connection.id}`)
+      ws.terminate()
+      continue
+    }
+    connection.isAlive = false
+    ws.ping()
+  }
+}, HEARTBEAT_INTERVAL_MS)
+
+wss.on('close', () => clearInterval(heartbeatTimer))
 
 httpServer.listen(PORT, () => {
   console.log(`Multiplayer WS server listening on ws://localhost:${PORT}`)

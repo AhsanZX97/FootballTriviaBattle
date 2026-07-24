@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { decideResult, scoreOf } from '../scoring'
+import { scoreOf } from '../scoring'
 
 describe('scoreOf', () => {
   it('gives the user a goal on a correct shot', () => {
@@ -13,14 +13,5 @@ describe('scoreOf', () => {
   })
   it('lets the CPU score when the keeper answers wrong', () => {
     expect(scoreOf('keep', false)).toBe('cpu')
-  })
-})
-
-describe('decideResult', () => {
-  it('is a win when the user leads', () => {
-    expect(decideResult(5, 4)).toEqual({ outcome: 'win', userScore: 5, cpuScore: 4 })
-  })
-  it('is a loss when the user trails', () => {
-    expect(decideResult(4, 5).outcome).toBe('lose')
   })
 })

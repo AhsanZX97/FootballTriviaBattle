@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useRef, useState, useSyncExternalStore } from 'react'
 import { IntroScreen } from './features/menu/IntroScreen'
 import { TopBar } from './features/menu/components/TopBar'
 import { MatchScreen } from './features/match/MatchScreen'
@@ -13,6 +13,8 @@ import { ChallengeOverlay } from './features/friends/components/ChallengeOverlay
 import { ChallengeCountdown } from './features/friends/components/ChallengeCountdown'
 import { FriendsPopup } from './features/friends/components/FriendsPopup'
 import { ShopPopup } from './features/shop/components/ShopPopup'
+import { DailyRewardPopup } from './features/challenges/components/DailyRewardPopup'
+import { claimableReward } from './services/dailyChallenges'
 import type { MatchReadySession } from './features/lobby/store'
 import { playTheme, stopTheme } from './services/sound'
 import { isNative } from './services/platform'
@@ -32,6 +34,16 @@ function App() {
   const [shopOpen, setShopOpen] = useState(false)
   // An accepted challenge waits here through the 3-2-1 overlay, then starts.
   const [challengeMatch, setChallengeMatch] = useState<MatchReadySession | null>(null)
+  // Daily login reward: auto-shows once per app session when a claim is waiting.
+  // Dismissing (claim or close) sets this so it doesn't reappear this session.
+  const [dailyDismissed, setDailyDismissed] = useState(false)
+
+  const auth = useSyncExternalStore(authStore.subscribe, authStore.getState)
+  const dailyClaimable =
+    auth.status === 'signedIn' &&
+    claimableReward(auth.dailyRewardStreak, auth.lastDailyRewardDate).claimable
+  const showDailyReward =
+    screen === 'intro' && dailyClaimable && !dailyDismissed && !shopOpen && !challengeMatch
 
   // theme plays over the menus, stops for the match, resumes on the way back
   useEffect(() => {
@@ -175,6 +187,7 @@ function App() {
         />
       )}
       {shopOpen && screen === 'intro' && <ShopPopup onClose={() => setShopOpen(false)} />}
+      {showDailyReward && <DailyRewardPopup onClose={() => setDailyDismissed(true)} />}
       {challengeMatch && screen !== 'match' && (
         <ChallengeCountdown
           session={challengeMatch}

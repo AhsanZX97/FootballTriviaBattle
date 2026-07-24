@@ -29,6 +29,11 @@ export function connect(
   const messageHandlers = new Set<(message: ServerMessage) => void>()
   const closeHandlers = new Set<() => void>()
   const pending: ClientMessage[] = []
+  // Latched so a handler attached *after* the socket already closed still
+  // fires. The lobby detaches its close handler at match handoff, leaving a
+  // gap (the pre-match countdown) with no listener — without this latch a drop
+  // in that gap is lost and the match screen freezes instead of recovering.
+  let closed = false
 
   ws.addEventListener('open', () => {
     for (const message of pending.splice(0)) ws.send(JSON.stringify(message))
@@ -38,6 +43,7 @@ export function connect(
     messageHandlers.forEach((h) => h(message))
   })
   ws.addEventListener('close', () => {
+    closed = true
     closeHandlers.forEach((h) => h())
   })
 
@@ -51,6 +57,10 @@ export function connect(
       return () => void messageHandlers.delete(handler)
     },
     onClose(handler) {
+      if (closed) {
+        handler()
+        return () => {}
+      }
       closeHandlers.add(handler)
       return () => void closeHandlers.delete(handler)
     },

@@ -1,6 +1,7 @@
 import { describe, expect, it, vi } from 'vitest'
 import type { AuthState } from '../../../types/auth'
 import { createAuthStore } from '../store'
+import { dailyKey } from '../../../services/dailyChallenges'
 
 type Callback = (event: string, session: FakeSession | null) => void | Promise<void>
 
@@ -410,6 +411,65 @@ describe('applyCoinsUpdate', () => {
 
     expect(store.getState().coins).toBe(42)
     expect(storage.setItem).toHaveBeenCalledWith('ftb.coins', '42')
+  })
+})
+
+describe('claimDailyReward', () => {
+  async function signedInStore() {
+    const fake = createFakeSupabase({ u1: { username: 'bob', coins: 5 } })
+    const storage = fakeStorage()
+    const store = createAuthStore({ supabaseClient: fake.client as never, storage })
+    await fake.emit('INITIAL_SESSION', session('u1', 'bob@example.com'))
+    return { fake, storage, store }
+  }
+
+  it('returns null when signed out', async () => {
+    const fake = createFakeSupabase()
+    const store = createAuthStore({ supabaseClient: fake.client as never, storage: fakeStorage() })
+    await fake.emit('INITIAL_SESSION', null)
+
+    expect(await store.claimDailyReward()).toBeNull()
+    expect(fake.rpc).not.toHaveBeenCalled()
+  })
+
+  it('banks the reward and updates coins + streak on success', async () => {
+    const { fake, storage, store } = await signedInStore()
+    fake.rpc.mockResolvedValueOnce({
+      data: { already_claimed: false, coins: 25, streak: 7, reward: 20 },
+      error: null,
+    })
+
+    const result = await store.claimDailyReward()
+
+    expect(fake.rpc).toHaveBeenCalledWith('claim_daily_reward')
+    expect(result).toEqual({ alreadyClaimed: false, coins: 25, streak: 7, reward: 20 })
+    expect(store.getState()).toMatchObject({
+      coins: 25,
+      dailyRewardStreak: 7,
+      lastDailyRewardDate: dailyKey(),
+    })
+    expect(storage.setItem).toHaveBeenCalledWith('ftb.coins', '25')
+  })
+
+  it('reports an already-claimed day without granting coins', async () => {
+    const { fake, store } = await signedInStore()
+    fake.rpc.mockResolvedValueOnce({
+      data: { already_claimed: true, coins: 5, streak: 3, reward: 0 },
+      error: null,
+    })
+
+    const result = await store.claimDailyReward()
+
+    expect(result).toEqual({ alreadyClaimed: true, coins: 5, streak: 3, reward: 0 })
+    expect(store.getState().coins).toBe(5)
+  })
+
+  it('returns null when the RPC errors', async () => {
+    const { fake, store } = await signedInStore()
+    fake.rpc.mockResolvedValueOnce({ data: null, error: { message: 'boom' } })
+
+    expect(await store.claimDailyReward()).toBeNull()
+    expect(store.getState().coins).toBe(5)
   })
 })
 
