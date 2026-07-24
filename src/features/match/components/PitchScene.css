@@ -370,11 +370,12 @@
   }
 }
 
-/* Same four outcome rules as the stock ball above (duration/delay/iteration
+/* Same four outcome rules as the stock ball below (duration/delay/iteration
    counts must match exactly, so the skinned ball lands on the same frame at
    the same moment), just swapping the spin keyframes + step count for the
-   grid's. The mirrored-travel transform on miss/concede already applies —
-   it targets .scene__ball, which this element still is. */
+   grid's. The miss/concede mirror is an animation entry (scene-ball-mirror),
+   so it must be repeated in these lists — `animation` here fully replaces the
+   stock rule's. */
 .scene--goal .scene__ball.scene__ball--skinned {
   animation:
     scene-ball-spin-grid 0.2s steps(1) var(--suspense) 3.5,
@@ -383,6 +384,7 @@
 
 .scene--miss .scene__ball.scene__ball--skinned {
   animation:
+    scene-ball-mirror 0.7s var(--suspense) forwards,
     scene-ball-spin-grid 0.2s steps(1) var(--suspense) 3.5,
     scene-ball-miss 0.7s steps(7) var(--suspense) forwards;
 }
@@ -395,6 +397,7 @@
 
 .scene--concede .scene__ball.scene__ball--skinned {
   animation:
+    scene-ball-mirror 0.7s var(--suspense) forwards,
     scene-ball-spin-grid 0.2s steps(1) var(--suspense) 3.5,
     scene-ball-concede 0.7s steps(7) var(--suspense) forwards;
 }
@@ -489,7 +492,7 @@
    transform on the rule would flip the keeper the instant the scene mounts,
    making him visibly swap facing mid-idle when the feedback scene replaces the
    waiting scene (both idle through --suspense first). Constant from/to, so no
-   mismatched-function-list interpolation — see the scene-ball-miss comment. */
+   mismatched-function-list interpolation — see the scene-ball-mirror comment. */
 @keyframes scene-keeper-mirror {
   from,
   to {
@@ -515,22 +518,30 @@
 
 /* frozen: keeper doesn't move — no rule needed */
 
-/* user misses: ball sails over the bar into the crowd */
-.scene--miss .scene__ball {
-  animation:
-    scene-ball-spin 0.2s steps(3) var(--suspense) 3.5,
-    scene-ball-miss 0.7s steps(7) var(--suspense) forwards;
+/* rightward travel (miss/concede) mirrors the ball with scaleX(-1) so the
+   spin frames read correctly — but only from the launch moment, via this
+   constant-transform keyframe delayed like the flight (`forwards` holds it).
+   A static transform on the rule would flip the ball the instant the feedback
+   scene mounts, visibly spinning a skinned ball's pattern around while it
+   still sits on the spot through --suspense. Constant from/to, so no
+   mismatched-function-list interpolation: animating `transform` between
+   mismatched lists (e.g. adding scale() only at the end) makes the browser
+   fall back to matrix decomposition, which can visibly collapse the ball
+   toward zero mid-flight before popping back. */
+@keyframes scene-ball-mirror {
+  from,
+  to {
+    transform: translate(-50%, -50%) scaleX(-1);
+  }
 }
 
-/* travels right, so mirrored — see scene-ball-spin comment above. The mirror
-   is a plain (non-animated) transform, same pattern as the keeper's mirror:
-   animating `transform` between mismatched function lists (e.g. adding
-   scale() only at the end) makes the browser fall back to matrix
-   decomposition, which can visibly collapse the ball toward zero mid-flight
-   before popping back — looks like it vanishing and un-shrinking. Keeping
-   transform constant and only animating left/top/opacity avoids that. */
+/* user misses: ball sails over the bar into the crowd (travels right, so
+   mirrored — see scene-ball-mirror above) */
 .scene--miss .scene__ball {
-  transform: translate(-50%, -50%) scaleX(-1);
+  animation:
+    scene-ball-mirror 0.7s var(--suspense) forwards,
+    scene-ball-spin 0.2s steps(3) var(--suspense) 3.5,
+    scene-ball-miss 0.7s steps(7) var(--suspense) forwards;
 }
 
 @keyframes scene-ball-miss {
@@ -605,10 +616,11 @@
   }
 }
 
-/* cpu scores: ball into the right corner, keeper dives the wrong way */
+/* cpu scores: ball into the right corner, keeper dives the wrong way
+   (travels right, so mirrored — see scene-ball-mirror above) */
 .scene--concede .scene__ball {
-  transform: translate(-50%, -50%) scaleX(-1); /* travels right, so mirrored — see scene-ball-miss comment above */
   animation:
+    scene-ball-mirror 0.7s var(--suspense) forwards,
     scene-ball-spin 0.2s steps(3) var(--suspense) 3.5,
     scene-ball-concede 0.7s steps(7) var(--suspense) forwards;
 }
