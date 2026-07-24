@@ -2,7 +2,7 @@ import { useEffect, useLayoutEffect, useRef, useState, useSyncExternalStore } fr
 import type { Kick, Stage } from '../../types/match'
 import { getResult, KICKS_PER_SIDE } from '../../game/shootout'
 import { matchStore, QUESTION_TIME_SECONDS } from './store'
-import { PitchScene, type SceneFeedback } from './components/PitchScene'
+import { PitchScene, preloadSceneArt, type SceneFeedback } from './components/PitchScene'
 import { CoinReward } from './components/CoinReward'
 import { PreMatchCountdown } from '../lobby/components/PreMatchCountdown'
 import { fadeOutCrowd, play, playGoalCelebration } from '../../services/sound'
@@ -73,6 +73,11 @@ export function MatchScreen({ onExit, onMainMenu }: Props) {
   const is1v1 = state.mode === '1v1'
   const opponentLabel = is1v1 ? (state.opponentName ?? 'OPPONENT') : 'CPU'
   const goalSound = auth.customization.goalSound
+
+  // warm the equipped skins' sprite sheets before the first animation needs them
+  useEffect(() => {
+    preloadSceneArt(auth.customization.ballSkin, auth.customization.gkSkin)
+  }, [auth.customization.ballSkin, auth.customization.gkSkin])
 
   // countdown — paused while feedback plays and once the match is over. During
   // an opponent's turn it just ticks cosmetically: the server owns their real timeout.

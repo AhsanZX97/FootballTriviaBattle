@@ -1,7 +1,33 @@
 import { useState, type CSSProperties } from 'react'
 import type { Stage } from '../../../types/match'
 import { BALL_SKIN_SOURCES, GK_SKIN_SOURCES } from '../../../services/shopCatalogue'
+import stockDiveSheet from '../../../assets/gk-dive-strip.png'
+import stockSpinSheet from '../../../assets/ball-spin-strip.png'
 import './PitchScene.css'
+
+/* The dive/spin sheets are referenced only inside @keyframes, and browsers
+ * don't fetch a background image until a rule actually applies it — so on a
+ * cold cache the sheet is fetched mid-animation, blanking the actor for a few
+ * frames the first time each outcome plays. Warm the stock sheets at module
+ * load; the equipped skins' art goes through preloadSceneArt, which
+ * MatchScreen calls on mount — well before the first animation needs it. */
+const warmed = new Set<string>()
+function warm(src?: string) {
+  if (!src || warmed.has(src)) return
+  warmed.add(src)
+  new Image().src = src
+}
+warm(stockDiveSheet)
+warm(stockSpinSheet)
+
+export function preloadSceneArt(ballSkin?: string, gkSkin?: string) {
+  const ball = ballSkin ? BALL_SKIN_SOURCES[ballSkin] : undefined
+  const keeper = gkSkin ? GK_SKIN_SOURCES[gkSkin] : undefined
+  warm(ball?.thumb)
+  warm(ball?.spin)
+  warm(keeper?.idle)
+  warm(keeper?.dive)
+}
 
 /** How the keeper reacts to being beaten — picked at random per goal. */
 const GOAL_KEEPER_VARIANTS = ['wrong-way', 'frozen', 'late'] as const
