@@ -53,4 +53,10 @@ export const records: BankEntry[] = [
   q('Colombian keeper René Higuita is famous for inventing which outrageous clearance?', 'The scorpion kick', ['The dragon flick', 'The backheel volley', 'The flying wall'], 'medium'),
   q('Who captained Germany to the 2014 World Cup title before retiring from international football?', 'Philipp Lahm', ['Bastian Schweinsteiger', 'Manuel Neuer', 'Per Mertesacker'], 'hard'),
   q('Which striker scored the fastest Premier League goal ever, after just 7.69 seconds in 2019?', 'Shane Long', ['Jamie Vardy', 'Sadio Mané', 'Dwight Gayle'], 'hard'),
+  q('Which English club won the first expanded 32-team FIFA Club World Cup in 2025?', 'Chelsea', ['Manchester City', 'Real Madrid', 'PSG'], 'medium'),
+  q('Aitana Bonmatí won a third consecutive Women’s Ballon d’Or in which year?', '2025', ['2024', '2023', '2022'], 'hard'),
+  q('Who holds the record for most goals in men’s international football, with over 130?', 'Cristiano Ronaldo', ['Lionel Messi', 'Ali Daei', 'Ferenc Puskás'], 'medium'),
+  q('Which country won the 2023 Women’s World Cup, their first-ever title?', 'Spain', ['England', 'Sweden', 'Australia'], 'medium'),
+  q('Erling Haaland set the record for goals in a single 38-game Premier League season with how many in 2022-23?', '36', ['34', '32', '38'], 'medium'),
+  q('Real Madrid’s 2024 Champions League win, their 15th, was sealed at which London stadium?', 'Wembley', ['The Emirates', 'Stamford Bridge', 'Tottenham Hotspur Stadium'], 'hard'),
 ]

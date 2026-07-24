@@ -52,4 +52,8 @@ export const clubs: BankEntry[] = [
   q('Which club’s badge features a liver bird?', 'Liverpool', ['Everton', 'Norwich City', 'Cardiff City'], 'medium'),
   q('Flamengo, one of the world’s most supported clubs, is based in which country?', 'Brazil', ['Portugal', 'Argentina', 'Colombia'], 'medium'),
   q('Which German club is famous for its fan-owned "50+1" culture and plays in yellow and black?', 'Borussia Dortmund', ['Bayern Munich', 'Eintracht Frankfurt', 'Wolfsburg'], 'easy'),
+  q('Which club left Goodison Park to move into a new waterfront stadium at Bramley-Moore Dock in 2025?', 'Everton', ['Liverpool', 'Newcastle United', 'Sunderland'], 'hard'),
+  q('Which London club opened a stadium in 2019 with a dividing retractable pitch that reveals an NFL surface beneath?', 'Tottenham Hotspur', ['Arsenal', 'West Ham United', 'Chelsea'], 'medium'),
+  q('Which club redeveloped the Santiago Bernabéu with a retractable pitch and a wraparound metal skin in the 2020s?', 'Real Madrid', ['Barcelona', 'Atlético Madrid', 'Sevilla'], 'medium'),
+  q('Barcelona spent 2023-25 playing at the Montjuïc Olympic Stadium while renovating which iconic ground?', 'Camp Nou', ['Mestalla', 'San Mamés', 'Metropolitano'], 'medium'),
 ]

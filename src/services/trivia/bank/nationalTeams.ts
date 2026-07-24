@@ -53,4 +53,10 @@ export const nationalTeams: BankEntry[] = [
   q('Which country hosts the Maracanã and has produced Pelé, Ronaldo and Neymar?', 'Brazil', ['Argentina', 'Portugal', 'Uruguay'], 'easy'),
   q('Zinedine Zidane’s family roots, celebrated during France’s 1998 win, trace to which country?', 'Algeria', ['Morocco', 'Tunisia', 'Senegal'], 'hard'),
   q('Which country won the first-ever European Championship in 1960?', 'Soviet Union', ['Spain', 'Yugoslavia', 'France'], 'hard'),
+  q('Which country won the 2024 Copa América, beating Colombia in the final?', 'Argentina', ['Brazil', 'Uruguay', 'Colombia'], 'medium'),
+  q('Which country won the 2025 UEFA Nations League, beating Spain on penalties in the final?', 'Portugal', ['France', 'Germany', 'Italy'], 'medium'),
+  q('Which teenager set records for Spain at Euro 2024, becoming the tournament’s youngest goalscorer?', 'Lamine Yamal', ['Nico Williams', 'Pedri', 'Arda Güler'], 'medium'),
+  q('Which country won the men’s football gold medal at the 2024 Paris Olympics?', 'Spain', ['France', 'Argentina', 'Morocco'], 'hard'),
+  q('The 2026 World Cup is co-hosted by the United States, Canada and which other country?', 'Mexico', ['Brazil', 'Costa Rica', 'Colombia'], 'easy'),
+  q('Cristiano Ronaldo became the first man to play at how many different European Championships, a run reaching Euro 2024?', '6', ['4', '5', '7'], 'hard'),
 ]

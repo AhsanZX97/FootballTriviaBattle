@@ -53,4 +53,12 @@ export const leagues: BankEntry[] = [
   q('Which trophy do the Premier League champions and FA Cup winners contest each August?', 'The Community Shield', ['The Charity Bowl', 'The Super Trophy', 'The League Shield'], 'medium'),
   q('Which two Sheffield clubs contest the Steel City derby?', 'United and Wednesday', ['City and Rovers', 'Athletic and Town', 'United and City'], 'hard'),
   q('Which Spanish club plays its home games at the Mestalla?', 'Valencia', ['Sevilla', 'Real Betis', 'Villarreal'], 'hard'),
+  q('Which club won the 2024-25 Premier League in Arne Slot’s first season as manager?', 'Liverpool', ['Arsenal', 'Manchester City', 'Chelsea'], 'medium'),
+  q('Liverpool’s 2024-25 league title drew them level with Manchester United on how many English top-flight titles?', '20', ['19', '18', '21'], 'medium'),
+  q('Which club won the 2024-25 La Liga title under manager Hansi Flick?', 'Barcelona', ['Real Madrid', 'Atlético Madrid', 'Athletic Bilbao'], 'medium'),
+  q('Which club won the 2024-25 Serie A title under manager Antonio Conte?', 'Napoli', ['Inter Milan', 'Juventus', 'AC Milan'], 'medium'),
+  q('Which club reclaimed the Bundesliga title in 2024-25 after Bayer Leverkusen’s one-year reign?', 'Bayern Munich', ['Borussia Dortmund', 'RB Leipzig', 'VfB Stuttgart'], 'medium'),
+  q('Which club won the 2024-25 Ligue 1 title before going on to win the Champions League?', 'PSG', ['Monaco', 'Marseille', 'Lille'], 'easy'),
+  q('Kylian Mbappé won the 2024-25 European Golden Shoe playing for which club?', 'Real Madrid', ['PSG', 'Liverpool', 'Barcelona'], 'medium'),
+  q('Which club won the 2024-25 FA Cup, the first major trophy in its history, by beating Manchester City?', 'Crystal Palace', ['Fulham', 'Aston Villa', 'Brentford'], 'hard'),
 ]

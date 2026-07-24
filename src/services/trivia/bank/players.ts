@@ -55,4 +55,11 @@ export const players: BankEntry[] = [
   q('Cristiano Ronaldo began his professional career at which Portuguese club?', 'Sporting CP', ['Benfica', 'Porto', 'Braga'], 'medium'),
   q('Which Brazilian winger, a two-time World Cup winner nicknamed "Little Bird", is celebrated for his dribbling?', 'Garrincha', ['Jairzinho', 'Zico', 'Rivelino'], 'hard'),
   q('Which magazine originally created and awarded the Ballon d’Or?', 'France Football', ['L’Équipe', 'Marca', 'Kicker'], 'hard'),
+  q('Which PSG forward won the 2025 Ballon d’Or after their treble-winning season?', 'Ousmane Dembélé', ['Vitinha', 'Lamine Yamal', 'Kylian Mbappé'], 'medium'),
+  q('Which teenage Barcelona winger won the Kopa Trophy for best young player in both 2024 and 2025?', 'Lamine Yamal', ['Endrick', 'Warren Zaïre-Emery', 'Arda Güler'], 'medium'),
+  q('Which club did Kylian Mbappé join on a free transfer in 2024?', 'Real Madrid', ['Liverpool', 'Manchester City', 'Barcelona'], 'easy'),
+  q('Cristiano Ronaldo became the first footballer to score how many career goals, a milestone he passed in 2024?', '900', ['800', '1000', '850'], 'medium'),
+  q('Which Real Madrid winger won the 2024 FIFA The Best Men’s Player award?', 'Vinícius Júnior', ['Rodri', 'Jude Bellingham', 'Erling Haaland'], 'hard'),
+  q('Which England midfielder became a Galáctico by scoring on his Real Madrid debut season in 2023-24?', 'Jude Bellingham', ['Phil Foden', 'Declan Rice', 'Cole Palmer'], 'medium'),
+  q('Which young England forward broke out at Chelsea and won the 2023-24 PFA Young Player award?', 'Cole Palmer', ['Bukayo Saka', 'Phil Foden', 'Anthony Gordon'], 'medium'),
 ]

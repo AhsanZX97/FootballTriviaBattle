@@ -55,4 +55,8 @@ export const worldCup: BankEntry[] = [
   q('Which country won the 1962 World Cup held in Chile?', 'Brazil', ['Czechoslovakia', 'Chile', 'Italy'], 'hard'),
   q('How often is the FIFA World Cup held?', 'Every 4 years', ['Every 2 years', 'Every 3 years', 'Every 5 years'], 'easy'),
   q('Which Portuguese legend was top scorer at the 1966 World Cup?', 'Eusébio', ['Cristiano Ronaldo', 'Luís Figo', 'Mário Coluna'], 'hard'),
+  q('At which World Cup did Lionel Messi finally lift the trophy, in his fifth appearance?', '2022', ['2018', '2014', '2010'], 'easy'),
+  q('The 2026 World Cup is co-hosted by the USA, Mexico and which other country?', 'Canada', ['Brazil', 'England', 'Japan'], 'easy'),
+  q('Emiliano Martínez won the Golden Glove as best goalkeeper at which World Cup?', '2022', ['2018', '2014', '2010'], 'medium'),
+  q('Which teenager was named the best young player of the 2022 World Cup?', 'Enzo Fernández', ['Jamal Musiala', 'Jude Bellingham', 'Pedri'], 'hard'),
 ]
