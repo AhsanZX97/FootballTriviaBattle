@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState, useSyncExternalStore } from 'react'
+import { useEffect, useLayoutEffect, useRef, useState, useSyncExternalStore } from 'react'
 import type { Kick, Stage } from '../../types/match'
 import { getResult, KICKS_PER_SIDE } from '../../game/shootout'
 import { matchStore, QUESTION_TIME_SECONDS } from './store'
@@ -143,8 +143,11 @@ export function MatchScreen({ onExit, onMainMenu }: Props) {
   }, [feedback, is1v1, feedbackIsMine])
 
   // 1v1 only: replay the opponent's resolved kick as a feedback animation —
-  // their side of the match store already applied it via kickResolved.
-  useEffect(() => {
+  // their side of the match store already applied it via kickResolved. Layout
+  // effect, not useEffect: the store has already flipped stage to 'shoot' by
+  // the time this runs, so a passive effect would let the question screen
+  // paint for a frame before the feedback scene replaces it.
+  useLayoutEffect(() => {
     const kicks = state.shootout.kicks
     const prevSeen = kicksSeenRef.current
     kicksSeenRef.current = kicks.length

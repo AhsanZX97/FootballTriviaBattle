@@ -483,11 +483,25 @@
   }
 }
 
+/* leftward dives mirror the rightward dive sheet with scaleX(-1) — but only
+   from the moment the dive starts, via this constant-transform keyframe in the
+   animation list (delayed like the dive, `forwards` holds it). A static
+   transform on the rule would flip the keeper the instant the scene mounts,
+   making him visibly swap facing mid-idle when the feedback scene replaces the
+   waiting scene (both idle through --suspense first). Constant from/to, so no
+   mismatched-function-list interpolation — see the scene-ball-miss comment. */
+@keyframes scene-keeper-mirror {
+  from,
+  to {
+    transform: translate(-50%, -100%) scaleX(-1);
+  }
+}
+
 /* guesses right but gets there too late, lands short of the ball */
 .scene--goal-late .scene__keeper {
-  transform: translate(-50%, -100%) scaleX(-1); /* mirror: dive travels screen-left */
   animation:
     scene-keeper-idle var(--suspense) steps(15),
+    scene-keeper-mirror 0.6s calc(var(--suspense) + 0.2s) forwards,
     scene-keeper-dive-frames 0.6s steps(5) calc(var(--suspense) + 0.2s) forwards,
     scene-keeper-late 0.6s steps(6) calc(var(--suspense) + 0.2s) forwards;
 }
@@ -542,9 +556,9 @@
 }
 
 .scene--save .scene__keeper {
-  transform: translate(-50%, -100%) scaleX(-1); /* mirror: dive travels screen-left */
   animation:
     scene-keeper-idle var(--suspense) steps(15),
+    scene-keeper-mirror 0.6s var(--suspense) forwards,
     scene-keeper-dive-frames 0.6s steps(5) var(--suspense) forwards,
     scene-keeper-save 0.5s steps(5) var(--suspense) forwards;
 }
@@ -553,33 +567,33 @@
    the stock strips — one variant per keeper (see the idle-grid and
    dive-frames comments above for why these can't be one generic rule). */
 .scene--save .scene__keeper.scene__keeper--skinned.scene__keeper--neuer {
-  transform: translate(-50%, -100%) scaleX(-1);
   animation:
     scene-keeper-idle-grid-4x3 var(--suspense) steps(1),
+    scene-keeper-mirror 0.6s var(--suspense) forwards,
     scene-keeper-dive-frames-neuer 0.6s steps(5) var(--suspense) forwards,
     scene-keeper-save 0.5s steps(5) var(--suspense) forwards;
 }
 
 .scene--save .scene__keeper.scene__keeper--skinned.scene__keeper--casillas {
-  transform: translate(-50%, -100%) scaleX(-1);
   animation:
     scene-keeper-idle-grid-4x4 var(--suspense) steps(1),
+    scene-keeper-mirror 0.6s var(--suspense) forwards,
     scene-keeper-dive-frames-casillas 0.6s steps(4) var(--suspense) forwards,
     scene-keeper-save 0.5s steps(5) var(--suspense) forwards;
 }
 
 .scene--save .scene__keeper.scene__keeper--skinned.scene__keeper--vozinha {
-  transform: translate(-50%, -100%) scaleX(-1);
   animation:
     scene-keeper-idle-grid-4x4 var(--suspense) steps(1),
+    scene-keeper-mirror 0.6s var(--suspense) forwards,
     scene-keeper-dive-frames-vozinha 0.6s steps(4) var(--suspense) forwards,
     scene-keeper-save 0.5s steps(5) var(--suspense) forwards;
 }
 
 .scene--save .scene__keeper.scene__keeper--skinned.scene__keeper--terstegen {
-  transform: translate(-50%, -100%) scaleX(-1);
   animation:
     scene-keeper-idle-grid-4x4 var(--suspense) steps(1),
+    scene-keeper-mirror 0.6s var(--suspense) forwards,
     scene-keeper-dive-frames-terstegen 0.6s steps(4) var(--suspense) forwards,
     scene-keeper-save 0.5s steps(5) var(--suspense) forwards;
 }
@@ -607,9 +621,9 @@
 }
 
 .scene--concede .scene__keeper {
-  transform: translate(-50%, -100%) scaleX(-1); /* mirror: dive travels screen-left */
   animation:
     scene-keeper-idle var(--suspense) steps(15),
+    scene-keeper-mirror 0.6s var(--suspense) forwards,
     scene-keeper-dive-frames 0.6s steps(5) var(--suspense) forwards,
     scene-keeper-concede 0.7s steps(7) var(--suspense) forwards;
 }
@@ -617,33 +631,33 @@
 /* Same handoff, grid idle + each keeper's own repacked dive sheet — see the
    --save variants above. */
 .scene--concede .scene__keeper.scene__keeper--skinned.scene__keeper--neuer {
-  transform: translate(-50%, -100%) scaleX(-1);
   animation:
     scene-keeper-idle-grid-4x3 var(--suspense) steps(1),
+    scene-keeper-mirror 0.6s var(--suspense) forwards,
     scene-keeper-dive-frames-neuer 0.6s steps(5) var(--suspense) forwards,
     scene-keeper-concede 0.7s steps(7) var(--suspense) forwards;
 }
 
 .scene--concede .scene__keeper.scene__keeper--skinned.scene__keeper--casillas {
-  transform: translate(-50%, -100%) scaleX(-1);
   animation:
     scene-keeper-idle-grid-4x4 var(--suspense) steps(1),
+    scene-keeper-mirror 0.6s var(--suspense) forwards,
     scene-keeper-dive-frames-casillas 0.6s steps(4) var(--suspense) forwards,
     scene-keeper-concede 0.7s steps(7) var(--suspense) forwards;
 }
 
 .scene--concede .scene__keeper.scene__keeper--skinned.scene__keeper--vozinha {
-  transform: translate(-50%, -100%) scaleX(-1);
   animation:
     scene-keeper-idle-grid-4x4 var(--suspense) steps(1),
+    scene-keeper-mirror 0.6s var(--suspense) forwards,
     scene-keeper-dive-frames-vozinha 0.6s steps(4) var(--suspense) forwards,
     scene-keeper-concede 0.7s steps(7) var(--suspense) forwards;
 }
 
 .scene--concede .scene__keeper.scene__keeper--skinned.scene__keeper--terstegen {
-  transform: translate(-50%, -100%) scaleX(-1);
   animation:
     scene-keeper-idle-grid-4x4 var(--suspense) steps(1),
+    scene-keeper-mirror 0.6s var(--suspense) forwards,
     scene-keeper-dive-frames-terstegen 0.6s steps(4) var(--suspense) forwards,
     scene-keeper-concede 0.7s steps(7) var(--suspense) forwards;
 }
