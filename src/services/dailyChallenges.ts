@@ -10,28 +10,28 @@ export const DAILY_CHALLENGE_POOL: DailyChallengeDef[] = [
     title: 'SHARP SHOOTER',
     description: 'Answer 15 questions correctly',
     goal: 15,
-    reward: 10,
+    reward: 5,
   },
   {
     id: 'win_2_cpu',
     title: 'CPU CRUSHER',
     description: 'Win 2 matches vs CPU',
     goal: 2,
-    reward: 15,
+    reward: 5,
   },
   {
     id: 'score_5_pens',
     title: 'DEAD-EYE',
     description: 'Score 5 penalties',
     goal: 5,
-    reward: 10,
+    reward: 5,
   },
   {
     id: 'win_1v1',
     title: 'DUELIST',
     description: 'Win a 1v1 match',
     goal: 1,
-    reward: 20,
+    reward: 5,
   },
 ]
 

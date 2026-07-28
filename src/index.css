@@ -111,6 +111,31 @@ h2 {
   text-align: center;
 }
 
+/* Button variant, used everywhere the counter can open the "get coins" popup.
+   Strips the UA button chrome so it renders identically to the plain readout —
+   the only visible difference is the `+` below. */
+.coin-counter--action {
+  padding: 0;
+  border: none;
+  background: none;
+  font: inherit;
+  cursor: pointer;
+}
+
+/* The affordance that says the counter is tappable. Sits inside the pill, to
+   the right of the number, and is the only thing that widens it. */
+.coin-counter__plus {
+  margin-left: 6px;
+  color: #2fae4e;
+  text-shadow: 1px 1px 0 #000;
+}
+
+@media (hover: hover) {
+  .coin-counter--action:hover .coin-counter__plus {
+    color: #4fd873;
+  }
+}
+
 @media (max-width: 360px) {
   .coin-counter__icon {
     width: 24px;
@@ -123,6 +148,10 @@ h2 {
     height: 20px;
     padding: 0 8px 0 16px;
     font-size: 10px;
+  }
+
+  .coin-counter__plus {
+    margin-left: 4px;
   }
 }
 

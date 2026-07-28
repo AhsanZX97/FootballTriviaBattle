@@ -13,6 +13,8 @@ import { ChallengeOverlay } from './features/friends/components/ChallengeOverlay
 import { ChallengeCountdown } from './features/friends/components/ChallengeCountdown'
 import { FriendsPopup } from './features/friends/components/FriendsPopup'
 import { ShopPopup } from './features/shop/components/ShopPopup'
+import { GetCoinsPopup } from './features/coins/components/GetCoinsPopup'
+import { coinsStore } from './features/coins/store'
 import { DailyRewardPopup } from './features/challenges/components/DailyRewardPopup'
 import { claimableReward } from './services/dailyChallenges'
 import type { MatchReadySession } from './features/lobby/store'
@@ -32,6 +34,9 @@ function App() {
   // Shop opened from the intro menu. App owns it for the same reason as the
   // friends picker — the intro screen stays free of the shop's module graph.
   const [shopOpen, setShopOpen] = useState(false)
+  // "Get coins" popup, opened by tapping the top-bar coin counter. App owns it
+  // for the same reason as the shop, and because the counter lives in TopBar.
+  const [getCoinsOpen, setGetCoinsOpen] = useState(false)
   // An accepted challenge waits here through the 3-2-1 overlay, then starts.
   const [challengeMatch, setChallengeMatch] = useState<MatchReadySession | null>(null)
   // Daily login reward: auto-shows once per app session when a claim is waiting.
@@ -43,7 +48,12 @@ function App() {
     auth.status === 'signedIn' &&
     claimableReward(auth.dailyRewardStreak, auth.lastDailyRewardDate).claimable
   const showDailyReward =
-    screen === 'intro' && dailyClaimable && !dailyDismissed && !shopOpen && !challengeMatch
+    screen === 'intro' &&
+    dailyClaimable &&
+    !dailyDismissed &&
+    !shopOpen &&
+    !getCoinsOpen &&
+    !challengeMatch
 
   // theme plays over the menus, stops for the match, resumes on the way back
   useEffect(() => {
@@ -99,6 +109,25 @@ function App() {
   useEffect(() => {
     shopOpenRef.current = shopOpen
   }, [shopOpen])
+  const getCoinsOpenRef = useRef(getCoinsOpen)
+  useEffect(() => {
+    getCoinsOpenRef.current = getCoinsOpen
+  }, [getCoinsOpen])
+
+  // A match can start while the popup is open (an accepted friend challenge
+  // runs its countdown over the top of it), so close it on the way in rather
+  // than have it reappear when the match ends.
+  useEffect(() => {
+    if (screen === 'match') setGetCoinsOpen(false)
+  }, [screen])
+
+  // Finish any coin-pack purchase the app died in the middle of — paid for at
+  // Google but never credited here. Keyed on sign-in because crediting needs an
+  // account, and a purchase easily outlives the session that made it. A no-op
+  // on web and when Play is holding nothing.
+  useEffect(() => {
+    if (auth.status === 'signedIn') void coinsStore.recoverPurchases()
+  }, [auth.status])
   useEffect(() => {
     if (!isNative) return
     let handle: { remove: () => void } | undefined
@@ -106,7 +135,10 @@ function App() {
     void import('@capacitor/app').then(({ App: CapApp }) => {
       void CapApp.addListener('backButton', () => {
         const s = screenRef.current
-        if (s === 'intro' && shopOpenRef.current) setShopOpen(false)
+        // The coins popup can be open over intro, lobby or auth, and back
+        // should dismiss it before it navigates anywhere.
+        if (s !== 'match' && getCoinsOpenRef.current) setGetCoinsOpen(false)
+        else if (s === 'intro' && shopOpenRef.current) setShopOpen(false)
         else if (s === 'intro') void CapApp.exitApp()
         else if (s === 'lobby' || s === 'auth') setScreen('intro')
         // in a match the on-screen buttons own every exit
@@ -174,7 +206,7 @@ function App() {
 
   return (
     <>
-      <TopBar screen={screen} />
+      <TopBar screen={screen} onGetCoins={() => setGetCoinsOpen(true)} />
       {screen !== 'match' && <ChallengeOverlay />}
       {content}
       {friendsPickerOpen && screen === 'lobby' && (
@@ -187,6 +219,9 @@ function App() {
         />
       )}
       {shopOpen && screen === 'intro' && <ShopPopup onClose={() => setShopOpen(false)} />}
+      {getCoinsOpen && screen !== 'match' && (
+        <GetCoinsPopup onClose={() => setGetCoinsOpen(false)} />
+      )}
       {showDailyReward && <DailyRewardPopup onClose={() => setDailyDismissed(true)} />}
       {challengeMatch && screen !== 'match' && (
         <ChallengeCountdown

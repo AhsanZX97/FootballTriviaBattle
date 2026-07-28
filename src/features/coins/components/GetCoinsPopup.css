@@ -1,0 +1,201 @@
+/* Deliberately mirrors ShopPopup.css / FriendsPopup.css — the modals are one
+   system, so any change to the panel skin should land in all of them.
+
+   Every class here is prefixed `getcoins`: this project uses plain global CSS
+   (no Modules), and a shorter prefix like `.coin` would collide with the
+   existing .coin-counter and .coin-reward rules in index.css. */
+
+/* Full-screen dimming backdrop centring the panel. Above the App-level floats
+   (z 100) so it covers the coin/sound/friends bar while open. */
+.getcoins {
+  position: fixed;
+  inset: 0;
+  z-index: 200;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+  background: rgba(0, 0, 0, 0.6);
+}
+
+.getcoins__panel {
+  display: flex;
+  flex-direction: column;
+  width: min(94%, 380px);
+  max-height: min(88dvh, 640px);
+  background: linear-gradient(#123a24, #0a2416);
+  border-radius: 6px;
+  box-shadow:
+    inset 0 0 0 3px rgba(255, 207, 26, 0.4),
+    0 0 0 4px #0a0a0a,
+    6px 6px 0 4px rgba(0, 0, 0, 0.85);
+}
+
+.getcoins__head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 16px 10px;
+}
+
+.getcoins__title {
+  margin: 0;
+  color: #ffcf1a;
+  font-family: 'Press Start 2P', ui-monospace, Consolas, monospace;
+  font-size: 16px;
+  letter-spacing: 0.06em;
+  text-shadow: 2px 2px 0 #000;
+}
+
+.getcoins__close {
+  padding: 4px 8px;
+  border: none;
+  background: none;
+  color: #cfd8e6;
+  font-family: 'Press Start 2P', ui-monospace, Consolas, monospace;
+  font-size: 14px;
+  cursor: pointer;
+  text-shadow: 2px 2px 0 #000;
+}
+
+@media (hover: hover) {
+  .getcoins__close:hover {
+    color: #fff;
+  }
+}
+
+.getcoins__body {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  padding: 12px 16px 16px;
+  background: rgba(0, 0, 0, 0.18);
+  font-family: 'Press Start 2P', ui-monospace, Consolas, monospace;
+}
+
+/* One acquisition method per card. Phase B's coin packs stack below this one. */
+.getcoins__card {
+  padding: 18px 14px 14px;
+  text-align: center;
+  background: #0a2416;
+  border-radius: 4px;
+  box-shadow: inset 0 0 0 2px rgba(0, 0, 0, 0.5);
+}
+
+.getcoins__reward {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  margin: 0 0 6px;
+}
+
+.getcoins__amount {
+  color: #ffcf1a;
+  font-size: 20px;
+  letter-spacing: 0.04em;
+  text-shadow: 2px 2px 0 #000;
+}
+
+.getcoins__label {
+  margin: 0 0 16px;
+  color: #9fc3ad;
+  font-size: 9px;
+  line-height: 1.6;
+  letter-spacing: 0.04em;
+}
+
+.getcoins__btn {
+  width: 100%;
+  padding: 12px 8px;
+  border: none;
+  background: #2fae4e;
+  color: #fff;
+  font-family: inherit;
+  font-size: 10px;
+  letter-spacing: 0.04em;
+  cursor: pointer;
+  border-radius: 4px;
+  text-shadow: 1px 1px 0 rgba(0, 0, 0, 0.4);
+  box-shadow:
+    0 0 0 2px #0a0a0a,
+    2px 2px 0 2px rgba(0, 0, 0, 0.7);
+}
+
+.getcoins__btn:disabled {
+  background: #4a5a4e;
+  color: #9aa0aa;
+  cursor: not-allowed;
+}
+
+.getcoins__note {
+  margin: 12px 0 0;
+  color: #7fa38c;
+  font-size: 8px;
+  line-height: 1.6;
+}
+
+.getcoins__error {
+  margin: 12px 0 0;
+  color: #ff8b8b;
+  font-size: 9px;
+  line-height: 1.5;
+  text-align: center;
+  text-shadow: 1px 1px 0 #000;
+}
+
+/* --- real-money coin packs --- */
+
+.getcoins__heading {
+  margin: 18px 0 8px;
+  color: #ffcf1a;
+  font-size: 10px;
+  letter-spacing: 0.06em;
+  text-shadow: 1px 1px 0 #000;
+}
+
+.getcoins__packs {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+/* Coin amount grows, name sits under it, price button pins right. */
+.getcoins__pack {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  align-items: center;
+  gap: 2px 10px;
+  padding: 10px 12px;
+  background: #0a2416;
+  border-radius: 4px;
+  box-shadow: inset 0 0 0 2px rgba(0, 0, 0, 0.5);
+}
+
+.getcoins__pack-amount {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  color: #ffcf1a;
+  font-size: 13px;
+}
+
+.getcoins__pack-name {
+  grid-column: 1;
+  color: #7fa38c;
+  font-size: 8px;
+  line-height: 1.6;
+}
+
+/* Spans both pack rows so it centres against the amount + name block. */
+.getcoins__btn--buy {
+  grid-column: 2;
+  grid-row: 1 / span 2;
+  width: auto;
+  min-width: 88px;
+  padding: 10px 12px;
+  font-size: 10px;
+}

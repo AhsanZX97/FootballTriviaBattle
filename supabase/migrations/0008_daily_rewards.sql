@@ -97,10 +97,10 @@ declare
   v_balance integer;
 begin
   v_reward := case p_challenge_id
-    when 'answer_15'    then 10
-    when 'win_2_cpu'    then 15
-    when 'score_5_pens' then 10
-    when 'win_1v1'      then 20
+    when 'answer_15'    then 5
+    when 'win_2_cpu'    then 5
+    when 'score_5_pens' then 5
+    when 'win_1v1'      then 5
     else 0 end;
   if v_reward = 0 then
     return null;

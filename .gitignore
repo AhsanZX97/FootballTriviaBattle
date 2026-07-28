@@ -17,6 +17,11 @@ keystore.properties
 *.jks
 *.keystore
 
+# Google service account key + the env file used to push Supabase function
+# secrets. These grant access to the Play Developer API — never commit them.
+supabase/.env.secrets
+*-service-account*.json
+
 # Editor directories and files
 .vscode/*
 !.vscode/extensions.json
@@ -31,3 +36,6 @@ keystore.properties
 docs/
 
 src/assets/screenshots
+
+# Playwright MCP session artifacts (snapshots, console logs, screenshots)
+.playwright-mcp/
