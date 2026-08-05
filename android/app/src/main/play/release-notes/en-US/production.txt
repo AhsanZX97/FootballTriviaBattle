@@ -1,0 +1,4 @@
+- New: earn coins by watching a short ad, up to 5 times a day
+- New: coin packs available to purchase
+- Fixed rewarded ads not playing
+- Fixes and performance improvements

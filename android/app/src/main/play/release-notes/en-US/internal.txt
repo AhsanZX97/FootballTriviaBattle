@@ -1,0 +1,3 @@
+- New: earn coins by watching a short ad, up to 5 times a day
+- New: coin packs available to purchase
+- Fixes and performance improvements

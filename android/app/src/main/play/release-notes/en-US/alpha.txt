@@ -1,0 +1,10 @@
+Welcome to Football Trivia Battle — v1.0
+
+• Test your football knowledge against the clock
+• Score goals by answering correctly, then settle it with penalty shootouts
+• Play head-to-head in real-time online matches
+• Quick match to get straight into the action
+
+This is an early test release. Thanks for helping out — please send feedback
+on anything that feels off, and note that online matches need both players
+connected.

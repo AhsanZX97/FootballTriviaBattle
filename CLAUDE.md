@@ -82,8 +82,19 @@ the **Data safety form** / content rating / policy declarations, and the
 **final rollout** button (by our own DRAFT default).
 
 `versionCode` in `android/app/build.gradle` must increase every upload; Play
-rejects a reused one. Release notes are a repo file:
-`android/app/src/main/play/release-notes/en-US/default.txt`, **max 500 chars**.
+rejects a reused one. Release notes are repo files, **one per track**:
+`android/app/src/main/play/release-notes/en-US/{internal,alpha,production}.txt`
+(`default.txt` is the fallback if a track file is missing), **max 500 chars**.
+
+The store listing itself — title, descriptions, screenshots, feature graphic —
+is now checked in under `android/app/src/main/play/listings/`, pulled down by
+`bootstrapReleaseListing`. Note `publishReleaseBundle` does **not** push these;
+only `publishReleaseListing` does, so editing them is inert until you run that.
+
+Known breakage: `bootstrapListing` and `publishProducts` fail with `403 "Please
+migrate to the new publishing API"`. Google retired the v3 `inappproducts`
+endpoint (now "One-time products") and GPP 3.12.1 never migrated. It does not
+affect `publishReleaseBundle`. Manage in-app products in the console.
 
 ## Multiplayer dev
 

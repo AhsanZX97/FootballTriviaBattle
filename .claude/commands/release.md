@@ -24,7 +24,12 @@ Read [android/app/build.gradle](android/app/build.gradle). Bump:
 ## 3. Write the release notes
 
 Read `git log <last tag>..HEAD --oneline` and rewrite the user-facing changes
-into [android/app/src/main/play/release-notes/en-US/default.txt](android/app/src/main/play/release-notes/en-US/default.txt).
+into the release-notes file **for the track being published** —
+`android/app/src/main/play/release-notes/en-US/<track>.txt`. For the default
+internal release that is
+[internal.txt](android/app/src/main/play/release-notes/en-US/internal.txt);
+promoting to production later uses `production.txt`, so update that one too if
+the user is going straight to production.
 
 Rules: **max 500 characters** (Play hard-rejects longer), plain user language,
 no commit hashes, no internal refactors. Short bullets with `-`. If every commit
