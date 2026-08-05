@@ -142,11 +142,11 @@ describe('presence store', () => {
     fake.emit({
       type: 'matched',
       opponentName: 'Bob',
-      opponentGkSkin: 'gk_vozinha',
+      opponentGkSkin: 'gk_coral_guard',
       youGoFirst: true,
       questions: [] as Question[],
     })
-    expect(handler.mock.calls[0]![0]).toMatchObject({ opponentGkSkin: 'gk_vozinha' })
+    expect(handler.mock.calls[0]![0]).toMatchObject({ opponentGkSkin: 'gk_coral_guard' })
 
     // reconnect and match again without a skin — must land as null, not undefined
     await store.connect()

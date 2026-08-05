@@ -2,6 +2,8 @@ import type { LobbyPhase } from '../../types/multiplayer'
 import type { Question } from '../../types/trivia'
 import type { MultiplayerSocket } from '../../services/multiplayer/socket'
 import { connectWithAuth } from '../../services/multiplayer/socket'
+import { questionsFromMatchPayload } from '../../services/trivia/bank/localised'
+import { i18nStore } from '../../services/i18n/store'
 import { authStore } from '../auth/store'
 import { randomName } from './randomName'
 
@@ -111,7 +113,7 @@ export function createLobbyStore(connectFn: ConnectFn = connectWithAuth) {
             opponentName: message.opponentName,
             opponentGkSkin: message.opponentGkSkin ?? null,
             youGoFirst: message.youGoFirst,
-            questions: message.questions,
+            questions: questionsFromMatchPayload(message, i18nStore.getLocale()),
           })
           return
         case 'error':

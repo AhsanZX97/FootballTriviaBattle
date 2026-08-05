@@ -2,6 +2,7 @@ import type { ShopItem } from '../../../types/customization'
 import { Sprite } from '../../../components/Sprite'
 import volumeIcon from '../../../assets/volume-icon.png'
 import './ShopItemList.css'
+import { useT } from '../../../services/i18n/store'
 
 type Props = {
   items: ShopItem[]
@@ -41,6 +42,7 @@ export function ShopItemList({
   onEquip,
   busy,
 }: Props) {
+  const t = useT()
   return (
     <ul className="shop-items">
       {items.map((item) => {
@@ -53,7 +55,9 @@ export function ShopItemList({
           <div className="shop-items__main shop-items__main--static">
             <span className="shop-items__name">{item.name}</span>
             {isEquipped ? (
-              <span className="shop-items__tag shop-items__tag--equipped">EQUIPPED</span>
+              <span className="shop-items__tag shop-items__tag--equipped">
+                {t('shop.equipped')}
+              </span>
             ) : (
               <button
                 type="button"
@@ -61,7 +65,7 @@ export function ShopItemList({
                 disabled={busy}
                 onClick={() => onEquip(item)}
               >
-                EQUIP
+                {t('shop.equip')}
               </button>
             )}
           </div>
@@ -74,9 +78,11 @@ export function ShopItemList({
           >
             <span className="shop-items__name">{item.name}</span>
             {isEquipped ? (
-              <span className="shop-items__tag shop-items__tag--equipped">EQUIPPED</span>
+              <span className="shop-items__tag shop-items__tag--equipped">
+                {t('shop.equipped')}
+              </span>
             ) : isOwned ? (
-              <span className="shop-items__tag">OWNED</span>
+              <span className="shop-items__tag">{t('shop.owned')}</span>
             ) : (
               <span className="shop-items__price">
                 <Sprite name="coin" />
@@ -92,7 +98,7 @@ export function ShopItemList({
               <button
                 type="button"
                 className="shop-items__preview"
-                aria-label={`Preview ${item.name}`}
+                aria-label={t('shop.previewAria', { name: item.name })}
                 onClick={() => onPreview(item)}
               >
                 <img className="shop-items__preview-img" src={volumeIcon} alt="" />

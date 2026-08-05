@@ -6,6 +6,7 @@ import { DAILY_REWARD_CYCLE, dailyRewardFor } from '../../../types/daily'
 import coinSprite from '../../../assets/sprites/coin.png'
 import trophySprite from '../../../assets/sprites/trophy.png'
 import './DailyRewardCard.css'
+import { useT } from '../../../services/i18n/store'
 
 type Props = {
   /** Fired after a successful claim with the coins granted — lets a host popup
@@ -19,6 +20,7 @@ const DAYS = Array.from({ length: DAILY_REWARD_CYCLE }, (_, i) => i + 1)
  * the streak state comes from the profile and claiming goes through the RPC.
  * Reused by the auto popup and the account tab's Daily panel. */
 export function DailyRewardCard({ onClaimed }: Props) {
+  const t = useT()
   const auth = useSyncExternalStore(authStore.subscribe, authStore.getState)
   const [busy, setBusy] = useState(false)
   const [burst, setBurst] = useState<number | null>(null)
@@ -40,8 +42,8 @@ export function DailyRewardCard({ onClaimed }: Props) {
   }
 
   return (
-    <section className="daily-reward" aria-label="Daily login reward">
-      <h3 className="daily-reward__title">DAILY REWARD</h3>
+    <section className="daily-reward" aria-label={t('dailyReward.aria')}>
+      <h3 className="daily-reward__title">{t('dailyReward.title')}</h3>
 
       <ol className="daily-reward__track">
         {DAYS.map((day) => {
@@ -51,7 +53,9 @@ export function DailyRewardCard({ onClaimed }: Props) {
           return (
             <li key={day} className={`daily-reward__day daily-reward__day--${state}`}>
               <span className="daily-reward__day-label">
-                {isMilestone ? 'DAY 7' : `D${day}`}
+                {isMilestone
+                  ? t('dailyReward.milestone', { day: DAILY_REWARD_CYCLE })
+                  : t('dailyReward.dayShort', { day })}
               </span>
               <img
                 className="daily-reward__day-icon"
@@ -75,7 +79,7 @@ export function DailyRewardCard({ onClaimed }: Props) {
           <CoinReward amount={burst} />
         </div>
       ) : !signedIn ? (
-        <p className="daily-reward__note">Sign in to claim your daily reward.</p>
+        <p className="daily-reward__note">{t('dailyReward.signInNote')}</p>
       ) : status.claimable ? (
         <button
           type="button"
@@ -83,10 +87,10 @@ export function DailyRewardCard({ onClaimed }: Props) {
           onClick={() => void handleClaim()}
           disabled={busy}
         >
-          {busy ? 'CLAIMING…' : `CLAIM +${status.reward}`}
+          {busy ? t('dailyReward.claiming') : t('dailyReward.claim', { amount: status.reward })}
         </button>
       ) : (
-        <p className="daily-reward__note">Claimed! Come back tomorrow.</p>
+        <p className="daily-reward__note">{t('dailyReward.claimed')}</p>
       )}
     </section>
   )

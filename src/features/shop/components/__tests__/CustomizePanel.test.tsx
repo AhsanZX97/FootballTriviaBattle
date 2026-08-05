@@ -106,43 +106,43 @@ describe('CustomizePanel tabs', () => {
 
 describe('CustomizePanel owned items', () => {
   it('lists only what you own, never the rest of the catalogue', async () => {
-    await renderSounds({ listOwnedItems: vi.fn(async () => ['siuuuu']) })
-    await screen.findByText('SIUUUU')
+    await renderSounds({ listOwnedItems: vi.fn(async () => ['celebration_yell']) })
+    await screen.findByText('Celebration Yell')
     expect(screen.queryByText('GOOOOOOOOOOAL')).toBeNull()
     expect(screen.queryByText('gooal')).toBeNull()
   })
 
   it('marks the equipped item and offers no equip button for it', async () => {
-    authState = { ...authState, customization: { ...defaultCustomization(), goalSound: 'siuuuu' } }
-    await renderSounds({ listOwnedItems: vi.fn(async () => ['siuuuu']) })
-    await screen.findByText('SIUUUU')
+    authState = { ...authState, customization: { ...defaultCustomization(), goalSound: 'celebration_yell' } }
+    await renderSounds({ listOwnedItems: vi.fn(async () => ['celebration_yell']) })
+    await screen.findByText('Celebration Yell')
 
-    // one EQUIPPED tag (SIUUUU), and DEFAULT keeps its equip button
+    // one EQUIPPED tag (Celebration Yell), and DEFAULT keeps its equip button
     expect(screen.getAllByText('EQUIPPED')).toHaveLength(1)
     expect(screen.getAllByRole('button', { name: 'EQUIP' })).toHaveLength(1)
   })
 
   it('equips an owned item', async () => {
-    const { api } = await renderSounds({ listOwnedItems: vi.fn(async () => ['siuuuu']) })
-    await screen.findByText('SIUUUU')
+    const { api } = await renderSounds({ listOwnedItems: vi.fn(async () => ['celebration_yell']) })
+    await screen.findByText('Celebration Yell')
 
-    fireEvent.click(equipButtonFor('SIUUUU'))
+    fireEvent.click(equipButtonFor('Celebration Yell'))
 
-    await waitFor(() => expect(api.setCustomization).toHaveBeenCalledWith('goalSound', 'siuuuu'))
-    // the equipped marker moves off DEFAULT and onto SIUUUU
+    await waitFor(() => expect(api.setCustomization).toHaveBeenCalledWith('goalSound', 'celebration_yell'))
+    // the equipped marker moves off DEFAULT and onto Celebration Yell
     await waitFor(() =>
-      expect(within(screen.getByText('SIUUUU').closest('li')!).getByText('EQUIPPED')).toBeDefined(),
+      expect(within(screen.getByText('Celebration Yell').closest('li')!).getByText('EQUIPPED')).toBeDefined(),
     )
   })
 
   it('surfaces a failed equip', async () => {
     await renderSounds({
-      listOwnedItems: vi.fn(async () => ['siuuuu']),
+      listOwnedItems: vi.fn(async () => ['celebration_yell']),
       setCustomization: vi.fn(async () => false),
     })
-    await screen.findByText('SIUUUU')
+    await screen.findByText('Celebration Yell')
 
-    fireEvent.click(equipButtonFor('SIUUUU'))
+    fireEvent.click(equipButtonFor('Celebration Yell'))
 
     expect(await screen.findByText(/could not equip that item/i)).toBeDefined()
   })
@@ -150,9 +150,9 @@ describe('CustomizePanel owned items', () => {
 
 describe('CustomizePanel default row', () => {
   it('always offers DEFAULT so the stock sound can be equipped back', async () => {
-    authState = { ...authState, customization: { ...defaultCustomization(), goalSound: 'siuuuu' } }
-    const { api } = await renderSounds({ listOwnedItems: vi.fn(async () => ['siuuuu']) })
-    await screen.findByText('SIUUUU')
+    authState = { ...authState, customization: { ...defaultCustomization(), goalSound: 'celebration_yell' } }
+    const { api } = await renderSounds({ listOwnedItems: vi.fn(async () => ['celebration_yell']) })
+    await screen.findByText('Celebration Yell')
 
     fireEvent.click(equipButtonFor('DEFAULT'))
 
@@ -168,48 +168,48 @@ describe('CustomizePanel default row', () => {
 
 describe('CustomizePanel ball skins', () => {
   it('lists an owned ball skin with a thumbnail and equips it', async () => {
-    const { api } = await renderBalls({ listOwnedItems: vi.fn(async () => ['wc_ball_2010']) })
-    await screen.findByText('2010 WC Ball')
+    const { api } = await renderBalls({ listOwnedItems: vi.fn(async () => ['ball_gold_trim']) })
+    await screen.findByText('Gold Trim Ball')
 
-    const row = screen.getByText('2010 WC Ball').closest('li')
+    const row = screen.getByText('Gold Trim Ball').closest('li')
     expect(row?.querySelector('img')).not.toBeNull()
 
-    fireEvent.click(equipButtonFor('2010 WC Ball'))
+    fireEvent.click(equipButtonFor('Gold Trim Ball'))
 
-    await waitFor(() => expect(api.setCustomization).toHaveBeenCalledWith('ballSkin', 'wc_ball_2010'))
+    await waitFor(() => expect(api.setCustomization).toHaveBeenCalledWith('ballSkin', 'ball_gold_trim'))
   })
 })
 
 describe('CustomizePanel keeper skins', () => {
   it('lists an owned keeper skin with a thumbnail and equips it', async () => {
-    const made = makeStore({ listOwnedItems: vi.fn(async () => ['gk_manuel_neuer']) })
+    const made = makeStore({ listOwnedItems: vi.fn(async () => ['gk_green_wall']) })
     render(<CustomizePanel store={made.store} />)
     await waitFor(() => expect(made.api.listOwnedItems).toHaveBeenCalled())
     // SKIN is the opening tab, so no need to switch to it.
-    await screen.findByText('Manuel Neuer')
+    await screen.findByText('Green Wall Keeper')
 
-    const row = screen.getByText('Manuel Neuer').closest('li')
+    const row = screen.getByText('Green Wall Keeper').closest('li')
     expect(row?.querySelector('img')).not.toBeNull()
 
-    fireEvent.click(equipButtonFor('Manuel Neuer'))
+    fireEvent.click(equipButtonFor('Green Wall Keeper'))
 
     await waitFor(() =>
-      expect(made.api.setCustomization).toHaveBeenCalledWith('gkSkin', 'gk_manuel_neuer'),
+      expect(made.api.setCustomization).toHaveBeenCalledWith('gkSkin', 'gk_green_wall'),
     )
   })
 })
 
 describe('CustomizePanel preview', () => {
   it('previews an owned sound', async () => {
-    await renderSounds({ listOwnedItems: vi.fn(async () => ['siuuuu']) })
-    await screen.findByText('SIUUUU')
+    await renderSounds({ listOwnedItems: vi.fn(async () => ['celebration_yell']) })
+    await screen.findByText('Celebration Yell')
 
-    fireEvent.click(screen.getByRole('button', { name: 'Preview SIUUUU' }))
-    expect(previewGoalSound).toHaveBeenCalledWith('siuuuu')
+    fireEvent.click(screen.getByRole('button', { name: 'Preview Celebration Yell' }))
+    expect(previewGoalSound).toHaveBeenCalledWith('celebration_yell')
   })
 
   it('offers no preview on the visual slots', async () => {
-    const made = makeStore({ listOwnedItems: vi.fn(async () => ['siuuuu']) })
+    const made = makeStore({ listOwnedItems: vi.fn(async () => ['celebration_yell']) })
     render(<CustomizePanel store={made.store} />)
     await waitFor(() => expect(made.api.listOwnedItems).toHaveBeenCalled())
 

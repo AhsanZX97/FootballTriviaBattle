@@ -15,7 +15,17 @@ export interface BankQuestion extends BankEntry {
   category: string
 }
 
-const topics: Array<[prefix: string, category: string, entries: BankEntry[]]> = [
+/** Topic id — also the prefix of every question id drawn from that topic. */
+export type TopicPrefix = 'wc' | 'ec' | 'lg' | 'pl' | 'cl' | 'nt' | 'ru' | 're'
+
+/**
+ * The source (English) bank, by topic. `category` is internal bookkeeping, not
+ * UI text — nothing renders it — so it is deliberately not translated.
+ *
+ * Exported because the per-locale banks walk this same list in this same order:
+ * question ids are `${prefix}-${index}`, so order is load-bearing.
+ */
+export const TOPICS: Array<[prefix: TopicPrefix, category: string, entries: BankEntry[]]> = [
   ['wc', 'World Cup', worldCup],
   ['ec', 'European Cups', europeanCups],
   ['lg', 'Leagues', leagues],
@@ -27,6 +37,6 @@ const topics: Array<[prefix: string, category: string, entries: BankEntry[]]> = 
 ]
 
 /** The full football-only question bank, ids stable as long as entries keep their order. */
-export const footballBank: BankQuestion[] = topics.flatMap(([prefix, category, entries]) =>
+export const footballBank: BankQuestion[] = TOPICS.flatMap(([prefix, category, entries]) =>
   entries.map((entry, i) => ({ ...entry, id: `${prefix}-${i}`, category })),
 )

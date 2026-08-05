@@ -6,6 +6,7 @@ import { CustomizePanel } from '../../shop/components/CustomizePanel'
 import { StatsPanel } from '../../stats/components/StatsPanel'
 import { ChallengesPanel } from '../../challenges/components/ChallengesPanel'
 import './FriendsPopup.css'
+import { useT } from '../../../services/i18n/store'
 
 type Tab = 'daily' | 'friends' | 'stats' | 'customize'
 
@@ -19,6 +20,7 @@ type Props = {
  * for equipping what they own (buying lives in the shop). Refreshes the
  * friend/request lists on open. */
 export function FriendsPopup({ onClose, onChallenge }: Props) {
+  const t = useT()
   const [tab, setTab] = useState<Tab>('friends')
 
   // Hide the native bottom banner while open: the username search field opens
@@ -39,14 +41,14 @@ export function FriendsPopup({ onClose, onChallenge }: Props) {
   }, [onClose])
 
   return (
-    <div className="friends-popup" role="dialog" aria-modal="true" aria-label="Account" onClick={onClose}>
+    <div className="friends-popup" role="dialog" aria-modal="true" aria-label={t('account.aria')} onClick={onClose}>
       <div className="friends-popup__panel" onClick={(e) => e.stopPropagation()}>
         <div className="friends-popup__head">
-          <h2 className="friends-popup__title">ACCOUNT</h2>
+          <h2 className="friends-popup__title">{t('account.title')}</h2>
           <button
             type="button"
             className="friends-popup__close"
-            aria-label="Close"
+            aria-label={t('common.closeAria')}
             onClick={onClose}
           >
             ✕
@@ -61,7 +63,7 @@ export function FriendsPopup({ onClose, onChallenge }: Props) {
             className={`friends-popup__tab${tab === 'daily' ? ' is-active' : ''}`}
             onClick={() => setTab('daily')}
           >
-            DAILY
+            {t('account.tab.daily')}
           </button>
           <button
             type="button"
@@ -70,7 +72,7 @@ export function FriendsPopup({ onClose, onChallenge }: Props) {
             className={`friends-popup__tab${tab === 'friends' ? ' is-active' : ''}`}
             onClick={() => setTab('friends')}
           >
-            FRIENDS
+            {t('account.tab.friends')}
           </button>
           <button
             type="button"
@@ -79,7 +81,7 @@ export function FriendsPopup({ onClose, onChallenge }: Props) {
             className={`friends-popup__tab${tab === 'stats' ? ' is-active' : ''}`}
             onClick={() => setTab('stats')}
           >
-            STATS
+            {t('account.tab.stats')}
           </button>
           <button
             type="button"
@@ -88,7 +90,7 @@ export function FriendsPopup({ onClose, onChallenge }: Props) {
             className={`friends-popup__tab${tab === 'customize' ? ' is-active' : ''}`}
             onClick={() => setTab('customize')}
           >
-            CUSTOM
+            {t('account.tab.custom')}
           </button>
         </div>
 

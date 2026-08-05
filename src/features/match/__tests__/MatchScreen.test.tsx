@@ -182,7 +182,7 @@ describe('MatchScreen', () => {
   })
 
   it('keeps the equipped GK skin during the opponent-kick feedback while defending in 1v1', () => {
-    authStore.applyCustomizationUpdate('gkSkin', 'gk_manuel_neuer')
+    authStore.applyCustomizationUpdate('gkSkin', 'gk_green_wall')
     let handleMessage: ((m: ServerMessage) => void) | undefined
     const socket: MultiplayerSocket = {
       send: () => {},

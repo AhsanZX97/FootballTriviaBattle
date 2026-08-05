@@ -90,17 +90,17 @@ describe('ShopPopup tabs', () => {
   it('lists the keeper skins with their price and a thumbnail', () => {
     render(<ShopPopup onClose={() => {}} store={makeStore().store} />)
 
-    for (const name of ['Manuel Neuer', 'Iker Casillas', 'Vozinha', 'ter Stegen']) {
+    for (const name of ['Green Wall Keeper', 'Gold Standard Keeper', 'Coral Guard Keeper', 'Orange Blaze Keeper']) {
       expect(screen.getByRole('button', { name })).toBeDefined()
     }
     expect(screen.getAllByText('200')).toHaveLength(4)
-    const row = screen.getByRole('button', { name: 'Manuel Neuer' })
+    const row = screen.getByRole('button', { name: 'Green Wall Keeper' })
     expect(row.closest('li')?.querySelector('img')).not.toBeNull()
   })
 
   it('lists the five goal sounds with their price', async () => {
     await renderSounds()
-    for (const name of ['goal + horn', 'gooal', 'GOOOOOOOOOOAL', 'SIUUUU', 'video game sound']) {
+    for (const name of ['goal + horn', 'gooal', 'GOOOOOOOOOOAL', 'Celebration Yell', 'video game sound']) {
       expect(screen.getByRole('button', { name })).toBeDefined()
     }
     expect(screen.getAllByText('100')).toHaveLength(5)
@@ -110,11 +110,11 @@ describe('ShopPopup tabs', () => {
     render(<ShopPopup onClose={() => {}} store={makeStore().store} />)
     fireEvent.click(screen.getByRole('tab', { name: 'BALL' }))
 
-    for (const name of ['2010 WC Ball', '2014 WC Ball', '2018 WC Ball', '2022 WC Ball', '2026 WC Ball']) {
+    for (const name of ['Gold Trim Ball', 'Carnival Swirl Ball', 'Crimson Block Ball', 'Neon Streak Ball', 'Prism Panel Ball']) {
       expect(screen.getByRole('button', { name })).toBeDefined()
     }
     expect(screen.getAllByText('150')).toHaveLength(5)
-    const row = screen.getByRole('button', { name: '2010 WC Ball' })
+    const row = screen.getByRole('button', { name: 'Gold Trim Ball' })
     expect(row.closest('li')?.querySelector('img')).not.toBeNull()
   })
 
@@ -136,8 +136,8 @@ describe('ShopPopup tabs', () => {
 describe('ShopPopup preview', () => {
   it('previews a sound from its audio button without opening the confirm', async () => {
     await renderSounds()
-    fireEvent.click(screen.getByRole('button', { name: 'Preview SIUUUU' }))
-    expect(previewGoalSound).toHaveBeenCalledWith('siuuuu')
+    fireEvent.click(screen.getByRole('button', { name: 'Preview Celebration Yell' }))
+    expect(previewGoalSound).toHaveBeenCalledWith('celebration_yell')
     expect(screen.queryByRole('dialog', { name: /confirm purchase/i })).toBeNull()
   })
 })
@@ -145,7 +145,7 @@ describe('ShopPopup preview', () => {
 describe('ShopPopup buy flow', () => {
   it('opens a buy confirmation when an unowned sound is picked', async () => {
     await renderSounds()
-    fireEvent.click(screen.getByRole('button', { name: 'SIUUUU' }))
+    fireEvent.click(screen.getByRole('button', { name: 'Celebration Yell' }))
 
     expect(screen.getByRole('dialog', { name: /confirm purchase/i })).toBeDefined()
     expect(screen.getByRole('button', { name: 'BUY' })).toBeDefined()
@@ -154,7 +154,7 @@ describe('ShopPopup buy flow', () => {
 
   it('cancel closes the confirmation without buying', async () => {
     const { api } = await renderSounds()
-    fireEvent.click(screen.getByRole('button', { name: 'SIUUUU' }))
+    fireEvent.click(screen.getByRole('button', { name: 'Celebration Yell' }))
     fireEvent.click(screen.getByRole('button', { name: 'CANCEL' }))
 
     expect(screen.queryByRole('dialog', { name: /confirm purchase/i })).toBeNull()
@@ -163,10 +163,10 @@ describe('ShopPopup buy flow', () => {
 
   it('buying charges the item and offers to equip it', async () => {
     const { api } = await renderSounds()
-    fireEvent.click(screen.getByRole('button', { name: 'SIUUUU' }))
+    fireEvent.click(screen.getByRole('button', { name: 'Celebration Yell' }))
     fireEvent.click(screen.getByRole('button', { name: 'BUY' }))
 
-    await waitFor(() => expect(api.purchaseItem).toHaveBeenCalledWith('siuuuu'))
+    await waitFor(() => expect(api.purchaseItem).toHaveBeenCalledWith('celebration_yell'))
     expect(applyCoinsUpdate).toHaveBeenCalledWith(400)
     expect(await screen.findByRole('button', { name: 'EQUIP' })).toBeDefined()
     expect(screen.getByText('PURCHASED')).toBeDefined()
@@ -174,11 +174,11 @@ describe('ShopPopup buy flow', () => {
 
   it('equipping applies the item and closes the confirmation', async () => {
     const { api } = await renderSounds()
-    fireEvent.click(screen.getByRole('button', { name: 'SIUUUU' }))
+    fireEvent.click(screen.getByRole('button', { name: 'Celebration Yell' }))
     fireEvent.click(screen.getByRole('button', { name: 'BUY' }))
     fireEvent.click(await screen.findByRole('button', { name: 'EQUIP' }))
 
-    await waitFor(() => expect(api.setCustomization).toHaveBeenCalledWith('goalSound', 'siuuuu'))
+    await waitFor(() => expect(api.setCustomization).toHaveBeenCalledWith('goalSound', 'celebration_yell'))
     await waitFor(() => expect(screen.queryByRole('button', { name: 'EQUIP' })).toBeNull())
   })
 
@@ -186,7 +186,7 @@ describe('ShopPopup buy flow', () => {
     await renderSounds({
       purchaseItem: vi.fn(async () => ({ status: 'insufficient_coins' as const, coins: 20 })),
     })
-    fireEvent.click(screen.getByRole('button', { name: 'SIUUUU' }))
+    fireEvent.click(screen.getByRole('button', { name: 'Celebration Yell' }))
     fireEvent.click(screen.getByRole('button', { name: 'BUY' }))
 
     expect(await screen.findByText(/not enough coins/i)).toBeDefined()
@@ -197,10 +197,10 @@ describe('ShopPopup buy flow', () => {
 
 describe('ShopPopup owned items', () => {
   it('marks an owned sound and skips the buy step', async () => {
-    await renderSounds({ listOwnedItems: vi.fn(async () => ['siuuuu']) })
+    await renderSounds({ listOwnedItems: vi.fn(async () => ['celebration_yell']) })
     await screen.findByText('OWNED')
 
-    fireEvent.click(screen.getByRole('button', { name: 'SIUUUU' }))
+    fireEvent.click(screen.getByRole('button', { name: 'Celebration Yell' }))
 
     expect(screen.getByRole('dialog', { name: /equip item/i })).toBeDefined()
     expect(screen.getByRole('button', { name: 'EQUIP' })).toBeDefined()
@@ -208,11 +208,11 @@ describe('ShopPopup owned items', () => {
   })
 
   it('marks the equipped sound and offers no second equip', async () => {
-    authState = { ...authState, customization: { ...defaultCustomization(), goalSound: 'siuuuu' } }
-    await renderSounds({ listOwnedItems: vi.fn(async () => ['siuuuu']) })
+    authState = { ...authState, customization: { ...defaultCustomization(), goalSound: 'celebration_yell' } }
+    await renderSounds({ listOwnedItems: vi.fn(async () => ['celebration_yell']) })
     await screen.findByText('EQUIPPED')
 
-    fireEvent.click(screen.getByRole('button', { name: 'SIUUUU' }))
+    fireEvent.click(screen.getByRole('button', { name: 'Celebration Yell' }))
     expect(screen.getByRole('button', { name: 'EQUIPPED' }).hasAttribute('disabled')).toBe(true)
   })
 })

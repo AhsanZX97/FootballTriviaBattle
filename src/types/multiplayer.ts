@@ -1,4 +1,5 @@
 import type { Question } from './trivia'
+import type { QuestionRef } from '../services/trivia/bank/localised'
 
 /** Client name field cap — enforced on typed names; generated names stay well under it. */
 export const MAX_NAME_LENGTH = 16
@@ -35,11 +36,28 @@ export type ServerMessage =
        * treat as the stock keeper. */
       opponentGkSkin?: string
       youGoFirst: boolean
+      /**
+       * English question text. Kept for clients built before localisation —
+       * they read this field and know nothing of `questionRefs`. New clients
+       * prefer `questionRefs` and ignore this.
+       */
       questions: Question[]
+      /**
+       * The same questions as ids + answer order, so each client renders them
+       * from its own locale's bank. Optional only so an older server (or an
+       * older recorded session) still parses; the current server always sends it.
+       */
+      questionRefs?: QuestionRef[]
     }
   | { type: 'kickResolved'; by: 'you' | 'opponent'; scored: boolean }
   | { type: 'rematchVotes'; count: 1 }
-  | { type: 'rematchStart'; youGoFirst: boolean; questions: Question[] }
+  | {
+      type: 'rematchStart'
+      youGoFirst: boolean
+      /** English text, for pre-localisation clients — see `matched`. */
+      questions: Question[]
+      questionRefs?: QuestionRef[]
+    }
   | { type: 'opponentLeft' }
   | { type: 'error'; reason: string }
   | { type: 'coinsAwarded'; amount: number; balance: number }

@@ -10,6 +10,7 @@ import { authStore } from '../auth/store'
 import { useBottomBanner } from '../../services/ads'
 import { Sprite } from '../../components/Sprite'
 import './MatchScreen.css'
+import { useT } from '../../services/i18n/store'
 
 /** Animation screen duration: 1s suspense delay + 0.7s animation + a beat to read the outcome. */
 export const FEEDBACK_MS = 2600
@@ -40,10 +41,11 @@ type Props = {
 // they grow (PitchScene already graduated there).
 
 function KickDots({ kicks, side }: { kicks: Kick[]; side: 'user' | 'cpu' }) {
+  const t = useT()
   const own = kicks.filter((k) => k.stage === (side === 'user' ? 'shoot' : 'keep'))
   const slots = Math.max(KICKS_PER_SIDE, own.length)
   return (
-    <div className="match__dots" aria-label={`${side} kicks`}>
+    <div className="match__dots" aria-label={t('match.kicksAria', { side })}>
       {Array.from({ length: slots }, (_, i) => {
         const kick = own[i]
         return (
@@ -57,6 +59,7 @@ function KickDots({ kicks, side }: { kicks: Kick[]; side: 'user' | 'cpu' }) {
 }
 
 export function MatchScreen({ onExit, onMainMenu }: Props) {
+  const t = useT()
   const state = useSyncExternalStore(matchStore.subscribe, matchStore.getState)
   const auth = useSyncExternalStore(authStore.subscribe, authStore.getState)
   const [feedback, setFeedback] = useState<SceneFeedback | null>(null)
@@ -71,7 +74,7 @@ export function MatchScreen({ onExit, onMainMenu }: Props) {
   const result = getResult(state.shootout)
   const myTurn = state.shootout.stage === 'shoot'
   const is1v1 = state.mode === '1v1'
-  const opponentLabel = is1v1 ? (state.opponentName ?? 'OPPONENT') : 'CPU'
+  const opponentLabel = is1v1 ? (state.opponentName ?? t('match.opponent')) : t('match.cpu')
   const goalSound = auth.customization.goalSound
   // 1v1: the keeper we shoot against wears the opponent's equipped skin
   const opponentGkSkin = is1v1 ? (state.opponentGkSkin ?? undefined) : undefined
@@ -171,7 +174,7 @@ export function MatchScreen({ onExit, onMainMenu }: Props) {
     return (
       <main className="match match--message">
         <p className="match__result">
-          <Sprite name="disconnect" /> CONNECTION LOST
+          <Sprite name="disconnect" /> {t('match.connectionLost')}
         </p>
         <button
           type="button"
@@ -181,7 +184,7 @@ export function MatchScreen({ onExit, onMainMenu }: Props) {
             onExit?.()
           }}
         >
-          LOBBY
+          {t('match.lobby')}
         </button>
       </main>
     )
@@ -193,13 +196,17 @@ export function MatchScreen({ onExit, onMainMenu }: Props) {
         <main className="match match--message">
           <CoinReward amount={state.coinsAwarded} />
           <p className="match__result">
-            {state.matchAbandoned ? 'MATCH ABANDONED' : result.outcome === 'win' ? 'YOU WIN' : 'YOU LOSE'}
+            {state.matchAbandoned
+              ? t('match.abandoned')
+              : result.outcome === 'win'
+                ? t('match.youWin')
+                : t('match.youLose')}
           </p>
           <p className="match__final-score">
             {result.userScore} – {result.cpuScore}
           </p>
           {state.opponentLeft ? (
-            <p className="match__status">{opponentLabel} LEFT</p>
+            <p className="match__status">{t('match.opponentLeft', { name: opponentLabel })}</p>
           ) : (
             <button
               type="button"
@@ -207,7 +214,7 @@ export function MatchScreen({ onExit, onMainMenu }: Props) {
               disabled={state.rematchIVoted}
               onClick={() => matchStore.voteRematch1v1()}
             >
-              REMATCH ({state.rematchVotes}/2)
+              {t('match.rematch', { votes: state.rematchVotes })}
             </button>
           )}
           <button
@@ -218,7 +225,7 @@ export function MatchScreen({ onExit, onMainMenu }: Props) {
               onExit?.()
             }}
           >
-            LOBBY
+            {t('match.lobby')}
           </button>
           <button
             type="button"
@@ -228,7 +235,7 @@ export function MatchScreen({ onExit, onMainMenu }: Props) {
               onMainMenu?.()
             }}
           >
-            MAIN MENU
+            {t('match.mainMenu')}
           </button>
         </main>
       )
@@ -236,12 +243,14 @@ export function MatchScreen({ onExit, onMainMenu }: Props) {
     return (
       <main className="match match--message">
         <CoinReward amount={state.coinsAwarded} />
-        <p className="match__result">{result.outcome === 'win' ? 'YOU WIN' : 'YOU LOSE'}</p>
+        <p className="match__result">
+          {result.outcome === 'win' ? t('match.youWin') : t('match.youLose')}
+        </p>
         <p className="match__final-score">
           {result.userScore} – {result.cpuScore}
         </p>
         <button type="button" className="match__answer" onClick={() => void matchStore.start()}>
-          PLAY AGAIN
+          {t('match.playAgain')}
         </button>
         <button
           type="button"
@@ -251,7 +260,7 @@ export function MatchScreen({ onExit, onMainMenu }: Props) {
             onMainMenu?.()
           }}
         >
-          MAIN MENU
+          {t('match.mainMenu')}
         </button>
       </main>
     )
@@ -273,7 +282,7 @@ export function MatchScreen({ onExit, onMainMenu }: Props) {
   if (state.phase === 'loading') {
     return (
       <main className="match match--message">
-        <p className="match__status">LOADING QUESTIONS…</p>
+        <p className="match__status">{t('match.loadingQuestions')}</p>
       </main>
     )
   }
@@ -281,9 +290,9 @@ export function MatchScreen({ onExit, onMainMenu }: Props) {
   if (state.phase === 'error' || !question) {
     return (
       <main className="match match--message">
-        <p className="match__status">COULDN'T LOAD QUESTIONS</p>
+        <p className="match__status">{t('match.loadFailed')}</p>
         <button type="button" className="match__answer" onClick={() => matchStore.start()}>
-          RETRY
+          {t('match.retry')}
         </button>
       </main>
     )
@@ -296,9 +305,9 @@ export function MatchScreen({ onExit, onMainMenu }: Props) {
 
   return (
     <main className={`match${showScene ? ' match--scene' : ''}`}>
-      <section className="match__scoreboard" aria-label="scoreboard">
+      <section className="match__scoreboard" aria-label={t('match.scoreboardAria')}>
         <div className="match__team">
-          <span className="match__team-name">YOU</span>
+          <span className="match__team-name">{t('match.you')}</span>
           {/* key remounts the span so the pop animation replays on each score */}
           <span key={shootout.userScore} className="match__score">
             {shootout.userScore}
@@ -319,18 +328,18 @@ export function MatchScreen({ onExit, onMainMenu }: Props) {
         {is1v1 ? (
           myTurn ? (
             <>
-              <Sprite name="ball" /> YOUR KICK
+              <Sprite name="ball" /> {t('match.yourKick')}
             </>
           ) : (
-            <>⏳ {opponentLabel}'S KICK…</>
+            <>⏳ {t('match.opponentKick', { name: opponentLabel })}</>
           )
         ) : myTurn ? (
           <>
-            <Sprite name="ball" /> YOU'RE SHOOTING
+            <Sprite name="ball" /> {t('match.youreShooting')}
           </>
         ) : (
           <>
-            <Sprite name="glove" /> YOU'RE IN GOAL
+            <Sprite name="glove" /> {t('match.youreInGoal')}
           </>
         )}
       </p>
@@ -352,7 +361,7 @@ export function MatchScreen({ onExit, onMainMenu }: Props) {
             <progress className="match__timer-bar" max={QUESTION_TIME_SECONDS} value={timeLeft} />
           </div>
 
-          <section className="match__card" aria-label="question">
+          <section className="match__card" aria-label={t('match.questionAria')}>
             <p className="match__prompt">{question.prompt}</p>
             <div className="match__answers">
               {question.answers.map((answer) => (
@@ -382,7 +391,9 @@ export function MatchScreen({ onExit, onMainMenu }: Props) {
             gkSkin={auth.customization.gkSkin}
             opponentGkSkin={opponentGkSkin}
           />
-          {!myTurn && <p className="match__waiting">WAITING FOR {opponentLabel}…</p>}
+          {!myTurn && (
+            <p className="match__waiting">{t('match.waitingFor', { name: opponentLabel })}</p>
+          )}
         </>
       )}
     </main>

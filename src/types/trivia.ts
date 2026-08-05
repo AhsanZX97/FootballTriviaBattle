@@ -12,6 +12,20 @@ export interface BankEntry {
   difficulty: Difficulty
 }
 
+/**
+ * A bank entry's text in one non-English locale. `difficulty` and `category`
+ * aren't repeated — they're language-independent and stay on the English entry.
+ *
+ * Translated topic files are plain arrays in the SAME ORDER as the English
+ * ones, because question ids are index-derived (`cl-12`). A length mismatch
+ * means the two have drifted apart, which `localisedBank.test.ts` fails on.
+ */
+export interface TranslatedEntry {
+  prompt: string
+  correctAnswer: string
+  wrongAnswers: [string, string, string]
+}
+
 export interface Question {
   /** Stable id within a batch (index-based is fine for Phase 1). */
   id: string

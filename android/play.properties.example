@@ -1,0 +1,12 @@
+# Copy this to `android/play.properties` (gitignored) and fill in your value.
+# app/build.gradle reads it so Gradle Play Publisher can authenticate against
+# the Play Developer API when uploading the release .aab.
+#
+# serviceAccountFile: absolute path to the JSON key for a service account that
+#   has *release* permissions on the app in Play Console (Users and permissions
+#   -> Release apps to testing tracks / Release to production). Keep the .json
+#   OUTSIDE the repo. Use forward slashes even on Windows.
+#
+# NOTE: this must NOT be the play-purchase-verifier account — that one only has
+# "View financial data" and cannot publish. Create a separate service account.
+serviceAccountFile=C:/Users/ahsan/keys/play-publisher.json

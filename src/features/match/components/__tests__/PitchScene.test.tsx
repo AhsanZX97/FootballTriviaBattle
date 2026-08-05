@@ -9,20 +9,20 @@ function keeperClasses(container: HTMLElement): string {
 describe('PitchScene keeper skin', () => {
   it("wears my equipped skin when I'm the one in goal (stage keep)", () => {
     const { container } = render(
-      <PitchScene stage="keep" feedback={null} gkSkin="gk_vozinha" opponentGkSkin="gk_ter_stegen" />,
+      <PitchScene stage="keep" feedback={null} gkSkin="gk_coral_guard" opponentGkSkin="gk_orange_blaze" />,
     )
-    expect(keeperClasses(container)).toContain('scene__keeper--vozinha')
+    expect(keeperClasses(container)).toContain('scene__keeper--coralguard')
   })
 
   it("wears the opponent's equipped skin when I'm shooting (stage shoot)", () => {
     const { container } = render(
-      <PitchScene stage="shoot" feedback={null} gkSkin="gk_vozinha" opponentGkSkin="gk_ter_stegen" />,
+      <PitchScene stage="shoot" feedback={null} gkSkin="gk_coral_guard" opponentGkSkin="gk_orange_blaze" />,
     )
-    expect(keeperClasses(container)).toContain('scene__keeper--terstegen')
+    expect(keeperClasses(container)).toContain('scene__keeper--orangeblaze')
   })
 
   it('falls back to the stock keeper when shooting and the opponent has no skin', () => {
-    const { container } = render(<PitchScene stage="shoot" feedback={null} gkSkin="gk_vozinha" />)
+    const { container } = render(<PitchScene stage="shoot" feedback={null} gkSkin="gk_coral_guard" />)
     expect(keeperClasses(container)).not.toContain('scene__keeper--skinned')
   })
 

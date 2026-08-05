@@ -1,6 +1,7 @@
 import type { MatchHistoryEntry } from '../../types/stats'
 import { statsApi, type StatsApi } from '../../services/stats'
 import { authStore } from '../auth/store'
+import { t } from '../../services/i18n/store'
 
 export interface StatsState {
   status: 'idle' | 'loading' | 'loaded'
@@ -19,7 +20,7 @@ export interface StatsAuthSeam {
 
 type Listener = () => void
 
-const LOAD_FAILED_ERROR = 'Could not load your stats.'
+const LOAD_FAILED_ERROR = () => t('stats.error.loadFailed')
 
 const emptyState = (): StatsState => ({
   status: 'idle',
@@ -64,7 +65,7 @@ export function createStatsStore(deps: { api?: StatsApi; auth?: StatsAuthSeam } 
       set({ status: 'loaded', wins: stats.wins, losses: stats.losses, recent: stats.recent })
     } catch (err) {
       console.error('[stats] refresh failed', err)
-      set({ status: 'loaded', error: LOAD_FAILED_ERROR })
+      set({ status: 'loaded', error: LOAD_FAILED_ERROR() })
     }
   }
 

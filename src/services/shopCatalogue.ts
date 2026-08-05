@@ -2,30 +2,30 @@ import type { ShopItem } from '../types/customization'
 import goalHornSrc from '../assets/sounds/Goal Celebrations/goal + horn.mp3'
 import gooalSrc from '../assets/sounds/Goal Celebrations/gooal.mp3'
 import goooalSrc from '../assets/sounds/Goal Celebrations/GOOOOOOOOOOAL.mp3'
-import siuuuuSrc from '../assets/sounds/Goal Celebrations/SIUUUU.mp3'
+import celebrationYellSrc from '../assets/sounds/Goal Celebrations/celebration-yell.mp3'
 import videoGameSrc from '../assets/sounds/Goal Celebrations/video game sound.mp3'
-import gkManuelNeuerThumbSrc from '../assets/gk/Manuel Neuer_thumb.png'
-import gkManuelNeuerIdleSrc from '../assets/gk/Manuel Neuer.png'
-import gkManuelNeuerDiveSrc from '../assets/gk/Manuel Neuer_dive.png'
-import gkIkerCasillasThumbSrc from '../assets/gk/Iker Casillas_thumb.png'
-import gkIkerCasillasIdleSrc from '../assets/gk/Iker Casillas.png'
-import gkIkerCasillasDiveSrc from '../assets/gk/Iker Casillas_dive.png'
-import gkVozinhaThumbSrc from '../assets/gk/Vozinha_thumb.png'
-import gkVozinhaIdleSrc from '../assets/gk/Vozinha.png'
-import gkVozinhaDiveSrc from '../assets/gk/Vozinha_dive.png'
-import gkTerStegenThumbSrc from '../assets/gk/ter Stegen_thumb.png'
-import gkTerStegenIdleSrc from '../assets/gk/ter Stegen.png'
-import gkTerStegenDiveSrc from '../assets/gk/ter Stegen_dive.png'
-import wcBall2010Src from '../assets/sprites/ball/2010 WC Ball.png'
-import wcBall2010SpinSrc from '../assets/sprites/ball/2010 WC Ball_spin.png'
-import wcBall2014Src from '../assets/sprites/ball/2014 WC Ball.png'
-import wcBall2014SpinSrc from '../assets/sprites/ball/2014 WC Ball_spin.png'
-import wcBall2018Src from '../assets/sprites/ball/2018 WC Ball.png'
-import wcBall2018SpinSrc from '../assets/sprites/ball/2018 WC Ball_spin.png'
-import wcBall2022Src from '../assets/sprites/ball/2022 WC Ball.png'
-import wcBall2022SpinSrc from '../assets/sprites/ball/2022 WC Ball_spin.png'
-import wcBall2026Src from '../assets/sprites/ball/2026 WC Ball.png'
-import wcBall2026SpinSrc from '../assets/sprites/ball/2026 WC Ball_spin.png'
+import gkGreenWallThumbSrc from '../assets/gk/green-wall_thumb.png'
+import gkGreenWallIdleSrc from '../assets/gk/green-wall.png'
+import gkGreenWallDiveSrc from '../assets/gk/green-wall_dive.png'
+import gkGoldStandardThumbSrc from '../assets/gk/gold-standard_thumb.png'
+import gkGoldStandardIdleSrc from '../assets/gk/gold-standard.png'
+import gkGoldStandardDiveSrc from '../assets/gk/gold-standard_dive.png'
+import gkCoralGuardThumbSrc from '../assets/gk/coral-guard_thumb.png'
+import gkCoralGuardIdleSrc from '../assets/gk/coral-guard.png'
+import gkCoralGuardDiveSrc from '../assets/gk/coral-guard_dive.png'
+import gkOrangeBlazeThumbSrc from '../assets/gk/orange-blaze_thumb.png'
+import gkOrangeBlazeIdleSrc from '../assets/gk/orange-blaze.png'
+import gkOrangeBlazeDiveSrc from '../assets/gk/orange-blaze_dive.png'
+import ballGoldTrimSrc from '../assets/sprites/ball/gold-trim.png'
+import ballGoldTrimSpinSrc from '../assets/sprites/ball/gold-trim_spin.png'
+import ballCarnivalSwirlSrc from '../assets/sprites/ball/carnival-swirl.png'
+import ballCarnivalSwirlSpinSrc from '../assets/sprites/ball/carnival-swirl_spin.png'
+import ballCrimsonBlockSrc from '../assets/sprites/ball/crimson-block.png'
+import ballCrimsonBlockSpinSrc from '../assets/sprites/ball/crimson-block_spin.png'
+import ballNeonStreakSrc from '../assets/sprites/ball/neon-streak.png'
+import ballNeonStreakSpinSrc from '../assets/sprites/ball/neon-streak_spin.png'
+import ballPrismPanelSrc from '../assets/sprites/ball/prism-panel.png'
+import ballPrismPanelSpinSrc from '../assets/sprites/ball/prism-panel_spin.png'
 
 /** Every goal celebration costs the same for now. */
 const GOAL_SOUND_PRICE = 100
@@ -48,17 +48,17 @@ export const CATALOGUE: ShopItem[] = [
   { id: 'goal_horn', name: 'goal + horn', slot: 'goalSound', price: GOAL_SOUND_PRICE },
   { id: 'gooal', name: 'gooal', slot: 'goalSound', price: GOAL_SOUND_PRICE },
   { id: 'goooooooooal', name: 'GOOOOOOOOOOAL', slot: 'goalSound', price: GOAL_SOUND_PRICE },
-  { id: 'siuuuu', name: 'SIUUUU', slot: 'goalSound', price: GOAL_SOUND_PRICE },
+  { id: 'celebration_yell', name: 'Celebration Yell', slot: 'goalSound', price: GOAL_SOUND_PRICE },
   { id: 'video_game_sound', name: 'video game sound', slot: 'goalSound', price: GOAL_SOUND_PRICE },
-  { id: 'wc_ball_2010', name: '2010 WC Ball', slot: 'ballSkin', price: BALL_SKIN_PRICE },
-  { id: 'wc_ball_2014', name: '2014 WC Ball', slot: 'ballSkin', price: BALL_SKIN_PRICE },
-  { id: 'wc_ball_2018', name: '2018 WC Ball', slot: 'ballSkin', price: BALL_SKIN_PRICE },
-  { id: 'wc_ball_2022', name: '2022 WC Ball', slot: 'ballSkin', price: BALL_SKIN_PRICE },
-  { id: 'wc_ball_2026', name: '2026 WC Ball', slot: 'ballSkin', price: BALL_SKIN_PRICE },
-  { id: 'gk_manuel_neuer', name: 'Manuel Neuer', slot: 'gkSkin', price: GK_SKIN_PRICE },
-  { id: 'gk_iker_casillas', name: 'Iker Casillas', slot: 'gkSkin', price: GK_SKIN_PRICE },
-  { id: 'gk_vozinha', name: 'Vozinha', slot: 'gkSkin', price: GK_SKIN_PRICE },
-  { id: 'gk_ter_stegen', name: 'ter Stegen', slot: 'gkSkin', price: GK_SKIN_PRICE },
+  { id: 'ball_gold_trim', name: 'Gold Trim Ball', slot: 'ballSkin', price: BALL_SKIN_PRICE },
+  { id: 'ball_carnival_swirl', name: 'Carnival Swirl Ball', slot: 'ballSkin', price: BALL_SKIN_PRICE },
+  { id: 'ball_crimson_block', name: 'Crimson Block Ball', slot: 'ballSkin', price: BALL_SKIN_PRICE },
+  { id: 'ball_neon_streak', name: 'Neon Streak Ball', slot: 'ballSkin', price: BALL_SKIN_PRICE },
+  { id: 'ball_prism_panel', name: 'Prism Panel Ball', slot: 'ballSkin', price: BALL_SKIN_PRICE },
+  { id: 'gk_green_wall', name: 'Green Wall Keeper', slot: 'gkSkin', price: GK_SKIN_PRICE },
+  { id: 'gk_gold_standard', name: 'Gold Standard Keeper', slot: 'gkSkin', price: GK_SKIN_PRICE },
+  { id: 'gk_coral_guard', name: 'Coral Guard Keeper', slot: 'gkSkin', price: GK_SKIN_PRICE },
+  { id: 'gk_orange_blaze', name: 'Orange Blaze Keeper', slot: 'gkSkin', price: GK_SKIN_PRICE },
 ]
 
 /** Audio for each goal-sound item. Keyed by the catalogue id above; an id with
@@ -67,7 +67,7 @@ export const GOAL_SOUND_SOURCES: Record<string, string> = {
   goal_horn: goalHornSrc,
   gooal: gooalSrc,
   goooooooooal: goooalSrc,
-  siuuuu: siuuuuSrc,
+  celebration_yell: celebrationYellSrc,
   video_game_sound: videoGameSrc,
 }
 
@@ -76,17 +76,17 @@ export const GOAL_SOUND_SOURCES: Record<string, string> = {
  * spin animation. Keyed by the catalogue id above; an id with no entry here
  * falls back to the stock ball. */
 export const BALL_SKIN_SOURCES: Record<string, { thumb: string; spin: string }> = {
-  wc_ball_2010: { thumb: wcBall2010Src, spin: wcBall2010SpinSrc },
-  wc_ball_2014: { thumb: wcBall2014Src, spin: wcBall2014SpinSrc },
-  wc_ball_2018: { thumb: wcBall2018Src, spin: wcBall2018SpinSrc },
-  wc_ball_2022: { thumb: wcBall2022Src, spin: wcBall2022SpinSrc },
-  wc_ball_2026: { thumb: wcBall2026Src, spin: wcBall2026SpinSrc },
+  ball_gold_trim: { thumb: ballGoldTrimSrc, spin: ballGoldTrimSpinSrc },
+  ball_carnival_swirl: { thumb: ballCarnivalSwirlSrc, spin: ballCarnivalSwirlSpinSrc },
+  ball_crimson_block: { thumb: ballCrimsonBlockSrc, spin: ballCrimsonBlockSpinSrc },
+  ball_neon_streak: { thumb: ballNeonStreakSrc, spin: ballNeonStreakSpinSrc },
+  ball_prism_panel: { thumb: ballPrismPanelSrc, spin: ballPrismPanelSpinSrc },
 }
 
 /** Art for each keeper-skin item. `thumb` is the resting/shop-tile image — the
  * idle sheet's first frame, cropped to its own file. `idle` is the full idle
- * sheet used for the in-match animation, a grid (4x3 for Neuer, 4x4 for the
- * rest — each source came in with a different frame count). `dive` is a
+ * sheet used for the in-match animation, a grid (4x3 for Green Wall, 4x4 for
+ * the rest — each source came in with a different frame count). `dive` is a
  * horizontal strip, evenly packed and bottom-anchored per cell — repacked
  * from each source's unevenly-spaced (sometimes colliding) frames via
  * connected-component detection, the same approach the stock
@@ -97,29 +97,29 @@ export const BALL_SKIN_SOURCES: Record<string, { thumb: string; spin: string }> 
  * generic one to parameterize. Keyed by the catalogue id above; an id with no
  * entry here falls back to the stock keeper. */
 export const GK_SKIN_SOURCES: Record<string, { thumb: string; idle: string; dive: string; cssId: string }> = {
-  gk_manuel_neuer: {
-    thumb: gkManuelNeuerThumbSrc,
-    idle: gkManuelNeuerIdleSrc,
-    dive: gkManuelNeuerDiveSrc,
-    cssId: 'neuer',
+  gk_green_wall: {
+    thumb: gkGreenWallThumbSrc,
+    idle: gkGreenWallIdleSrc,
+    dive: gkGreenWallDiveSrc,
+    cssId: 'greenwall',
   },
-  gk_iker_casillas: {
-    thumb: gkIkerCasillasThumbSrc,
-    idle: gkIkerCasillasIdleSrc,
-    dive: gkIkerCasillasDiveSrc,
-    cssId: 'casillas',
+  gk_gold_standard: {
+    thumb: gkGoldStandardThumbSrc,
+    idle: gkGoldStandardIdleSrc,
+    dive: gkGoldStandardDiveSrc,
+    cssId: 'goldstandard',
   },
-  gk_vozinha: {
-    thumb: gkVozinhaThumbSrc,
-    idle: gkVozinhaIdleSrc,
-    dive: gkVozinhaDiveSrc,
-    cssId: 'vozinha',
+  gk_coral_guard: {
+    thumb: gkCoralGuardThumbSrc,
+    idle: gkCoralGuardIdleSrc,
+    dive: gkCoralGuardDiveSrc,
+    cssId: 'coralguard',
   },
-  gk_ter_stegen: {
-    thumb: gkTerStegenThumbSrc,
-    idle: gkTerStegenIdleSrc,
-    dive: gkTerStegenDiveSrc,
-    cssId: 'terstegen',
+  gk_orange_blaze: {
+    thumb: gkOrangeBlazeThumbSrc,
+    idle: gkOrangeBlazeIdleSrc,
+    dive: gkOrangeBlazeDiveSrc,
+    cssId: 'orangeblaze',
   },
 }
 

@@ -3,36 +3,16 @@ import { DAILY_CHALLENGE_COUNT, DAILY_REWARD_CYCLE, dailyRewardFor } from '../ty
 
 /** Every challenge the game can draw from. `pickDailyChallenges` selects a
  * deterministic subset for each calendar day. Rewards mirror the server's
- * claim_daily_challenge case statement (0008_daily_rewards.sql). */
+ * claim_daily_challenge case statement (0008_daily_rewards.sql).
+ *
+ * Name and objective text live in the message catalogues under
+ * `daily.<id>.title` / `daily.<id>.desc` — the id is the only link between the
+ * two, so a def carries no prose. */
 export const DAILY_CHALLENGE_POOL: DailyChallengeDef[] = [
-  {
-    id: 'answer_15',
-    title: 'SHARP SHOOTER',
-    description: 'Answer 15 questions correctly',
-    goal: 15,
-    reward: 5,
-  },
-  {
-    id: 'win_2_cpu',
-    title: 'CPU CRUSHER',
-    description: 'Win 2 matches vs CPU',
-    goal: 2,
-    reward: 5,
-  },
-  {
-    id: 'score_5_pens',
-    title: 'DEAD-EYE',
-    description: 'Score 5 penalties',
-    goal: 5,
-    reward: 5,
-  },
-  {
-    id: 'win_1v1',
-    title: 'DUELIST',
-    description: 'Win a 1v1 match',
-    goal: 1,
-    reward: 5,
-  },
+  { id: 'answer_15', goal: 15, reward: 5 },
+  { id: 'win_2_cpu', goal: 2, reward: 5 },
+  { id: 'score_5_pens', goal: 5, reward: 5 },
+  { id: 'win_1v1', goal: 1, reward: 5 },
 ]
 
 const POOL_BY_ID: Record<DailyChallengeId, DailyChallengeDef> = Object.fromEntries(

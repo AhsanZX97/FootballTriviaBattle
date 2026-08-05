@@ -34,7 +34,7 @@ describe('shop store', () => {
       'goal + horn',
       'gooal',
       'GOOOOOOOOOOAL',
-      'SIUUUU',
+      'Celebration Yell',
       'video game sound',
     ])
     expect(items.goalSound.every((i) => i.price === 100)).toBe(true)
@@ -44,10 +44,10 @@ describe('shop store', () => {
     const store = createShopStore(makeDeps())
     const { items } = store.getState()
     expect(items.gkSkin.map((i) => i.name)).toEqual([
-      'Manuel Neuer',
-      'Iker Casillas',
-      'Vozinha',
-      'ter Stegen',
+      'Green Wall Keeper',
+      'Gold Standard Keeper',
+      'Coral Guard Keeper',
+      'Orange Blaze Keeper',
     ])
     expect(items.gkSkin.every((i) => i.price === 200)).toBe(true)
   })
@@ -56,11 +56,11 @@ describe('shop store', () => {
     const store = createShopStore(makeDeps())
     const { items } = store.getState()
     expect(items.ballSkin.map((i) => i.name)).toEqual([
-      '2010 WC Ball',
-      '2014 WC Ball',
-      '2018 WC Ball',
-      '2022 WC Ball',
-      '2026 WC Ball',
+      'Gold Trim Ball',
+      'Carnival Swirl Ball',
+      'Crimson Block Ball',
+      'Neon Streak Ball',
+      'Prism Panel Ball',
     ])
     expect(items.ballSkin.every((i) => i.price === 150)).toBe(true)
   })
@@ -71,18 +71,18 @@ describe('shop store', () => {
   })
 
   it('loads the owned items on refresh', async () => {
-    const deps = makeDeps({ listOwnedItems: vi.fn(async () => ['siuuuu']) })
+    const deps = makeDeps({ listOwnedItems: vi.fn(async () => ['celebration_yell']) })
     const store = createShopStore(deps)
 
     await store.refresh()
 
-    expect(store.getState().owned).toEqual(['siuuuu'])
-    expect(store.isOwned('siuuuu')).toBe(true)
+    expect(store.getState().owned).toEqual(['celebration_yell'])
+    expect(store.isOwned('celebration_yell')).toBe(true)
     expect(store.isOwned('gooal')).toBe(false)
   })
 
   it('leaves the owned list empty when signed out', async () => {
-    const deps = makeDeps({ listOwnedItems: vi.fn(async () => ['siuuuu']) }, 'signedOut')
+    const deps = makeDeps({ listOwnedItems: vi.fn(async () => ['celebration_yell']) }, 'signedOut')
     const store = createShopStore(deps)
 
     await store.refresh()
@@ -97,11 +97,11 @@ describe('shop store purchase', () => {
     const deps = makeDeps()
     const store = createShopStore(deps)
 
-    const result = await store.purchase('siuuuu')
+    const result = await store.purchase('celebration_yell')
 
     expect(result).toBe('ok')
-    expect(deps.api.purchaseItem).toHaveBeenCalledWith('siuuuu')
-    expect(store.isOwned('siuuuu')).toBe(true)
+    expect(deps.api.purchaseItem).toHaveBeenCalledWith('celebration_yell')
+    expect(store.isOwned('celebration_yell')).toBe(true)
     expect(deps.coinUpdates).toEqual([400])
     expect(store.getState().error).toBeNull()
   })
@@ -112,10 +112,10 @@ describe('shop store purchase', () => {
     })
     const store = createShopStore(deps)
 
-    const result = await store.purchase('siuuuu')
+    const result = await store.purchase('celebration_yell')
 
     expect(result).toBe('insufficient_coins')
-    expect(store.isOwned('siuuuu')).toBe(false)
+    expect(store.isOwned('celebration_yell')).toBe(false)
     expect(store.getState().error).toBe('Not enough coins.')
   })
 
@@ -125,10 +125,10 @@ describe('shop store purchase', () => {
     })
     const store = createShopStore(deps)
 
-    const result = await store.purchase('siuuuu')
+    const result = await store.purchase('celebration_yell')
 
     expect(result).toBe('already_owned')
-    expect(store.isOwned('siuuuu')).toBe(true)
+    expect(store.isOwned('celebration_yell')).toBe(true)
     expect(store.getState().error).toBeNull()
   })
 
@@ -138,9 +138,9 @@ describe('shop store purchase', () => {
     })
     const store = createShopStore(deps)
 
-    await store.purchase('siuuuu')
+    await store.purchase('celebration_yell')
 
-    expect(store.isOwned('siuuuu')).toBe(false)
+    expect(store.isOwned('celebration_yell')).toBe(false)
     expect(store.getState().error).toBe('Could not complete that purchase.')
     // a failed purchase must never write a bogus balance onto the profile
     expect(deps.coinUpdates).toEqual([])
@@ -150,7 +150,7 @@ describe('shop store purchase', () => {
     const deps = makeDeps({}, 'signedOut')
     const store = createShopStore(deps)
 
-    const result = await store.purchase('siuuuu')
+    const result = await store.purchase('celebration_yell')
 
     expect(result).toBe('error')
     expect(deps.api.purchaseItem).not.toHaveBeenCalled()
@@ -158,11 +158,11 @@ describe('shop store purchase', () => {
   })
 
   it('does not buy the same item twice', async () => {
-    const deps = makeDeps({ listOwnedItems: vi.fn(async () => ['siuuuu']) })
+    const deps = makeDeps({ listOwnedItems: vi.fn(async () => ['celebration_yell']) })
     const store = createShopStore(deps)
     await store.refresh()
 
-    const result = await store.purchase('siuuuu')
+    const result = await store.purchase('celebration_yell')
 
     expect(result).toBe('already_owned')
     expect(deps.api.purchaseItem).not.toHaveBeenCalled()
@@ -186,14 +186,14 @@ describe('shop store purchase', () => {
 
 describe('shop store equip', () => {
   it('equips an owned item and reflects it on the profile', async () => {
-    const deps = makeDeps({ listOwnedItems: vi.fn(async () => ['siuuuu']) })
+    const deps = makeDeps({ listOwnedItems: vi.fn(async () => ['celebration_yell']) })
     const store = createShopStore(deps)
     await store.refresh()
 
-    await store.equip('goalSound', 'siuuuu')
+    await store.equip('goalSound', 'celebration_yell')
 
-    expect(deps.api.setCustomization).toHaveBeenCalledWith('goalSound', 'siuuuu')
-    expect(deps.applied).toEqual([['goalSound', 'siuuuu']])
+    expect(deps.api.setCustomization).toHaveBeenCalledWith('goalSound', 'celebration_yell')
+    expect(deps.applied).toEqual([['goalSound', 'celebration_yell']])
     expect(store.getState().error).toBeNull()
   })
 
@@ -211,7 +211,7 @@ describe('shop store equip', () => {
     const deps = makeDeps({}, 'signedOut')
     const store = createShopStore(deps)
 
-    await store.equip('goalSound', 'siuuuu')
+    await store.equip('goalSound', 'celebration_yell')
 
     expect(deps.api.setCustomization).not.toHaveBeenCalled()
     expect(deps.applied).toEqual([])
@@ -239,7 +239,7 @@ describe('shop store equip', () => {
     await store.equip('goalSound', 'nope')
     expect(store.getState().error).not.toBeNull()
 
-    await store.equip('goalSound', 'siuuuu')
+    await store.equip('goalSound', 'celebration_yell')
     expect(store.getState().error).toBeNull()
   })
 })

@@ -5,15 +5,17 @@ import type { AuthStore } from './store'
 import { Sprite } from '../../components/Sprite'
 import '../menu/IntroScreen.css'
 import './AuthScreen.css'
+import { useT } from '../../services/i18n/store'
+import type { MessageKey } from '../../services/i18n/messages/en'
 
 type Mode = 'signin' | 'signup' | 'reset-request' | 'reset-confirm'
 
-const TITLES: Record<Mode, string> = {
-  signin: 'SIGN IN',
-  signup: 'SIGN UP',
-  'reset-request': 'RESET PASSWORD',
-  'reset-confirm': 'RESET PASSWORD',
-}
+const TITLE_KEYS = {
+  signin: 'auth.title.signin',
+  signup: 'auth.title.signup',
+  'reset-request': 'auth.title.reset',
+  'reset-confirm': 'auth.title.reset',
+} as const satisfies Record<Mode, MessageKey>
 
 type Props = {
   /** Android back button / an on-screen back arrow — navigation is App.tsx's job. */
@@ -26,6 +28,7 @@ type Props = {
 }
 
 export function AuthScreen({ onBack, onAuthenticated, initialMode = 'signin', store = authStore }: Props) {
+  const t = useT()
   const state = useSyncExternalStore(store.subscribe, store.getState)
   const [mode, setMode] = useState<Mode>(initialMode)
   const [pending, setPending] = useState(false)
@@ -110,15 +113,15 @@ export function AuthScreen({ onBack, onAuthenticated, initialMode = 'signin', st
       <div className="intro__scanlines" aria-hidden />
       <div className="intro__content">
         <div className="auth__panel">
-          <h1 className="auth__title">{TITLES[mode]}</h1>
+          <h1 className="auth__title">{t(TITLE_KEYS[mode])}</h1>
 
           {mode === 'signin' ? (
             <form className="auth__form" onSubmit={handleSignIn}>
               <input
                 type="text"
                 className="auth__input"
-                placeholder="Username or email"
-                aria-label="Username or email"
+                placeholder={t('auth.usernameOrEmail')}
+                aria-label={t('auth.usernameOrEmail')}
                 value={usernameOrEmail}
                 onChange={(e) => {
                   setUsernameOrEmail(e.target.value)
@@ -128,8 +131,8 @@ export function AuthScreen({ onBack, onAuthenticated, initialMode = 'signin', st
               <input
                 type="password"
                 className="auth__input"
-                placeholder="Password"
-                aria-label="Password"
+                placeholder={t('auth.password')}
+                aria-label={t('auth.password')}
                 value={signInPassword}
                 onChange={(e) => {
                   setSignInPassword(e.target.value)
@@ -142,14 +145,14 @@ export function AuthScreen({ onBack, onAuthenticated, initialMode = 'signin', st
                 </p>
               )}
               <button type="submit" className="auth__submit" disabled={pending}>
-                {pending ? 'SIGNING IN…' : 'SIGN IN'}
+                {pending ? t('auth.signingIn') : t('auth.signIn')}
               </button>
               <div className="auth__btn-row">
                 <button type="button" className="auth__secondary" onClick={() => switchMode('signup')}>
-                  Sign Up
+                  {t('auth.signUpLink')}
                 </button>
                 <button type="button" className="auth__secondary" onClick={openForgotPassword}>
-                  Forgot password?
+                  {t('auth.forgotPassword')}
                 </button>
               </div>
             </form>
@@ -158,8 +161,8 @@ export function AuthScreen({ onBack, onAuthenticated, initialMode = 'signin', st
               <input
                 type="text"
                 className="auth__input"
-                placeholder="Username"
-                aria-label="Username"
+                placeholder={t('auth.username')}
+                aria-label={t('auth.username')}
                 maxLength={16}
                 value={username}
                 onChange={(e) => {
@@ -170,8 +173,8 @@ export function AuthScreen({ onBack, onAuthenticated, initialMode = 'signin', st
               <input
                 type="email"
                 className="auth__input"
-                placeholder="Email"
-                aria-label="Email"
+                placeholder={t('auth.email')}
+                aria-label={t('auth.email')}
                 value={email}
                 onChange={(e) => {
                   setEmail(e.target.value)
@@ -181,35 +184,35 @@ export function AuthScreen({ onBack, onAuthenticated, initialMode = 'signin', st
               <input
                 type="password"
                 className="auth__input"
-                placeholder="Password"
-                aria-label="Password"
+                placeholder={t('auth.password')}
+                aria-label={t('auth.password')}
                 value={signUpPassword}
                 onChange={(e) => {
                   setSignUpPassword(e.target.value)
                   clearErrorOnEdit()
                 }}
               />
-              <p className="auth__helper">min 8 characters</p>
+              <p className="auth__helper">{t('auth.minChars')}</p>
               {state.error && (
                 <p className="auth__error">
                   <Sprite name="warning" /> {state.error}
                 </p>
               )}
               <button type="submit" className="auth__submit" disabled={pending}>
-                {pending ? 'SIGNING UP…' : 'SIGN UP'}
+                {pending ? t('auth.signingUp') : t('auth.signUp')}
               </button>
               <button type="button" className="auth__link" onClick={() => switchMode('signin')}>
-                ◂ back to sign in
+                ◂ {t('auth.backToSignIn')}
               </button>
             </form>
           ) : mode === 'reset-request' ? (
             <form className="auth__form" onSubmit={handleRequestReset}>
-              <p className="auth__helper auth__helper--lead">Enter your account email and we'll send an 8-digit code.</p>
+              <p className="auth__helper auth__helper--lead">{t('auth.resetLead')}</p>
               <input
                 type="email"
                 className="auth__input"
-                placeholder="Email"
-                aria-label="Email"
+                placeholder={t('auth.email')}
+                aria-label={t('auth.email')}
                 value={resetEmail}
                 onChange={(e) => {
                   setResetEmail(e.target.value)
@@ -222,20 +225,20 @@ export function AuthScreen({ onBack, onAuthenticated, initialMode = 'signin', st
                 </p>
               )}
               <button type="submit" className="auth__submit" disabled={pending}>
-                {pending ? 'SENDING…' : 'SEND CODE'}
+                {pending ? t('auth.sending') : t('auth.sendCode')}
               </button>
               <button type="button" className="auth__link" onClick={() => switchMode('signin')}>
-                ◂ back to sign in
+                ◂ {t('auth.backToSignIn')}
               </button>
             </form>
           ) : (
             <form className="auth__form" onSubmit={handleConfirmReset}>
-              <p className="auth__helper">Code sent to {resetEmail}</p>
+              <p className="auth__helper">{t('auth.codeSentTo', { email: resetEmail })}</p>
               <input
                 type="text"
                 className="auth__input"
-                placeholder="8-digit code"
-                aria-label="Code"
+                placeholder={t('auth.codePlaceholder')}
+                aria-label={t('auth.codeAria')}
                 inputMode="numeric"
                 maxLength={8}
                 value={resetCode}
@@ -247,22 +250,22 @@ export function AuthScreen({ onBack, onAuthenticated, initialMode = 'signin', st
               <input
                 type="password"
                 className="auth__input"
-                placeholder="New password"
-                aria-label="New password"
+                placeholder={t('auth.newPassword')}
+                aria-label={t('auth.newPassword')}
                 value={resetNewPassword}
                 onChange={(e) => {
                   setResetNewPassword(e.target.value)
                   clearErrorOnEdit()
                 }}
               />
-              <p className="auth__helper">min 8 characters</p>
+              <p className="auth__helper">{t('auth.minChars')}</p>
               {state.error && (
                 <p className="auth__error">
                   <Sprite name="warning" /> {state.error}
                 </p>
               )}
               <button type="submit" className="auth__submit" disabled={pending}>
-                {pending ? 'RESETTING…' : 'RESET PASSWORD'}
+                {pending ? t('auth.resetting') : t('auth.resetPassword')}
               </button>
               <div className="auth__link-row">
                 <button
@@ -271,17 +274,17 @@ export function AuthScreen({ onBack, onAuthenticated, initialMode = 'signin', st
                   disabled={pending}
                   onClick={() => void store.requestPasswordReset(resetEmail)}
                 >
-                  Resend code
+                  {t('auth.resendCode')}
                 </button>
                 <button type="button" className="auth__link auth__link--small" onClick={() => switchMode('signin')}>
-                  ◂ back to sign in
+                  ◂ {t('auth.backToSignIn')}
                 </button>
               </div>
             </form>
           )}
 
-          <button type="button" className="auth__back" onClick={onBack} aria-label="Back to menu">
-            ◂ BACK
+          <button type="button" className="auth__back" onClick={onBack} aria-label={t('auth.backToMenu')}>
+            ◂ {t('common.back')}
           </button>
         </div>
       </div>

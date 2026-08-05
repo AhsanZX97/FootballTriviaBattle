@@ -4,6 +4,8 @@ import { BALL_SKIN_SOURCES, GK_SKIN_SOURCES } from '../../../services/shopCatalo
 import stockDiveSheet from '../../../assets/gk-dive-strip.png'
 import stockSpinSheet from '../../../assets/ball-spin-strip.png'
 import './PitchScene.css'
+import { useT } from '../../../services/i18n/store'
+import type { MessageKey } from '../../../services/i18n/messages/en'
 
 /* The dive/spin sheets are referenced only inside @keyframes, and browsers
  * don't fetch a background image until a rule actually applies it — so on a
@@ -37,12 +39,11 @@ const GOAL_KEEPER_VARIANTS = ['wrong-way', 'frozen', 'late'] as const
 /** Outcome being animated: goal/miss = user shot, save/concede = user kept. */
 export type SceneFeedback = 'goal' | 'miss' | 'save' | 'concede'
 
-const LABELS: Record<SceneFeedback, string> = {
-  goal: 'GOAL!',
-  miss: 'MISS!',
-  save: 'SAVED!',
-  concede: 'CPU SCORES!',
-}
+const LABEL_KEYS = {
+  goal: 'scene.goal',
+  miss: 'scene.miss',
+  save: 'scene.saved',
+} as const satisfies Partial<Record<SceneFeedback, MessageKey>>
 
 type Props = {
   stage: Stage
@@ -73,12 +74,18 @@ export function PitchScene({
   gkSkin,
   opponentGkSkin,
 }: Props) {
+  const t = useT()
   // ponytail: the scene mounts fresh for every animation, so a lazy useState
   // initializer gives one stable random pick per goal
   const [variant] = useState(
     () => GOAL_KEEPER_VARIANTS[Math.floor(Math.random() * GOAL_KEEPER_VARIANTS.length)],
   )
-  const label = feedback === 'concede' ? `${opponentLabel} SCORES!` : feedback ? LABELS[feedback] : null
+  const label =
+    feedback === 'concede'
+      ? t('scene.scores', { name: opponentLabel })
+      : feedback
+        ? t(LABEL_KEYS[feedback])
+        : null
   const skin = ballSkin ? BALL_SKIN_SOURCES[ballSkin] : undefined
   const ballStyle = skin
     ? ({ '--ball-thumb': `url(${skin.thumb})`, '--ball-spin': `url(${skin.spin})` } as CSSProperties)
@@ -94,7 +101,7 @@ export function PitchScene({
     <div
       className={`scene${feedback ? ` scene--${feedback}` : ''}${feedback === 'goal' ? ` scene--goal-${variant}` : ''}`}
       role="img"
-      aria-label={label ?? (stage === 'shoot' ? 'you are shooting' : 'you are in goal')}
+      aria-label={label ?? (stage === 'shoot' ? t('scene.shootingAria') : t('scene.keepingAria'))}
     >
       {/* stage mirrors the background's center/cover sizing so % positions land on the bg.jpg goal */}
       <div className="scene__stage">

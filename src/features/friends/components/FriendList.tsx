@@ -3,6 +3,7 @@ import { friendsStore } from '../store'
 import { presenceStore } from '../presenceStore'
 import type { Relationship } from '../../../types/friends'
 import './FriendList.css'
+import { t, useT } from '../../../services/i18n/store'
 
 type Props = {
   /** Phase 3 wires this to directed matchmaking; until then the Challenge
@@ -15,17 +16,18 @@ type Props = {
 function addButtonFor(rel: Relationship): { label: string; disabled: boolean } {
   switch (rel) {
     case 'friends':
-      return { label: 'FRIENDS', disabled: true }
+      return { label: t('friends.friends'), disabled: true }
     case 'outgoing':
-      return { label: 'SENT', disabled: true }
+      return { label: t('friends.sent'), disabled: true }
     case 'incoming':
-      return { label: 'ACCEPT', disabled: false }
+      return { label: t('friends.accept'), disabled: false }
     default:
-      return { label: 'ADD', disabled: false }
+      return { label: t('friends.add'), disabled: false }
   }
 }
 
 export function FriendList({ onChallenge }: Props) {
+  const t = useT()
   const state = useSyncExternalStore(friendsStore.subscribe, friendsStore.getState)
   const presence = useSyncExternalStore(presenceStore.subscribe, presenceStore.getState)
   const [query, setQuery] = useState('')
@@ -56,8 +58,8 @@ export function FriendList({ onChallenge }: Props) {
         <input
           className="friend-list__search-input"
           type="text"
-          placeholder="SEARCH PLAYER"
-          aria-label="Search for a player by username"
+          placeholder={t('friends.search')}
+          aria-label={t('friends.searchAria')}
           value={query}
           onChange={(e) => setQuery(e.target.value)}
           autoCapitalize="none"
@@ -70,9 +72,9 @@ export function FriendList({ onChallenge }: Props) {
 
       {showingSearch ? (
         <section className="friend-list__section">
-          {state.searching && <p className="friend-list__hint">Searching…</p>}
+          {state.searching && <p className="friend-list__hint">{t('friends.searching')}</p>}
           {!state.searching && state.searchResults.length === 0 && (
-            <p className="friend-list__hint">No players found.</p>
+            <p className="friend-list__hint">{t('friends.noPlayers')}</p>
           )}
           <ul className="friend-list__items">
             {state.searchResults.map((u) => {
@@ -97,7 +99,7 @@ export function FriendList({ onChallenge }: Props) {
         <>
           {state.incoming.length > 0 && (
             <section className="friend-list__section">
-              <h3 className="friend-list__heading">REQUESTS</h3>
+              <h3 className="friend-list__heading">{t('friends.requests')}</h3>
               <ul className="friend-list__items">
                 {state.incoming.map((r) => (
                   <li key={r.otherId} className="friend-list__row">
@@ -106,7 +108,7 @@ export function FriendList({ onChallenge }: Props) {
                       <button
                         type="button"
                         className="friend-list__icon friend-list__icon--accept"
-                        aria-label={`Accept ${r.username}`}
+                        aria-label={t('friends.acceptAria', { name: r.username })}
                         onClick={() => void friendsStore.accept(r.otherId)}
                       >
                         ✓
@@ -114,7 +116,7 @@ export function FriendList({ onChallenge }: Props) {
                       <button
                         type="button"
                         className="friend-list__icon friend-list__icon--decline"
-                        aria-label={`Decline ${r.username}`}
+                        aria-label={t('friends.declineAria', { name: r.username })}
                         onClick={() => void friendsStore.decline(r.otherId)}
                       >
                         ✕
@@ -127,10 +129,10 @@ export function FriendList({ onChallenge }: Props) {
           )}
 
           <section className="friend-list__section">
-            <h3 className="friend-list__heading">FRIENDS</h3>
+            <h3 className="friend-list__heading">{t('friends.friends')}</h3>
             {state.friends.length === 0 ? (
               <p className="friend-list__hint">
-                {hasNothing ? 'No friends yet — search a username to add one.' : 'No friends yet.'}
+                {hasNothing ? t('friends.noFriendsHint') : t('friends.noFriends')}
               </p>
             ) : (
               <ul className="friend-list__items">
@@ -142,7 +144,7 @@ export function FriendList({ onChallenge }: Props) {
                       <span
                         className={`friend-list__dot${online ? ' friend-list__dot--online' : ''}`}
                         role="img"
-                        aria-label={online ? 'Online' : 'Offline'}
+                        aria-label={online ? t('friends.online') : t('friends.offline')}
                       />
                       <span className="friend-list__name">{f.username}</span>
                     </span>
@@ -153,19 +155,19 @@ export function FriendList({ onChallenge }: Props) {
                         disabled={!onChallenge || !online}
                         title={
                           !onChallenge
-                            ? 'Coming soon'
+                            ? t('friends.comingSoon')
                             : online
                               ? undefined
-                              : `${f.username} is offline`
+                              : t('friends.isOffline', { name: f.username })
                         }
                         onClick={() => onChallenge?.(f.id, f.username)}
                       >
-                        CHALLENGE
+                        {t('friends.challenge')}
                       </button>
                       <button
                         type="button"
                         className="friend-list__icon friend-list__icon--decline"
-                        aria-label={`Remove ${f.username}`}
+                        aria-label={t('friends.removeAria', { name: f.username })}
                         onClick={() => void friendsStore.remove(f.id)}
                       >
                         ✕
@@ -180,7 +182,7 @@ export function FriendList({ onChallenge }: Props) {
 
           {state.outgoing.length > 0 && (
             <section className="friend-list__section">
-              <h3 className="friend-list__heading">SENT</h3>
+              <h3 className="friend-list__heading">{t('friends.sent')}</h3>
               <ul className="friend-list__items">
                 {state.outgoing.map((r) => (
                   <li key={r.otherId} className="friend-list__row">
@@ -188,7 +190,7 @@ export function FriendList({ onChallenge }: Props) {
                     <button
                       type="button"
                       className="friend-list__icon friend-list__icon--decline"
-                      aria-label={`Cancel request to ${r.username}`}
+                      aria-label={t('friends.cancelRequestAria', { name: r.username })}
                       onClick={() => void friendsStore.remove(r.otherId)}
                     >
                       ✕

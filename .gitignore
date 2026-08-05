@@ -21,6 +21,11 @@ keystore.properties
 # secrets. These grant access to the Play Developer API — never commit them.
 supabase/.env.secrets
 *-service-account*.json
+play-publisher*.json
+
+# Path to the Play publishing service account key (play.properties.example is
+# committed as the template). Never commit the real one.
+play.properties
 
 # Editor directories and files
 .vscode/*

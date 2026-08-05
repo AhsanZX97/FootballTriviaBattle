@@ -11,6 +11,7 @@ import {
 } from '../../services/billing'
 import type { BuyPackResult, CoinPackOffer } from '../../types/coins'
 import { authStore } from '../auth/store'
+import { t } from '../../services/i18n/store'
 
 /**
  * How a "watch an ad for coins" attempt ended, from the UI's point of view.
@@ -74,12 +75,12 @@ export interface CoinsBillingSeam {
 
 type Listener = () => void
 
-const SIGNED_OUT_ERROR = 'Sign in to earn coins.'
-const UNAVAILABLE_ERROR = 'No ad available right now. Try again in a moment.'
-const RATE_LIMITED_ERROR = "That's all the ad rewards for now — check back later."
-const SIGNED_OUT_BUY_ERROR = 'Sign in to buy coins.'
-const PURCHASE_FAILED_ERROR = "That purchase didn't go through. You have not been charged for coins you didn't receive."
-const STORE_UNAVAILABLE_ERROR = 'The store is unavailable right now. Try again in a moment.'
+const SIGNED_OUT_ERROR = () => t('coins.error.signedOut')
+const UNAVAILABLE_ERROR = () => t('coins.error.unavailable')
+const RATE_LIMITED_ERROR = () => t('coins.error.rateLimited')
+const SIGNED_OUT_BUY_ERROR = () => t('coins.error.signedOutBuy')
+const PURCHASE_FAILED_ERROR = () => t('coins.error.purchaseFailed')
+const STORE_UNAVAILABLE_ERROR = () => t('coins.error.storeUnavailable')
 
 const emptyState = (): CoinsState => ({
   watching: false,
@@ -171,7 +172,7 @@ export function createCoinsStore(
   async function watchAdForCoins(): Promise<WatchAdResult> {
     if (state.watching) return 'busy'
     if (!signedIn()) {
-      set({ error: SIGNED_OUT_ERROR })
+      set({ error: SIGNED_OUT_ERROR() })
       return 'signed_out'
     }
 
@@ -181,13 +182,13 @@ export function createCoinsStore(
     if (outcome !== 'rewarded') {
       // Dismissing is the player's own choice and needs no explanation; a
       // missing ad is the app failing them and does.
-      set({ watching: false, error: outcome === 'unavailable' ? UNAVAILABLE_ERROR : null })
+      set({ watching: false, error: outcome === 'unavailable' ? UNAVAILABLE_ERROR() : null })
       return outcome === 'unavailable' ? 'unavailable' : 'no_reward'
     }
 
     const balance = await api.claimRewardedAd()
     if (balance === null) {
-      set({ watching: false, error: RATE_LIMITED_ERROR })
+      set({ watching: false, error: RATE_LIMITED_ERROR() })
       return 'rate_limited'
     }
 
@@ -213,7 +214,7 @@ export function createCoinsStore(
   async function buyPack(productId: string): Promise<BuyPackResult> {
     if (state.purchasing !== null) return 'busy'
     if (!signedIn()) {
-      set({ error: SIGNED_OUT_BUY_ERROR })
+      set({ error: SIGNED_OUT_BUY_ERROR() })
       return 'signed_out'
     }
 
@@ -226,12 +227,12 @@ export function createCoinsStore(
       return 'cancelled'
     }
     if (attempt.status === 'unavailable') {
-      set({ purchasing: null, error: STORE_UNAVAILABLE_ERROR })
+      set({ purchasing: null, error: STORE_UNAVAILABLE_ERROR() })
       return 'unavailable'
     }
 
     const result = await redeem(productId, attempt.purchaseToken)
-    set({ purchasing: null, error: result === 'error' ? PURCHASE_FAILED_ERROR : null })
+    set({ purchasing: null, error: result === 'error' ? PURCHASE_FAILED_ERROR() : null })
     return result
   }
 

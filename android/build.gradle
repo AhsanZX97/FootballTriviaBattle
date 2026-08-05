@@ -9,6 +9,9 @@ buildscript {
     dependencies {
         classpath 'com.android.tools.build:gradle:8.13.0'
         classpath 'com.google.gms:google-services:4.4.4'
+        // Gradle Play Publisher — uploads the signed .aab to the Play Console
+        // over the Play Developer API. See app/build.gradle for the play {} config.
+        classpath 'com.github.triplet.gradle:play-publisher:3.12.1'
 
         // NOTE: Do not place your application dependencies here; they belong
         // in the individual module build.gradle files

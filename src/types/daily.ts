@@ -7,11 +7,8 @@ export type DailyChallengeId = 'answer_15' | 'win_2_cpu' | 'score_5_pens' | 'win
  * `reward` is display-only — the server owns the amount actually granted. */
 export interface DailyChallengeDef {
   id: DailyChallengeId
-  /** Short arcade-style name for the card header. */
-  title: string
-  /** One-line objective, e.g. "Answer 15 questions correctly". */
-  description: string
-  /** Target count that marks the challenge complete. */
+  /** Target count that marks the challenge complete. Also interpolated into
+   * the localised objective line, so the number is never hardcoded in prose. */
   goal: number
   /** Coins awarded on claim (must match the server's case statement). */
   reward: number

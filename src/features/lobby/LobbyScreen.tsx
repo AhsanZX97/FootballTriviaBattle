@@ -8,6 +8,7 @@ import './LobbyScreen.css'
 import { lobbyStore } from './store'
 import type { MatchReadySession } from './store'
 import { PreMatchCountdown } from './components/PreMatchCountdown'
+import { useT } from '../../services/i18n/store'
 
 type Props = {
   onBack: () => void
@@ -19,6 +20,7 @@ type Props = {
 }
 
 export function LobbyScreen({ onBack, onMatchReady, onFriendlyMatch }: Props) {
+  const t = useT()
   const state = useSyncExternalStore(lobbyStore.subscribe, lobbyStore.getState)
   const auth = useSyncExternalStore(authStore.subscribe, authStore.getState)
   const signedIn = auth.status === 'signedIn'
@@ -43,7 +45,7 @@ export function LobbyScreen({ onBack, onMatchReady, onFriendlyMatch }: Props) {
       <div className="intro__vignette" aria-hidden />
       <div className="intro__scanlines" aria-hidden />
       <div className="intro__content lobby__content">
-        <h1 className="lobby__title">1 V 1</h1>
+        <h1 className="lobby__title">{t('lobby.title')}</h1>
 
         {state.phase === 'idle' && (
           <>
@@ -57,13 +59,13 @@ export function LobbyScreen({ onBack, onMatchReady, onFriendlyMatch }: Props) {
                   value={state.name}
                   onChange={(e) => lobbyStore.setName(e.target.value)}
                   maxLength={MAX_NAME_LENGTH}
-                  aria-label="Your name"
+                  aria-label={t('lobby.yourName')}
                 />
                 <button
                   type="button"
                   className="lobby__reroll"
                   onClick={() => lobbyStore.rerollName()}
-                  aria-label="Randomise name"
+                  aria-label={t('lobby.randomiseName')}
                 >
                   <Sprite name="dice" />
                 </button>
@@ -76,19 +78,19 @@ export function LobbyScreen({ onBack, onMatchReady, onFriendlyMatch }: Props) {
             )}
 
             <button type="button" className="lobby__btn" onClick={() => lobbyStore.quickMatch()}>
-              QUICK MATCH
+              {t('lobby.quickMatch')}
             </button>
             <button
               type="button"
               className={`lobby__btn${signedIn ? '' : ' lobby__btn--disabled'}`}
               disabled={!signedIn}
-              title={signedIn ? undefined : 'Sign in to challenge friends'}
+              title={signedIn ? undefined : t('lobby.signInToChallenge')}
               onClick={onFriendlyMatch}
             >
-              FRIENDLY MATCH
+              {t('lobby.friendlyMatch')}
             </button>
             <button type="button" className="lobby__back" onClick={onBack}>
-              ◂ BACK
+              ◂ {t('common.back')}
             </button>
           </>
         )}
@@ -96,10 +98,11 @@ export function LobbyScreen({ onBack, onMatchReady, onFriendlyMatch }: Props) {
         {state.phase === 'searching' && (
           <>
             <p className="lobby__status">
-              FINDING MATCH<span className="lobby__dots" aria-hidden />
+              {t('lobby.findingMatch')}
+              <span className="lobby__dots" aria-hidden />
             </p>
             <button type="button" className="lobby__btn" onClick={() => lobbyStore.cancel()}>
-              CANCEL
+              {t('common.cancel')}
             </button>
           </>
         )}

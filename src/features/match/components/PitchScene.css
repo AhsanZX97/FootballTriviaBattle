@@ -71,8 +71,8 @@
    Every keeper's idle sheet is a GRID (unlike the stock strip's flat 16-wide
    row) — same reason .scene__ball--skinned needed its own -grid keyframes for
    the ball's 2x2 sheet — but the grid shape isn't even consistent between
-   keepers: Neuer's source came in 4-col x 3-row (12 frames), the rest 4-col x
-   4-row (16 frames). Frame proportions differ slightly per keeper too. So
+   keepers: Green Wall's source came in 4-col x 3-row (12 frames), the rest
+   4-col x 4-row (16 frames). Frame proportions differ slightly per keeper too. So
    each keeper gets its own compound rule (.scene__keeper--skinned.scene__keeper--<cssId>)
    picking the right grid keyframes + aspect-ratio + background-size; there's
    no single generic rule that fits all of them.
@@ -86,27 +86,27 @@
    Compounded with .scene__keeper (not just .scene__keeper--skinned alone) so
    these out-specificity the stock rule above regardless of source order, same
    pattern as .scene__ball--skinned. */
-.scene__keeper.scene__keeper--skinned.scene__keeper--neuer {
-  /* Neuer's per-frame proportions (321x311) aren't quite the stock sheet's
+.scene__keeper.scene__keeper--skinned.scene__keeper--greenwall {
+  /* Green Wall's per-frame proportions (321x311) aren't quite the stock sheet's
      (134x127) — reset aspect-ratio so frames don't stretch to the wrong box. */
   aspect-ratio: 321 / 311;
   background: var(--gk-idle) 0% 0% / 400% 300% no-repeat;
   animation: scene-keeper-idle-grid-4x3 1.56s steps(1) infinite;
 }
 
-.scene__keeper.scene__keeper--skinned.scene__keeper--casillas {
+.scene__keeper.scene__keeper--skinned.scene__keeper--goldstandard {
   aspect-ratio: 322 / 306;
   background: var(--gk-idle) 0% 0% / 400% 400% no-repeat;
   animation: scene-keeper-idle-grid-4x4 2.08s steps(1) infinite;
 }
 
-.scene__keeper.scene__keeper--skinned.scene__keeper--vozinha {
+.scene__keeper.scene__keeper--skinned.scene__keeper--coralguard {
   aspect-ratio: 313 / 313;
   background: var(--gk-idle) 0% 0% / 400% 400% no-repeat;
   animation: scene-keeper-idle-grid-4x4 2.08s steps(1) infinite;
 }
 
-.scene__keeper.scene__keeper--skinned.scene__keeper--terstegen {
+.scene__keeper.scene__keeper--skinned.scene__keeper--orangeblaze {
   aspect-ratio: 323 / 305;
   background: var(--gk-idle) 0% 0% / 400% 400% no-repeat;
   animation: scene-keeper-idle-grid-4x4 2.08s steps(1) infinite;
@@ -155,7 +155,7 @@
   }
 }
 
-/* 4-col x 4-row grid, 16 frames — Casillas, Vozinha, ter Stegen. Same
+/* 4-col x 4-row grid, 16 frames — Gold Standard, Coral Guard, Orange Blaze. Same
    steps(1)-per-stop trick as the 4x3 grid above. */
 @keyframes scene-keeper-idle-grid-4x4 {
   0% {
@@ -233,18 +233,18 @@
 /* Skinned dive: same handoff as scene-keeper-dive-frames above, but reading
    --gk-dive (GK_SKIN_SOURCES[id].dive) at each keeper's own cell size instead
    of the stock sheet's (94x83). Every one of these source sheets came out of
-   the editor with frames spaced unevenly (Neuer's, Casillas') or even
-   colliding (Casillas', ter Stegen's had stray marks/grid-line artifacts too)
-   — each repacked into its own evenly-spaced, bottom-anchored strip via
-   connected-component detection, same approach the stock sheet used (see the
-   comment above and the GK_SKIN_SOURCES doc comment in shopCatalogue.ts).
-   Frame count varies too — 6 for Neuer, 5 for Casillas, Vozinha and ter
-   Stegen — hence the different steps() counts below.
-   The scale constant in each (e.g. 1.2523 = 402/321 for Neuer) plays the same
-   role as the stock keyframes' 0.701 = 94/134: renders the dive at the same
-   native pixel scale as that keeper's own idle sheet (keeper-w /
+   the editor with frames spaced unevenly (Green Wall's, Gold Standard's) or
+   even colliding (Gold Standard's, Orange Blaze's had stray marks/grid-line
+   artifacts too) — each repacked into its own evenly-spaced, bottom-anchored
+   strip via connected-component detection, same approach the stock sheet used
+   (see the comment above and the GK_SKIN_SOURCES doc comment in
+   shopCatalogue.ts). Frame count varies too — 6 for Green Wall, 5 for Gold
+   Standard, Coral Guard and Orange Blaze — hence the different steps() below.
+   The scale constant in each (e.g. 1.2523 = 402/321 for Green Wall) plays the
+   same role as the stock keyframes' 0.701 = 94/134: renders the dive at the
+   same native pixel scale as that keeper's own idle sheet (keeper-w /
    idle-frame-width), so he doesn't change size when the sheet swaps. */
-@keyframes scene-keeper-dive-frames-neuer {
+@keyframes scene-keeper-dive-frames-greenwall {
   from {
     width: calc(var(--keeper-w) * 1.2523);
     aspect-ratio: 402 / 371;
@@ -259,7 +259,7 @@
 
 /* 447x400 cell, 5 frames. 447/321.75 = 1.3893 native scale, dialed down ~10%
    to 1.2504 — read as oversized next to the other keepers in the /test rig. */
-@keyframes scene-keeper-dive-frames-casillas {
+@keyframes scene-keeper-dive-frames-goldstandard {
   from {
     width: calc(var(--keeper-w) * 1.2504);
     aspect-ratio: 447 / 400;
@@ -274,7 +274,7 @@
 
 /* 495x439 cell, 5 frames. 495/313 = 1.5815 native scale (the largest of the
    four) — dialed down to 1.3. */
-@keyframes scene-keeper-dive-frames-vozinha {
+@keyframes scene-keeper-dive-frames-coralguard {
   from {
     width: calc(var(--keeper-w) * 1.3);
     aspect-ratio: 495 / 439;
@@ -289,7 +289,7 @@
 
 /* 461x418 cell, 5 frames. 461/322.75 = 1.4283 native scale (the largest of
    the four), dialed down ~10% to 1.2855 — still the biggest, just less so. */
-@keyframes scene-keeper-dive-frames-terstegen {
+@keyframes scene-keeper-dive-frames-orangeblaze {
   from {
     width: calc(var(--keeper-w) * 1.2855);
     aspect-ratio: 461 / 418;
@@ -337,7 +337,7 @@
   }
 }
 
-/* Skinned ball: a purchased/equipped World Cup ball (BALL_SKIN_SOURCES in
+/* Skinned ball: a purchased/equipped ball skin (BALL_SKIN_SOURCES in
    src/services/shopCatalogue.ts). PitchScene sets --ball-thumb/--ball-spin
    from the catalogue art; unrecognized/'default' ids skip this class
    entirely and keep the stock ball.png/ball-spin-strip.png above.
@@ -577,35 +577,35 @@
 /* Same handoff, grid idle + each keeper's own repacked dive sheet instead of
    the stock strips — one variant per keeper (see the idle-grid and
    dive-frames comments above for why these can't be one generic rule). */
-.scene--save .scene__keeper.scene__keeper--skinned.scene__keeper--neuer {
+.scene--save .scene__keeper.scene__keeper--skinned.scene__keeper--greenwall {
   animation:
     scene-keeper-idle-grid-4x3 var(--suspense) steps(1),
     scene-keeper-mirror 0.6s var(--suspense) forwards,
-    scene-keeper-dive-frames-neuer 0.6s steps(5) var(--suspense) forwards,
+    scene-keeper-dive-frames-greenwall 0.6s steps(5) var(--suspense) forwards,
     scene-keeper-save 0.5s steps(5) var(--suspense) forwards;
 }
 
-.scene--save .scene__keeper.scene__keeper--skinned.scene__keeper--casillas {
+.scene--save .scene__keeper.scene__keeper--skinned.scene__keeper--goldstandard {
   animation:
     scene-keeper-idle-grid-4x4 var(--suspense) steps(1),
     scene-keeper-mirror 0.6s var(--suspense) forwards,
-    scene-keeper-dive-frames-casillas 0.6s steps(4) var(--suspense) forwards,
+    scene-keeper-dive-frames-goldstandard 0.6s steps(4) var(--suspense) forwards,
     scene-keeper-save 0.5s steps(5) var(--suspense) forwards;
 }
 
-.scene--save .scene__keeper.scene__keeper--skinned.scene__keeper--vozinha {
+.scene--save .scene__keeper.scene__keeper--skinned.scene__keeper--coralguard {
   animation:
     scene-keeper-idle-grid-4x4 var(--suspense) steps(1),
     scene-keeper-mirror 0.6s var(--suspense) forwards,
-    scene-keeper-dive-frames-vozinha 0.6s steps(4) var(--suspense) forwards,
+    scene-keeper-dive-frames-coralguard 0.6s steps(4) var(--suspense) forwards,
     scene-keeper-save 0.5s steps(5) var(--suspense) forwards;
 }
 
-.scene--save .scene__keeper.scene__keeper--skinned.scene__keeper--terstegen {
+.scene--save .scene__keeper.scene__keeper--skinned.scene__keeper--orangeblaze {
   animation:
     scene-keeper-idle-grid-4x4 var(--suspense) steps(1),
     scene-keeper-mirror 0.6s var(--suspense) forwards,
-    scene-keeper-dive-frames-terstegen 0.6s steps(4) var(--suspense) forwards,
+    scene-keeper-dive-frames-orangeblaze 0.6s steps(4) var(--suspense) forwards,
     scene-keeper-save 0.5s steps(5) var(--suspense) forwards;
 }
 
@@ -642,35 +642,35 @@
 
 /* Same handoff, grid idle + each keeper's own repacked dive sheet — see the
    --save variants above. */
-.scene--concede .scene__keeper.scene__keeper--skinned.scene__keeper--neuer {
+.scene--concede .scene__keeper.scene__keeper--skinned.scene__keeper--greenwall {
   animation:
     scene-keeper-idle-grid-4x3 var(--suspense) steps(1),
     scene-keeper-mirror 0.6s var(--suspense) forwards,
-    scene-keeper-dive-frames-neuer 0.6s steps(5) var(--suspense) forwards,
+    scene-keeper-dive-frames-greenwall 0.6s steps(5) var(--suspense) forwards,
     scene-keeper-concede 0.7s steps(7) var(--suspense) forwards;
 }
 
-.scene--concede .scene__keeper.scene__keeper--skinned.scene__keeper--casillas {
+.scene--concede .scene__keeper.scene__keeper--skinned.scene__keeper--goldstandard {
   animation:
     scene-keeper-idle-grid-4x4 var(--suspense) steps(1),
     scene-keeper-mirror 0.6s var(--suspense) forwards,
-    scene-keeper-dive-frames-casillas 0.6s steps(4) var(--suspense) forwards,
+    scene-keeper-dive-frames-goldstandard 0.6s steps(4) var(--suspense) forwards,
     scene-keeper-concede 0.7s steps(7) var(--suspense) forwards;
 }
 
-.scene--concede .scene__keeper.scene__keeper--skinned.scene__keeper--vozinha {
+.scene--concede .scene__keeper.scene__keeper--skinned.scene__keeper--coralguard {
   animation:
     scene-keeper-idle-grid-4x4 var(--suspense) steps(1),
     scene-keeper-mirror 0.6s var(--suspense) forwards,
-    scene-keeper-dive-frames-vozinha 0.6s steps(4) var(--suspense) forwards,
+    scene-keeper-dive-frames-coralguard 0.6s steps(4) var(--suspense) forwards,
     scene-keeper-concede 0.7s steps(7) var(--suspense) forwards;
 }
 
-.scene--concede .scene__keeper.scene__keeper--skinned.scene__keeper--terstegen {
+.scene--concede .scene__keeper.scene__keeper--skinned.scene__keeper--orangeblaze {
   animation:
     scene-keeper-idle-grid-4x4 var(--suspense) steps(1),
     scene-keeper-mirror 0.6s var(--suspense) forwards,
-    scene-keeper-dive-frames-terstegen 0.6s steps(4) var(--suspense) forwards,
+    scene-keeper-dive-frames-orangeblaze 0.6s steps(4) var(--suspense) forwards,
     scene-keeper-concede 0.7s steps(7) var(--suspense) forwards;
 }
 

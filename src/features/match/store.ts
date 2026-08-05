@@ -5,6 +5,8 @@ import type { MultiplayerSocket } from '../../services/multiplayer/socket'
 import type { MatchReadySession } from '../lobby/store'
 import { applyAnswer, createInitialState, isMatchOver } from '../../game/shootout'
 import { getQuestions } from '../../services/trivia/questionSource'
+import { questionsFromMatchPayload } from '../../services/trivia/bank/localised'
+import { i18nStore } from '../../services/i18n/store'
 import { authStore } from '../auth/store'
 import { challengesStore } from '../challenges/store'
 import { supabase } from '../../services/supabase'
@@ -202,7 +204,7 @@ function createMatchStore() {
       case 'rematchStart':
         set({
           phase: 'rematchStarting',
-          questions: message.questions,
+          questions: questionsFromMatchPayload(message, i18nStore.getLocale()),
           questionIndex: 0,
           shootout: { ...createInitialState(), stage: message.youGoFirst ? 'shoot' : 'keep' },
           rematchVotes: 0,

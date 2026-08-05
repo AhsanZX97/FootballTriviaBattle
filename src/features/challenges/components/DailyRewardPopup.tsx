@@ -2,6 +2,7 @@ import { useEffect, useRef } from 'react'
 import { useSuppressBanner } from '../../../services/ads'
 import { DailyRewardCard } from './DailyRewardCard'
 import './DailyRewardPopup.css'
+import { useT } from '../../../services/i18n/store'
 
 type Props = {
   onClose: () => void
@@ -11,6 +12,7 @@ type Props = {
  * reward waiting. Same modal language as the friends/shop popups. After a
  * successful claim it lingers briefly so the coin burst plays, then closes. */
 export function DailyRewardPopup({ onClose }: Props) {
+  const t = useT()
   useSuppressBanner()
   const closeTimer = useRef<ReturnType<typeof setTimeout> | undefined>(undefined)
 
@@ -30,13 +32,18 @@ export function DailyRewardPopup({ onClose }: Props) {
       className="daily-popup"
       role="dialog"
       aria-modal="true"
-      aria-label="Daily reward"
+      aria-label={t('dailyReward.popupAria')}
       onClick={onClose}
     >
       <div className="daily-popup__panel" onClick={(e) => e.stopPropagation()}>
         <div className="daily-popup__head">
-          <h2 className="daily-popup__title">WELCOME BACK</h2>
-          <button type="button" className="daily-popup__close" aria-label="Close" onClick={onClose}>
+          <h2 className="daily-popup__title">{t('dailyReward.welcomeBack')}</h2>
+          <button
+            type="button"
+            className="daily-popup__close"
+            aria-label={t('common.closeAria')}
+            onClick={onClose}
+          >
             ✕
           </button>
         </div>

@@ -1,0 +1,103 @@
+/* Language switcher. Positioned by the TopBar flex row; relative only so the
+   expanded list can anchor to it — same arrangement as .sound. */
+.lang {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+/* Pixel-chip button, sized to sit on the same centre line as the 44px sprite
+   icons beside it without being as visually heavy. */
+.lang__toggle {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  padding: 8px 9px;
+  border: none;
+  background: #0a2416;
+  color: #ffcf1a;
+  font-family: 'Press Start 2P', ui-monospace, Consolas, monospace;
+  font-size: 10px;
+  line-height: 1;
+  letter-spacing: 0.06em;
+  cursor: pointer;
+  image-rendering: pixelated;
+  box-shadow:
+    0 0 0 3px #0a0a0a,
+    3px 3px 0 3px rgba(0, 0, 0, 0.85);
+}
+
+.lang__globe {
+  font-size: 12px;
+  line-height: 1;
+}
+
+.lang__code {
+  line-height: 1;
+}
+
+@media (hover: hover) {
+  .lang__toggle:hover {
+    background: #0f3620;
+  }
+}
+
+.lang__toggle:active {
+  transform: translate(3px, 3px);
+  box-shadow: 0 0 0 3px #0a0a0a;
+}
+
+.lang__toggle:focus-visible {
+  outline: 3px solid #fff;
+  outline-offset: 4px;
+}
+
+/* Drops out of flow so opening the list never changes .lang's height.
+   Right-aligned: this control sits at the end of the right-hand slot, so a
+   centred panel would overflow the screen edge on a phone. */
+.lang__panel {
+  position: absolute;
+  top: calc(100% + 8px);
+  right: 0;
+  display: flex;
+  flex-direction: column;
+  min-width: 116px;
+  background: #0a2416;
+  box-shadow:
+    0 0 0 3px #0a0a0a,
+    4px 4px 0 3px rgba(0, 0, 0, 0.85);
+}
+
+.lang__option {
+  padding: 10px 12px;
+  border: none;
+  background: none;
+  color: #eaf0fc;
+  font-family: 'Press Start 2P', ui-monospace, Consolas, monospace;
+  font-size: 9px;
+  line-height: 1.3;
+  letter-spacing: 0.04em;
+  text-align: left;
+  white-space: nowrap;
+  cursor: pointer;
+}
+
+.lang__option + .lang__option {
+  border-top: 2px solid rgba(0, 0, 0, 0.45);
+}
+
+@media (hover: hover) {
+  .lang__option:hover {
+    background: #0f3620;
+  }
+}
+
+.lang__option.is-active {
+  background: #123f26;
+  color: #ffcf1a;
+}
+
+.lang__option:focus-visible {
+  outline: 2px solid #fff;
+  outline-offset: -4px;
+}

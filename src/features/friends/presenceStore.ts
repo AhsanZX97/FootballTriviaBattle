@@ -2,6 +2,8 @@ import type { ChallengeFailReason, ServerMessage } from '../../types/multiplayer
 import type { MultiplayerSocket } from '../../services/multiplayer/socket'
 import { connectWithAuth } from '../../services/multiplayer/socket'
 import type { MatchReadySession } from '../lobby/store'
+import { questionsFromMatchPayload } from '../../services/trivia/bank/localised'
+import { i18nStore, t } from '../../services/i18n/store'
 import { authStore } from '../auth/store'
 
 /** A challenge you've sent, awaiting the friend's answer. */
@@ -53,18 +55,7 @@ const initialState = (): PresenceState => ({
 })
 
 function failNotice(name: string, reason: ChallengeFailReason): string {
-  switch (reason) {
-    case 'offline':
-      return `${name} is offline.`
-    case 'busy':
-      return `${name} is in a match.`
-    case 'declined':
-      return `${name} declined.`
-    case 'expired':
-      return `${name} didn't respond.`
-    case 'gone':
-      return `${name} went offline.`
-  }
+  return t(`challenge.failed.${reason}`, { name })
 }
 
 /** Exported for tests, which inject a fake socket + auth seam; the app uses the
@@ -165,7 +156,7 @@ export function createPresenceStore(
       case 'challengeCanceled':
         // withdrawn/expired invite we were shown
         if (state.incoming?.challengeId === message.challengeId) {
-          set({ incoming: null, notice: 'Challenge withdrawn.' })
+          set({ incoming: null, notice: t('challenge.withdrawn') })
         }
         return
       case 'friendsChanged':
@@ -187,7 +178,7 @@ export function createPresenceStore(
           opponentName: message.opponentName,
           opponentGkSkin: message.opponentGkSkin ?? null,
           youGoFirst: message.youGoFirst,
-          questions: message.questions,
+          questions: questionsFromMatchPayload(message, i18nStore.getLocale()),
         }
         // hand our socket to the match and stand down until we're back on the menu
         desired = false

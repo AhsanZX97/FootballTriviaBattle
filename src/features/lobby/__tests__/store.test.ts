@@ -129,12 +129,12 @@ describe('quickMatch', () => {
     fake.emit({
       type: 'matched',
       opponentName: 'Bob',
-      opponentGkSkin: 'gk_vozinha',
+      opponentGkSkin: 'gk_coral_guard',
       youGoFirst: true,
       questions: [],
     })
 
-    expect(store.getState().opponentGkSkin).toBe('gk_vozinha')
+    expect(store.getState().opponentGkSkin).toBe('gk_coral_guard')
   })
 
   it('leaves opponentGkSkin null when matched carries none (anonymous opponent)', async () => {

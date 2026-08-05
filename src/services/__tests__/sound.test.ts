@@ -76,9 +76,9 @@ describe('sound service', () => {
 describe('playGoalCelebration', () => {
   it('plays the equipped goal sound', () => {
     setMasterVolume(1)
-    playGoalCelebration('siuuuu')
+    playGoalCelebration('celebration_yell')
     expect(created).toHaveLength(1)
-    expect(created[0].src).toBe(GOAL_SOUND_SOURCES.siuuuu)
+    expect(created[0].src).toBe(GOAL_SOUND_SOURCES.celebration_yell)
   })
 
   it('falls back to the stock cheer for the default item', () => {
@@ -118,8 +118,8 @@ describe('previewGoalSound', () => {
 
   it('restarts rather than debouncing when the same item is previewed twice', () => {
     setMasterVolume(1)
-    previewGoalSound('siuuuu')
-    previewGoalSound('siuuuu')
+    previewGoalSound('celebration_yell')
+    previewGoalSound('celebration_yell')
     expect(created).toHaveLength(2)
     expect(created[0].pause).toHaveBeenCalled()
   })
@@ -133,7 +133,7 @@ describe('previewGoalSound', () => {
 
   it('stays silent when muted', () => {
     setMasterVolume(0)
-    previewGoalSound('siuuuu')
+    previewGoalSound('celebration_yell')
     expect(created).toHaveLength(0)
   })
 

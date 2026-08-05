@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { play } from '../../../services/sound'
 import { Sprite } from '../../../components/Sprite'
 import './PreMatchCountdown.css'
+import { useT } from '../../../services/i18n/store'
 
 // ponytail: the "321 countdown" audio runs ~3s, so ticks are 1s to stay in
 // step with it — this is the knob if the beeps drift from the numbers.
@@ -19,6 +20,7 @@ type Props = {
 }
 
 export function PreMatchCountdown({ opponentName, youGoFirst, onDone, skipFoundBeat }: Props) {
+  const t = useT()
   const [stage, setStage] = useState<Stage>(skipFoundBeat ? 'whoFirst' : 'found')
   const [count, setCount] = useState(3)
 
@@ -54,19 +56,19 @@ export function PreMatchCountdown({ opponentName, youGoFirst, onDone, skipFoundB
     <div className="pmc">
       {stage === 'found' && (
         <>
-          <p className="pmc__status">MATCH FOUND!</p>
-          <p className="pmc__opponent">vs {opponentName}</p>
+          <p className="pmc__status">{t('prematch.matchFound')}</p>
+          <p className="pmc__opponent">{t('prematch.vs', { name: opponentName })}</p>
         </>
       )}
       {stage === 'whoFirst' && (
         <p className="pmc__status">
           {youGoFirst ? (
             <>
-              YOU GO FIRST <Sprite name="ball" />
+              {t('prematch.youGoFirst')} <Sprite name="ball" />
             </>
           ) : (
             <>
-              {opponentName} GOES FIRST <Sprite name="glove" />
+              {t('prematch.goesFirst', { name: opponentName })} <Sprite name="glove" />
             </>
           )}
         </p>

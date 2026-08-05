@@ -247,9 +247,9 @@ describe('matchStore 1v1 mode', () => {
   })
 
   it("keeps the opponent's keeper skin from the session", () => {
-    const { session } = readySession({ opponentGkSkin: 'gk_vozinha' })
+    const { session } = readySession({ opponentGkSkin: 'gk_coral_guard' })
     matchStore.start1v1(session)
-    expect(matchStore.getState().opponentGkSkin).toBe('gk_vozinha')
+    expect(matchStore.getState().opponentGkSkin).toBe('gk_coral_guard')
   })
 
   it('marks a kick pending on submitAnswer1v1 without touching the shootout yet', () => {

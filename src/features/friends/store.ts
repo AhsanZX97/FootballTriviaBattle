@@ -1,6 +1,8 @@
 import type { Friend, FriendRequest, SendRequestResult, UserSearchResult } from '../../types/friends'
 import { friendsApi, type FriendsApi } from '../../services/friends'
 import { authStore } from '../auth/store'
+import { t } from '../../services/i18n/store'
+import type { MessageKey } from '../../services/i18n/messages/en'
 
 export interface FriendsState {
   status: 'idle' | 'loading' | 'loaded'
@@ -37,11 +39,11 @@ const emptyState = (): FriendsState => ({
   actionError: null,
 })
 
-const SEND_MESSAGES: Partial<Record<SendRequestResult, string>> = {
-  not_found: 'No player with that username.',
-  already_friends: 'You are already friends.',
-  already_pending: 'Request already pending.',
-  self: "You can't add yourself.",
+const SEND_MESSAGE_KEYS: Partial<Record<SendRequestResult, MessageKey>> = {
+  not_found: 'friends.error.notFound',
+  already_friends: 'friends.error.alreadyFriends',
+  already_pending: 'friends.error.alreadyPending',
+  self: 'friends.error.self',
 }
 
 /** Exported for tests, which inject a fake api and auth seam; the app uses the
@@ -107,7 +109,8 @@ export function createFriendsStore(
       // nudge the recipient so their request badge appears without a reopen
       if (targetId) notify?.([targetId])
     } else {
-      set({ actionError: SEND_MESSAGES[result] ?? 'Could not send request.' })
+      const key = SEND_MESSAGE_KEYS[result]
+      set({ actionError: key ? t(key) : t('friends.error.sendFailed') })
     }
     return result
   }

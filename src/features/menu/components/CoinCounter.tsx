@@ -2,6 +2,7 @@ import { useSyncExternalStore } from 'react'
 import { authStore } from '../../auth/store'
 import type { AuthStore } from '../../auth/store'
 import coinSprite from '../../../assets/sprites/coin.png'
+import { useT } from '../../../services/i18n/store'
 
 type Props = {
   /** Defaults to the real singleton; tests inject a fake. */
@@ -15,6 +16,7 @@ type Props = {
 /** Coin balance next to the global SoundControl overlay. Shows 0 whenever the
  * player isn't signed in (logged out or still loading), per spec. */
 export function CoinCounter({ store = authStore, onPress }: Props) {
+  const t = useT()
   const state = useSyncExternalStore(store.subscribe, store.getState)
   const coins = state.status === 'signedIn' ? state.coins : 0
 
@@ -35,7 +37,7 @@ export function CoinCounter({ store = authStore, onPress }: Props) {
   if (!onPress) return <div className="coin-counter">{inner}</div>
 
   return (
-    <button type="button" className="coin-counter coin-counter--action" aria-label="Get coins" onClick={onPress}>
+    <button type="button" className="coin-counter coin-counter--action" aria-label={t('getcoins.getCoinsAria')} onClick={onPress}>
       {inner}
     </button>
   )

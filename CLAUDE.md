@@ -52,12 +52,48 @@ diagnosing a runtime error that only reproduces in-page, or reading console
 output the user can't retrieve. When used, keep it surgical: one navigate,
 the minimal snapshot/console read, done — not click-through flows.
 
+## Releasing to Play
+
+Releases go out over the Play Developer API via Gradle Play Publisher, not by
+hand in the console. The whole flow is the `/release` slash command
+(`.claude/commands/release.md`); underneath it is one npm script:
+
+```
+npm run release:play      # cap:sync:release -> bundleRelease -> upload
+```
+
+Defaults live in the `play { }` block in `android/app/build.gradle`: **internal
+track, DRAFT status**. A successful run puts a draft in the console; nothing
+reaches users until rollout is pressed there. Override per-run rather than
+editing the block — flags pass straight through:
+
+```
+npm run release:play -- --track production --release-status inProgress --user-fraction 0.1
+npm run release:promote -- --from-track internal --promote-track production
+```
+
+Credentials come from a gitignored `android/play.properties` (template:
+`play.properties.example`), same pattern as `keystore.properties`. It needs a
+service account with **release** permissions — the `play-purchase-verifier`
+account only has *View financial data* and cannot publish.
+
+Two things the API cannot do, ever — these stay manual in the console:
+the **Data safety form** / content rating / policy declarations, and the
+**final rollout** button (by our own DRAFT default).
+
+`versionCode` in `android/app/build.gradle` must increase every upload; Play
+rejects a reused one. Release notes are a repo file:
+`android/app/src/main/play/release-notes/en-US/default.txt`, **max 500 chars**.
+
 ## Multiplayer dev
 
 - `npm run dev` (Vite, port 5173) + `npm run dev:server` (WS server, port 8787).
 - The server's origin check only allows `http://localhost:5173`. If Vite grabs
   5174 because a stale Vite is still on 5173, the socket handshake fails with
   "HTTP Authentication failed" — kill the stray process, don't change the port.
+- Quick match falls back to a **bot** after 8s alone in the queue (`server/bot.ts`).
+  So a single tab that sits on "searching" *will* get matched — that's the fill,
+  not a real opponent. Set `BOT_FILL_ENABLED=false` when testing real pairing.
 - `dev:server` loads `.env.development.local` (gitignored). 1v1 coin awards
   only work locally if that file sets `SUPABASE_URL` and
   `SUPABASE_SERVICE_ROLE_KEY`; the server's boot log says ENABLED or DISABLED

@@ -4,6 +4,7 @@ import { defaultCustomization } from '../../types/customization'
 import { getItem, removeItem, setItem } from '../../services/storage'
 import { dailyKey } from '../../services/dailyChallenges'
 import { loginWithUsername, supabase } from '../../services/supabase'
+import { t } from '../../services/i18n/store'
 
 export interface AuthStore {
   getState(): AuthState
@@ -104,7 +105,27 @@ export interface StorageLike {
 
 type Listener = () => void
 
-const BAD_CREDENTIALS_ERROR = 'Invalid username/email or password.'
+/**
+ * Supabase reports failures as English prose, which would sit untranslated in
+ * the middle of an otherwise localised screen. Classify the few messages that
+ * actually reach a player into our own keys and translate those; anything
+ * unrecognised becomes a generic message rather than leaking raw server text.
+ *
+ * Matching on message text is unavoidable — GoTrue doesn't return stable codes
+ * for these — so the fallback matters more than the individual patterns.
+ */
+function supabaseErrorMessage(message: string): string {
+  const text = message.toLowerCase()
+  if (text.includes('already registered') || text.includes('already been registered')) {
+    return t('auth.error.emailTaken')
+  }
+  if (text.includes('rate limit') || text.includes('too many')) return t('auth.error.rateLimited')
+  if (text.includes('invalid login credentials')) return t('auth.error.badCredentials')
+  if (text.includes('failed to fetch') || text.includes('network')) return t('auth.error.network')
+  if (text.includes('password')) return t('auth.error.passwordLength')
+  if (text.includes('email')) return t('auth.error.emailInvalid')
+  return t('auth.error.generic')
+}
 
 const initialState = (cachedCoins: number): AuthState => ({
   status: 'loading',
@@ -131,25 +152,25 @@ function readCustomization(profile: ProfileRow | null): Customization {
 
 function validateUsername(username: string): string | null {
   if (username.length < 3 || username.length > 16 || !USERNAME_PATTERN.test(username)) {
-    return 'Username must be 3-16 characters: letters, numbers, underscore only.'
+    return t('auth.error.usernameFormat')
   }
   return null
 }
 
 function validatePassword(password: string): string | null {
-  if (password.length < 8) return 'Password must be at least 8 characters.'
+  if (password.length < 8) return t('auth.error.passwordLength')
   return null
 }
 
 function validateEmail(email: string): string | null {
-  if (!email.includes('@')) return 'Enter a valid email address.'
+  if (!email.includes('@')) return t('auth.error.emailInvalid')
   return null
 }
 
 function validateResetCode(code: string): string | null {
   // Supabase's recovery OTP is 8 digits (not the commonly-assumed 6) — this
   // was verified against a real sent email, not just docs.
-  if (!/^\d{8}$/.test(code)) return 'Enter the 8-digit code from your email.'
+  if (!/^\d{8}$/.test(code)) return t('auth.error.codeFormat')
   return null
 }
 
@@ -229,7 +250,7 @@ export function createAuthStore(
       ? await supabaseClient.auth.signInWithPassword({ email: usernameOrEmail, password })
       : await loginWithUsernameFn(usernameOrEmail, password)
     if (error) {
-      set({ error: BAD_CREDENTIALS_ERROR })
+      set({ error: t('auth.error.badCredentials') })
     }
     // Success intentionally does not flip status here — onAuthStateChange is
     // the single source of truth for signedIn state.
@@ -252,11 +273,11 @@ export function createAuthStore(
       p_username: username,
     })
     if (availabilityError) {
-      set({ error: availabilityError.message })
+      set({ error: supabaseErrorMessage(availabilityError.message) })
       return
     }
     if (!available) {
-      set({ error: 'Username already taken.' })
+      set({ error: t('auth.error.usernameTaken') })
       return
     }
 
@@ -265,7 +286,7 @@ export function createAuthStore(
       password,
       options: { data: { username } },
     })
-    if (error) set({ error: error.message })
+    if (error) set({ error: supabaseErrorMessage(error.message) })
     // Success: signup with email confirmation off returns an active session,
     // which onAuthStateChange picks up and flips status to signedIn.
   }
@@ -321,7 +342,7 @@ export function createAuthStore(
       return
     }
     const { error } = await supabaseClient.auth.resetPasswordForEmail(email)
-    if (error) set({ error: error.message })
+    if (error) set({ error: supabaseErrorMessage(error.message) })
   }
 
   async function confirmPasswordReset(email: string, code: string, newPassword: string): Promise<void> {
@@ -339,12 +360,12 @@ export function createAuthStore(
 
     const { error: otpError } = await supabaseClient.auth.verifyOtp({ email, token: code, type: 'recovery' })
     if (otpError) {
-      set({ error: 'Invalid or expired code.' })
+      set({ error: t('auth.error.codeInvalid') })
       return
     }
 
     const { error: updateError } = await supabaseClient.auth.updateUser({ password: newPassword })
-    if (updateError) set({ error: updateError.message })
+    if (updateError) set({ error: supabaseErrorMessage(updateError.message) })
     // Success: verifyOtp already established a session — onAuthStateChange
     // is the single source of truth and flips status to signedIn from here.
   }

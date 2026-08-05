@@ -12,10 +12,13 @@ import type { ClientMessage, ServerMessage } from '../src/types/multiplayer'
 import { isMatchOver } from '../src/game/shootout'
 import { footballBank } from '../src/services/trivia/bank'
 import { sampleQuestions } from '../src/services/trivia/sampler'
+import { refsForQuestions } from '../src/services/trivia/bank/localised'
 import { createJwtVerifier } from './auth'
 import type { VerifiedToken } from './auth'
 import { settleMatch } from './awards'
 import type { SettleReason } from './awards'
+import { botKickDelayMs, botRematchDelayMs, botScores, createBotProfile } from './bot'
+import type { BotProfile } from './bot'
 
 const PORT = Number(process.env.PORT ?? 8787)
 const ALLOWED_ORIGINS = (process.env.ALLOWED_ORIGINS ?? 'http://localhost:5173')
@@ -49,6 +52,15 @@ const CHALLENGE_TIMEOUT_MS = 30_000
 // friend's green "online" dot — would linger until the OS TCP timeout, which
 // can be minutes. This bounds it to at most two intervals.
 const HEARTBEAT_INTERVAL_MS = 30_000
+
+// Bot fill: how long a player waits alone in the quick-match queue before the
+// server pairs them with a bot rather than leave them staring at "searching"
+// with nobody else online. Long enough that two real players who queue within
+// a few seconds of each other still find each other first.
+const BOT_QUEUE_TIMEOUT_MS = 8_000
+// Kill switch for the above — set BOT_FILL_ENABLED=false to make quick match
+// pair real players only.
+const BOT_FILL_ENABLED = (process.env.BOT_FILL_ENABLED ?? 'true') !== 'false'
 
 interface Connection {
   id: string
@@ -85,6 +97,14 @@ interface RoomEntry {
   settled: boolean
 }
 
+interface BotRuntime {
+  profile: BotProfile
+  /** The bot's one pending action (a kick, or a rematch vote). The two can
+   * never be outstanding at once — a rematch is only votable once the match is
+   * over, which is exactly when no kick is pending. */
+  timer: ReturnType<typeof setTimeout> | null
+}
+
 let queue: Queue = createQueue()
 const connectionsByWs = new Map<WebSocket, Connection>()
 const connectionsById = new Map<string, Connection>()
@@ -92,6 +112,11 @@ const rooms = new Map<string, RoomEntry>()
 // Presence: every live authed connection, grouped by userId (a user may have
 // several tabs/devices open). Used to locate a friend to deliver a challenge to.
 const connectionsByUser = new Map<string, Set<Connection>>()
+// Live bots, keyed by their (synthetic) connection id — see the bot fill
+// section. `botFillTimers` is keyed by the *waiting player's* connection id and
+// holds the countdown to giving up on a real opponent.
+const bots = new Map<string, BotRuntime>()
+const botFillTimers = new Map<string, ReturnType<typeof setTimeout>>()
 // In-flight friend challenges + their expiry timers (parallel maps keyed by
 // challenge id). See challenges.ts for the pure bookkeeping.
 const challenges = createChallengeStore()
@@ -276,8 +301,16 @@ const QUESTIONS_PER_MATCH = 30
 
 // Both players must see the same questions, so the server draws one shared
 // sample per room from the bundled football bank (Node-safe: no DOM APIs).
+//
+// Two forms of the same draw go out together. `refs` (ids + answer order) is
+// what current clients use: each renders the questions from its own locale's
+// bank, so two players in different languages still get the same question with
+// the correct answer in the same slot. `questions` is the English text, kept
+// because clients built before localisation only understand that field —
+// dropping it would break every already-installed app.
 function questionsForRoom() {
-  return sampleQuestions(footballBank, QUESTIONS_PER_MATCH)
+  const questions = sampleQuestions(footballBank, QUESTIONS_PER_MATCH)
+  return { questions, refs: refsForQuestions(questions) }
 }
 
 function armKickTimer(roomId: string, entry: RoomEntry) {
@@ -332,13 +365,14 @@ function startMatch(x: Connection, y: Connection, xGoesFirst: boolean) {
   roomConnections.a.roomId = roomId
   roomConnections.b.roomId = roomId
 
-  const questions = questionsForRoom()
+  const { questions, refs } = questionsForRoom()
   send(roomConnections.a.ws, {
     type: 'matched',
     opponentName: roomConnections.b.name,
     opponentGkSkin: roomConnections.b.gkSkin ?? undefined,
     youGoFirst: true,
     questions,
+    questionRefs: refs,
   })
   send(roomConnections.b.ws, {
     type: 'matched',
@@ -346,6 +380,7 @@ function startMatch(x: Connection, y: Connection, xGoesFirst: boolean) {
     opponentGkSkin: roomConnections.a.gkSkin ?? undefined,
     youGoFirst: false,
     questions,
+    questionRefs: refs,
   })
 
   const entry: RoomEntry = { room, connections: roomConnections, kickTimer: null, settled: false }
@@ -374,10 +409,15 @@ async function handleQueue(connection: Connection, name: string) {
   queue = result.queue
   if (!result.pair) {
     send(connection.ws, { type: 'queued' })
+    if (BOT_FILL_ENABLED) scheduleBotFill(connection)
     return
   }
 
   const [x, y] = result.pair
+  // A real opponent turned up first — whoever was counting down to a bot no
+  // longer needs one.
+  clearBotFill(x.id)
+  clearBotFill(y.id)
   startMatch(connectionsById.get(x.id)!, connectionsById.get(y.id)!, Math.random() < 0.5)
 }
 
@@ -402,10 +442,145 @@ function handleRematchVote(connection: Connection) {
   }
   // Fresh shootout state means a fresh match to award — let it settle again.
   entry.settled = false
-  const questions = questionsForRoom()
-  send(entry.connections.a.ws, { type: 'rematchStart', youGoFirst: true, questions })
-  send(entry.connections.b.ws, { type: 'rematchStart', youGoFirst: false, questions })
+  const { questions, refs } = questionsForRoom()
+  send(entry.connections.a.ws, {
+    type: 'rematchStart',
+    youGoFirst: true,
+    questions,
+    questionRefs: refs,
+  })
+  send(entry.connections.b.ws, {
+    type: 'rematchStart',
+    youGoFirst: false,
+    questions,
+    questionRefs: refs,
+  })
   armKickTimer(connection.roomId!, entry)
+}
+
+// --- bot fill (quick match with nobody else queueing) ---
+//
+// A bot is a `Connection` like any other, minus the socket: it goes through
+// startMatch, occupies a room slot, and takes its kicks via the same
+// resolveKick the real player's `kickResult` uses. Nothing in the match rules,
+// the awards, or the client knows the difference. The only synthetic part is
+// the `ws` stub below, which turns "the server sent this player a message"
+// into "the bot decides what to do next".
+
+/** Cancel a waiting player's countdown to being given a bot. */
+function clearBotFill(connectionId: string) {
+  const timer = botFillTimers.get(connectionId)
+  if (timer) {
+    clearTimeout(timer)
+    botFillTimers.delete(connectionId)
+  }
+}
+
+function scheduleBotFill(connection: Connection) {
+  clearBotFill(connection.id)
+  botFillTimers.set(
+    connection.id,
+    setTimeout(() => {
+      botFillTimers.delete(connection.id)
+      fillWithBot(connection)
+    }, BOT_QUEUE_TIMEOUT_MS),
+  )
+}
+
+/** The wait ran out: pair the still-queueing player with a fresh bot. */
+function fillWithBot(connection: Connection) {
+  // They may have been paired, cancelled, or dropped while the timer ran.
+  if (connection.roomId || connectionsById.get(connection.id) !== connection) return
+  if (!queue.waiting.some((player) => player.id === connection.id)) return
+  queue = dequeue(queue, connection.id)
+  const bot = spawnBot()
+  console.log(`[bot] no opponent for ${connection.id} — filling with "${bot.name}"`)
+  startMatch(connection, bot, Math.random() < 0.5)
+}
+
+function spawnBot(): Connection {
+  const profile = createBotProfile()
+  const bot: Connection = {
+    id: randomUUID(),
+    name: profile.name,
+    // No real socket: everything the server "sends" the bot is fed straight
+    // back into its own handler. Stringify/parse keeps this identical to what
+    // a real client would have received off the wire.
+    ws: {
+      readyState: WebSocket.OPEN,
+      send: (data: string) => handleBotMessage(bot, JSON.parse(data) as ServerMessage),
+    } as unknown as WebSocket,
+    roomId: null,
+    // Anonymous by construction: no userId means no coin award, no match
+    // history row, and no presence entry for the bot.
+    userId: null,
+    username: null,
+    gkSkin: profile.gkSkin,
+    profileReady: Promise.resolve(),
+    presenceWatch: null,
+    isAlive: true,
+  }
+  bots.set(bot.id, { profile, timer: null })
+  // startMatch resolves room slots through this map, so the bot has to be in it.
+  connectionsById.set(bot.id, bot)
+  return bot
+}
+
+function disposeBot(bot: Connection) {
+  const runtime = bots.get(bot.id)
+  if (!runtime) return
+  if (runtime.timer) clearTimeout(runtime.timer)
+  bots.delete(bot.id)
+  connectionsById.delete(bot.id)
+  bot.roomId = null
+}
+
+function handleBotMessage(bot: Connection, message: ServerMessage) {
+  switch (message.type) {
+    case 'matched':
+    case 'rematchStart':
+      if (message.youGoFirst) scheduleBotKick(bot)
+      return
+    case 'kickResolved':
+      // The opponent's kick just landed, so the next one is the bot's.
+      if (message.by === 'opponent') scheduleBotKick(bot)
+      return
+    case 'rematchVotes':
+      // The player wants another match; bots always take it.
+      scheduleBotAction(bot, botRematchDelayMs(), () => handleRematchVote(bot))
+      return
+    case 'opponentLeft':
+      disposeBot(bot)
+      return
+    default:
+      return
+  }
+}
+
+/** Queue the bot's single pending action, replacing any earlier one. */
+function scheduleBotAction(bot: Connection, delayMs: number, act: () => void) {
+  const runtime = bots.get(bot.id)
+  if (!runtime) return
+  if (runtime.timer) clearTimeout(runtime.timer)
+  runtime.timer = setTimeout(() => {
+    runtime.timer = null
+    // Re-check against live room state rather than trusting the message that
+    // triggered this: the match can end or be torn down mid-delay.
+    if (!bots.has(bot.id)) return
+    act()
+  }, delayMs)
+}
+
+function scheduleBotKick(bot: Connection) {
+  const runtime = bots.get(bot.id)
+  if (!runtime) return
+  scheduleBotAction(bot, botKickDelayMs(), () => {
+    const entry = bot.roomId ? rooms.get(bot.roomId) : undefined
+    if (!entry) return
+    const slot = slotOf(entry, bot)
+    if (isMatchOver(entry.room.shootout) || activeSlot(entry.room.shootout) !== slot) return
+    resolveKick(bot.roomId!, entry, slot, botScores(runtime.profile))
+  })
 }
 
 // --- presence (authed connections grouped by userId) ---
@@ -608,6 +783,7 @@ function handleMessage(connection: Connection, message: ClientMessage) {
       return
     case 'cancel':
       queue = dequeue(queue, connection.id)
+      clearBotFill(connection.id)
       return
     case 'kickResult':
       handleKickResult(connection, message.scored)
@@ -746,6 +922,7 @@ wss.on('connection', (ws, req) => {
     removePresence(connection)
     cleanUpChallenges(connection)
     queue = dequeue(queue, connection.id)
+    clearBotFill(connection.id)
     const entry = connection.roomId ? rooms.get(connection.roomId) : undefined
     if (entry) handleLeave(connection.roomId!, entry, connection)
   })

@@ -1,6 +1,7 @@
 import { useEffect, useSyncExternalStore } from 'react'
 import { presenceStore } from '../presenceStore'
 import './ChallengeOverlay.css'
+import { useT } from '../../../services/i18n/store'
 
 const NOTICE_TIMEOUT_MS = 4000
 
@@ -9,6 +10,7 @@ const NOTICE_TIMEOUT_MS = 4000
  * out, and a transient notice when one fails. Reads the presence store; the
  * actual match hand-off is wired in App via presenceStore.onMatchReady. */
 export function ChallengeOverlay() {
+  const t = useT()
   const state = useSyncExternalStore(presenceStore.subscribe, presenceStore.getState)
   const { incoming, outgoing, notice } = state
 
@@ -22,13 +24,13 @@ export function ChallengeOverlay() {
   return (
     <>
       {incoming && (
-        <div className="challenge" role="dialog" aria-modal="true" aria-label="Incoming challenge">
+        <div className="challenge" role="dialog" aria-modal="true" aria-label={t('challenge.incomingAria')}>
           <div className="challenge__panel">
             <p className="challenge__headline">
               <span className="challenge__ball" aria-hidden>
                 ⚽
               </span>
-              <strong>{incoming.fromName}</strong> challenges you!
+              {t('challenge.challengesYou', { name: incoming.fromName })}
             </p>
             <div className="challenge__actions">
               <button
@@ -36,14 +38,14 @@ export function ChallengeOverlay() {
                 className="challenge__btn challenge__btn--accept"
                 onClick={() => presenceStore.acceptIncoming()}
               >
-                ACCEPT
+                {t('challenge.accept')}
               </button>
               <button
                 type="button"
                 className="challenge__btn challenge__btn--decline"
                 onClick={() => presenceStore.declineIncoming()}
               >
-                DECLINE
+                {t('challenge.decline')}
               </button>
             </div>
           </div>
@@ -51,13 +53,13 @@ export function ChallengeOverlay() {
       )}
 
       {outgoing && !incoming && (
-        <div className="challenge" role="dialog" aria-modal="true" aria-label="Waiting for opponent">
+        <div className="challenge" role="dialog" aria-modal="true" aria-label={t('challenge.waitingAria')}>
           <div className="challenge__panel">
             <p className="challenge__headline">
               <span className="challenge__ball challenge__ball--spin" aria-hidden>
                 ⚽
               </span>
-              Waiting for <strong>{outgoing.friendName}</strong>
+              {t('challenge.waitingFor', { name: outgoing.friendName })}
               <span className="challenge__dots" aria-hidden />
             </p>
             <div className="challenge__actions">
@@ -66,7 +68,7 @@ export function ChallengeOverlay() {
                 className="challenge__btn challenge__btn--decline"
                 onClick={() => presenceStore.cancelOutgoing()}
               >
-                CANCEL
+                {t('common.cancel')}
               </button>
             </div>
           </div>

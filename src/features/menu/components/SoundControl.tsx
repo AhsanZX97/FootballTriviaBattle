@@ -4,6 +4,7 @@ import { isNative } from '../../../services/platform'
 import volumeIcon from '../../../assets/volume-icon.png'
 import volumeMuteIcon from '../../../assets/volume-mute-icon.png'
 import './SoundControl.css'
+import { useT } from '../../../services/i18n/store'
 
 type Props = {
   /** Any screen change retracts the slider. */
@@ -15,6 +16,7 @@ type Props = {
  * never grows the top bar's row height (which would knock the other icons off
  * their shared centre line). Previously inlined in App.tsx. */
 export function SoundControl({ screen }: Props) {
+  const t = useT()
   const [open, setOpen] = useState(false)
   const [volume, setVolume] = useState(getMasterVolume)
   const rootRef = useRef<HTMLDivElement>(null)
@@ -52,7 +54,7 @@ export function SoundControl({ screen }: Props) {
       <button
         type="button"
         className="sound__toggle"
-        aria-label={open ? 'hide volume slider' : 'show volume slider'}
+        aria-label={open ? t('sound.hideSlider') : t('sound.showSlider')}
         aria-expanded={open}
         onClick={() => setOpen((o) => !o)}
         onDoubleClick={(e) => {
@@ -71,7 +73,7 @@ export function SoundControl({ screen }: Props) {
           <input
             type="range"
             className="sound__slider"
-            aria-label="master volume"
+            aria-label={t('sound.masterVolume')}
             min={0}
             max={1}
             step={0.05}
@@ -86,7 +88,7 @@ export function SoundControl({ screen }: Props) {
               button; web keeps the double-click and never renders this */}
           {isNative && (
             <button type="button" className="sound__mute" onClick={toggleMute}>
-              {volume === 0 ? 'UNMUTE' : 'MUTE'}
+              {volume === 0 ? t('sound.unmute') : t('sound.mute')}
             </button>
           )}
         </div>

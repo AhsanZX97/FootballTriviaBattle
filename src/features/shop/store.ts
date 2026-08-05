@@ -2,6 +2,7 @@ import type { CustomizationSlot, PurchaseResult, ShopItem } from '../../types/cu
 import { customizationApi, type CustomizationApi } from '../../services/customization'
 import { catalogueFor } from '../../services/shopCatalogue'
 import { authStore } from '../auth/store'
+import { t } from '../../services/i18n/store'
 
 export interface ShopState {
   /** The catalogue, per slot. Static (it ships with the bundle) — only `owned`
@@ -28,10 +29,10 @@ export interface ShopAuthSeam {
 
 type Listener = () => void
 
-const SIGNED_OUT_ERROR = 'Sign in to customize your character.'
-const EQUIP_FAILED_ERROR = 'Could not equip that item.'
-const PURCHASE_FAILED_ERROR = 'Could not complete that purchase.'
-const INSUFFICIENT_COINS_ERROR = 'Not enough coins.'
+const SIGNED_OUT_ERROR = () => t('shop.error.signedOut')
+const EQUIP_FAILED_ERROR = () => t('shop.error.equipFailed')
+const PURCHASE_FAILED_ERROR = () => t('shop.error.purchaseFailed')
+const INSUFFICIENT_COINS_ERROR = () => t('shop.error.insufficient')
 
 const emptyState = (): ShopState => ({
   items: {
@@ -91,7 +92,7 @@ export function createShopStore(deps: { api?: CustomizationApi; auth?: ShopAuthS
    */
   async function purchase(itemId: string): Promise<PurchaseResult> {
     if (!signedIn()) {
-      set({ error: SIGNED_OUT_ERROR })
+      set({ error: SIGNED_OUT_ERROR() })
       return 'error'
     }
     if (isOwned(itemId)) return 'already_owned'
@@ -111,7 +112,7 @@ export function createShopStore(deps: { api?: CustomizationApi; auth?: ShopAuthS
     }
     set({
       purchasing: null,
-      error: status === 'insufficient_coins' ? INSUFFICIENT_COINS_ERROR : PURCHASE_FAILED_ERROR,
+      error: status === 'insufficient_coins' ? INSUFFICIENT_COINS_ERROR() : PURCHASE_FAILED_ERROR(),
     })
     return status
   }
@@ -120,13 +121,13 @@ export function createShopStore(deps: { api?: CustomizationApi; auth?: ShopAuthS
    * only reflects the change once the RPC confirms it. */
   async function equip(slot: CustomizationSlot, itemId: string): Promise<boolean> {
     if (!signedIn()) {
-      set({ error: SIGNED_OUT_ERROR })
+      set({ error: SIGNED_OUT_ERROR() })
       return false
     }
     set({ equipping: true, error: null })
     const ok = await api.setCustomization(slot, itemId)
     if (ok) auth.applyCustomizationUpdate(slot, itemId)
-    set({ equipping: false, error: ok ? null : EQUIP_FAILED_ERROR })
+    set({ equipping: false, error: ok ? null : EQUIP_FAILED_ERROR() })
     return ok
   }
 

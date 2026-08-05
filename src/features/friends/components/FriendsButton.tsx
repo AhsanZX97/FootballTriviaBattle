@@ -5,11 +5,13 @@ import { presenceStore } from '../presenceStore'
 import { FriendsPopup } from './FriendsPopup'
 import profileIcon from '../../../assets/sprites/profile.png'
 import './FriendsButton.css'
+import { useT } from '../../../services/i18n/store'
 
 /** Profile icon in the TopBar's left slot. Only shown when signed in (friends
  * need an account). Carries a red badge with the count of incoming friend
  * requests and opens the friends popup. */
 export function FriendsButton() {
+  const t = useT()
   const auth = useSyncExternalStore(authStore.subscribe, authStore.getState)
   const friends = useSyncExternalStore(friendsStore.subscribe, friendsStore.getState)
   const [open, setOpen] = useState(false)
@@ -23,7 +25,9 @@ export function FriendsButton() {
       <button
         type="button"
         className="friends-btn"
-        aria-label={pending > 0 ? `Friends (${pending} pending requests)` : 'Friends'}
+        aria-label={
+          pending > 0 ? t('friends.buttonPending', { count: pending }) : t('friends.button')
+        }
         onClick={() => setOpen(true)}
       >
         <img className="friends-btn__img" src={profileIcon} alt="" />

@@ -7,6 +7,7 @@ import { BALL_SKIN_SOURCES, GK_SKIN_SOURCES } from '../../../services/shopCatalo
 import { ShopItemList } from './ShopItemList'
 import { ShopConfirm } from './ShopConfirm'
 import './ShopPopup.css'
+import { useT } from '../../../services/i18n/store'
 
 type Props = {
   onClose: () => void
@@ -16,15 +17,12 @@ type Props = {
 
 /** The shop's three tabs, in display order. Each maps 1:1 to a customization
  * slot on the profile, so picking a tab is picking the slot to equip. */
-const TABS: Array<{ slot: CustomizationSlot; label: string; empty: string }> = [
-  { slot: 'gkSkin', label: 'SKIN', empty: 'No keeper skins yet.' },
-  { slot: 'ballSkin', label: 'BALL', empty: 'No ball skins yet.' },
-  { slot: 'goalSound', label: 'SOUNDS', empty: 'No goal sounds yet.' },
-]
+const TAB_SLOTS: CustomizationSlot[] = ['gkSkin', 'ballSkin', 'goalSound']
 
 /** Modal shell for the shop. Shares the FriendsPopup layout/skin so the two
  * read as one system. Tapping an item opens a buy (or equip) confirmation. */
 export function ShopPopup({ onClose, store = shopStore }: Props) {
+  const t = useT()
   const [slot, setSlot] = useState<CustomizationSlot>('gkSkin')
   const [selected, setSelected] = useState<ShopItem | null>(null)
   const shop = useSyncExternalStore(store.subscribe, store.getState)
@@ -49,7 +47,6 @@ export function ShopPopup({ onClose, store = shopStore }: Props) {
     return () => document.removeEventListener('keydown', onKey)
   }, [onClose, selected])
 
-  const active = TABS.find((t) => t.slot === slot) ?? TABS[0]
   const items = shop.items[slot]
   const equippedId = auth.customization[slot]
 
@@ -78,29 +75,34 @@ export function ShopPopup({ onClose, store = shopStore }: Props) {
     // it, a click on the confirm's own backdrop would bubble into this one's
     // onClick and close the whole shop behind it.
     <>
-      <div className="shop-popup" role="dialog" aria-modal="true" aria-label="Shop" onClick={onClose}>
+      <div className="shop-popup" role="dialog" aria-modal="true" aria-label={t('shop.aria')} onClick={onClose}>
         <div className="shop-popup__panel" onClick={(e) => e.stopPropagation()}>
           <div className="shop-popup__head">
-            <h2 className="shop-popup__title">SHOP</h2>
-            <button type="button" className="shop-popup__close" aria-label="Close" onClick={onClose}>
+            <h2 className="shop-popup__title">{t('shop.title')}</h2>
+            <button
+              type="button"
+              className="shop-popup__close"
+              aria-label={t('common.closeAria')}
+              onClick={onClose}
+            >
               ✕
             </button>
           </div>
 
           <div className="shop-popup__tabs" role="tablist">
-            {TABS.map((tab) => (
+            {TAB_SLOTS.map((tabSlot) => (
               <button
-                key={tab.slot}
+                key={tabSlot}
                 type="button"
                 role="tab"
-                aria-selected={slot === tab.slot}
-                className={`shop-popup__tab${slot === tab.slot ? ' is-active' : ''}`}
+                aria-selected={slot === tabSlot}
+                className={`shop-popup__tab${slot === tabSlot ? ' is-active' : ''}`}
                 onClick={() => {
                   stopPreview()
-                  setSlot(tab.slot)
+                  setSlot(tabSlot)
                 }}
               >
-                {tab.label}
+                {t(`shop.tab.${tabSlot}`)}
               </button>
             ))}
           </div>
@@ -109,7 +111,7 @@ export function ShopPopup({ onClose, store = shopStore }: Props) {
             {/* The store's error shows inside the confirm popup while one is open. */}
             {shop.error && !selected && <p className="shop-popup__error">{shop.error}</p>}
             {items.length === 0 ? (
-              <p className="shop-popup__empty">{active.empty}</p>
+              <p className="shop-popup__empty">{t(`shop.empty.${slot}`)}</p>
             ) : (
               <ShopItemList
                 items={items}

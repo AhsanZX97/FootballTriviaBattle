@@ -2,6 +2,7 @@ import { describe, expect, it, vi } from 'vitest'
 import type { AuthState } from '../../../types/auth'
 import { createAuthStore } from '../store'
 import { dailyKey } from '../../../services/dailyChallenges'
+import { t } from '../../../services/i18n/store'
 
 type Callback = (event: string, session: FakeSession | null) => void | Promise<void>
 
@@ -211,14 +212,24 @@ describe('signUp', () => {
     expect(fake.signUp).not.toHaveBeenCalled()
   })
 
-  it('surfaces the error message when supabase signUp fails', async () => {
+  it('translates a recognised supabase signUp failure instead of leaking its text', async () => {
     const fake = createFakeSupabase()
     fake.signUp.mockResolvedValue({ error: { message: 'User already registered' } })
     const store = createAuthStore({ supabaseClient: fake.client as never, storage: fakeStorage() })
 
     await store.signUp('bobby', 'bob@example.com', 'password1')
 
-    expect(store.getState().error).toBe('User already registered')
+    expect(store.getState().error).toBe(t('auth.error.emailTaken'))
+  })
+
+  it('falls back to a generic message for an unrecognised supabase failure', async () => {
+    const fake = createFakeSupabase()
+    fake.signUp.mockResolvedValue({ error: { message: 'kaboom 0x8007' } })
+    const store = createAuthStore({ supabaseClient: fake.client as never, storage: fakeStorage() })
+
+    await store.signUp('bobby', 'bob@example.com', 'password1')
+
+    expect(store.getState().error).toBe(t('auth.error.generic'))
   })
 })
 
@@ -325,7 +336,7 @@ describe('requestPasswordReset', () => {
 
     await store.requestPasswordReset('bob@example.com')
 
-    expect(store.getState().error).toBe('rate limited')
+    expect(store.getState().error).toBe(t('auth.error.rateLimited'))
   })
 })
 
@@ -383,7 +394,7 @@ describe('confirmPasswordReset', () => {
 
     await store.confirmPasswordReset('bob@example.com', '12345678', 'newpassword1')
 
-    expect(store.getState().error).toBe('weak password')
+    expect(store.getState().error).toBe(t('auth.error.passwordLength'))
   })
 })
 

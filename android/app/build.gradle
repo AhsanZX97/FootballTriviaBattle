@@ -1,4 +1,7 @@
 apply plugin: 'com.android.application'
+apply plugin: 'com.github.triplet.play'
+
+import com.github.triplet.gradle.androidpublisher.ReleaseStatus
 
 // Release signing pulled from a gitignored keystore.properties so the upload
 // key + passwords never enter git. If the file is absent (debug builds, or a
@@ -9,6 +12,14 @@ if (keystorePropertiesFile.exists()) {
     keystoreProperties.load(new FileInputStream(keystorePropertiesFile))
 }
 
+// Play Developer API service account, same gitignored-properties pattern as the
+// keystore. Absent file = ordinary builds still work, only publish* tasks fail.
+def playPropertiesFile = rootProject.file("play.properties")
+def playProperties = new Properties()
+if (playPropertiesFile.exists()) {
+    playProperties.load(new FileInputStream(playPropertiesFile))
+}
+
 android {
     namespace = "com.degreatahsan.footballtriviabattle"
     compileSdk = rootProject.ext.compileSdkVersion
@@ -16,8 +27,8 @@ android {
         applicationId "com.degreatahsan.footballtriviabattle"
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
-        versionCode 5
-        versionName "1.3"
+        versionCode 6
+        versionName "1.3.1"
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
         aaptOptions {
              // Files and dirs to omit from the packaged assets dir, modified to accommodate modern web apps.
@@ -44,6 +55,19 @@ android {
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
         }
     }
+}
+
+// Defaults are deliberately conservative: internal track, uploaded as a DRAFT
+// so nothing reaches users until it is rolled out from the Play Console.
+// Override per-run instead of editing this, e.g.
+//   gradlew.bat publishReleaseBundle --track production --release-status inProgress --user-fraction 0.1
+play {
+    if (playPropertiesFile.exists()) {
+        serviceAccountCredentials.set(file(playProperties['serviceAccountFile']))
+    }
+    track.set("internal")
+    releaseStatus.set(ReleaseStatus.DRAFT)
+    defaultToAppBundles.set(true)
 }
 
 repositories {

@@ -4,6 +4,7 @@ import bg from '../../assets/bg.jpg'
 import logo from '../../assets/logo.png'
 import { authStore } from '../auth/store'
 import './IntroScreen.css'
+import { useT } from '../../services/i18n/store'
 
 type Props = {
   /** Called when the player picks 1 v CPU. */
@@ -17,6 +18,7 @@ type Props = {
 }
 
 export function IntroScreen({ onPlay, onOneVOne, onSignIn, onShop }: Props) {
+  const t = useT()
   useBottomBanner(true) // ad banner sits under the menu for as long as it's open
   const auth = useSyncExternalStore(authStore.subscribe, authStore.getState)
   const signedIn = auth.status === 'signedIn'
@@ -28,16 +30,16 @@ export function IntroScreen({ onPlay, onOneVOne, onSignIn, onShop }: Props) {
       <div className="intro__vignette" aria-hidden />
       <div className="intro__scanlines" aria-hidden />
       <div className="intro__content">
-        <img className="intro__logo" src={logo} alt="Football Trivia Battle" />
+        <img className="intro__logo" src={logo} alt={t('intro.logoAlt')} />
         <button type="button" className="intro__play" onClick={onOneVOne}>
-          <span className="intro__play-label">1 v 1</span>
+          <span className="intro__play-label">{t('intro.oneVOne')}</span>
         </button>
         <button type="button" className="intro__play intro__play--secondary" onClick={onPlay}>
-          <span className="intro__play-label">1 v CPU</span>
+          <span className="intro__play-label">{t('intro.oneVCpu')}</span>
         </button>
 
         <button type="button" className="intro__play intro__play--secondary" onClick={onShop}>
-          <span className="intro__play-label">SHOP</span>
+          <span className="intro__play-label">{t('intro.shop')}</span>
         </button>
 
         {signedIn ? (
@@ -46,15 +48,15 @@ export function IntroScreen({ onPlay, onOneVOne, onSignIn, onShop }: Props) {
             className="intro__play intro__play--secondary"
             onClick={() => void authStore.signOut()}
           >
-            <span className="intro__play-label">SIGN OUT</span>
+            <span className="intro__play-label">{t('intro.signOut')}</span>
           </button>
         ) : (
           <button type="button" className="intro__play intro__play--secondary" onClick={onSignIn}>
-            <span className="intro__play-label">SIGN IN</span>
+            <span className="intro__play-label">{t('intro.signIn')}</span>
           </button>
         )}
 
-        <div className="intro__prompt">▸ PRESS START ◂</div>
+        <div className="intro__prompt">▸ {t('intro.pressStart')} ◂</div>
       </div>
     </main>
   )

@@ -4,10 +4,12 @@ import { authStore } from '../../auth/store'
 import { DailyRewardCard } from './DailyRewardCard'
 import coinSprite from '../../../assets/sprites/coin.png'
 import './ChallengesPanel.css'
+import { useT } from '../../../services/i18n/store'
 
 /** The Daily tab of the account popup: the login-reward tracker on top, then the
  * three randomised daily challenges with their progress and coin claims. */
 export function ChallengesPanel() {
+  const t = useT()
   const state = useSyncExternalStore(challengesStore.subscribe, challengesStore.getState)
   const auth = useSyncExternalStore(authStore.subscribe, authStore.getState)
   const signedIn = auth.status === 'signedIn'
@@ -21,7 +23,7 @@ export function ChallengesPanel() {
     <div className="daily-challenges">
       <DailyRewardCard />
 
-      <h3 className="daily-challenges__heading">DAILY CHALLENGES</h3>
+      <h3 className="daily-challenges__heading">{t('daily.heading')}</h3>
       <ul className="daily-challenges__list">
         {state.challenges.map(({ def, progress, complete, claimed }) => {
           const pct = Math.round((progress / def.goal) * 100)
@@ -29,8 +31,10 @@ export function ChallengesPanel() {
           return (
             <li key={def.id} className={`daily-challenge${claimed ? ' daily-challenge--done' : ''}`}>
               <div className="daily-challenge__info">
-                <span className="daily-challenge__title">{def.title}</span>
-                <span className="daily-challenge__desc">{def.description}</span>
+                <span className="daily-challenge__title">{t(`daily.${def.id}.title`)}</span>
+                <span className="daily-challenge__desc">
+                  {t(`daily.${def.id}.desc`, { goal: def.goal })}
+                </span>
                 <div
                   className="daily-challenge__bar"
                   role="progressbar"
@@ -50,8 +54,8 @@ export function ChallengesPanel() {
                   {def.reward}
                 </span>
                 {claimed ? (
-                  <span className="daily-challenge__claimed" aria-label="Claimed">
-                    ✓ DONE
+                  <span className="daily-challenge__claimed" aria-label={t('daily.claimedAria')}>
+                    ✓ {t('daily.done')}
                   </span>
                 ) : (
                   <button
@@ -60,7 +64,7 @@ export function ChallengesPanel() {
                     disabled={!signedIn || !complete || claiming}
                     onClick={() => void challengesStore.claim(def.id)}
                   >
-                    {claiming ? '…' : 'CLAIM'}
+                    {claiming ? '…' : t('daily.claim')}
                   </button>
                 )}
               </div>
@@ -69,7 +73,7 @@ export function ChallengesPanel() {
         })}
       </ul>
 
-      {!signedIn && <p className="daily-challenges__note">Sign in to earn challenge rewards.</p>}
+      {!signedIn && <p className="daily-challenges__note">{t('daily.signInNote')}</p>}
     </div>
   )
 }
