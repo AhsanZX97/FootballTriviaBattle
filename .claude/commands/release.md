@@ -25,11 +25,10 @@ Read [android/app/build.gradle](android/app/build.gradle). Bump:
 
 Read `git log <last tag>..HEAD --oneline` and rewrite the user-facing changes
 into the release-notes file **for the track being published** —
-`android/app/src/main/play/release-notes/en-US/<track>.txt`. For the default
-internal release that is
-[internal.txt](android/app/src/main/play/release-notes/en-US/internal.txt);
-promoting to production later uses `production.txt`, so update that one too if
-the user is going straight to production.
+`android/app/src/main/play/release-notes/en-US/<track>.txt`. The default track
+is production, so that is
+[production.txt](android/app/src/main/play/release-notes/en-US/production.txt).
+These notes go to real users — write them for a player, not a developer.
 
 Rules: **max 500 characters** (Play hard-rejects longer), plain user language,
 no commit hashes, no internal refactors. Short bullets with `-`. If every commit
@@ -52,8 +51,12 @@ npm run release:play
 ```
 
 This runs `cap:sync:release` then `publishReleaseBundle`, which uploads to the
-**internal** track as a **DRAFT**. It does not reach any user until the rollout
-button is pressed in the console.
+**production** track as a **DRAFT**. It does not reach any user until the
+rollout button is pressed in the console.
+
+If it 403s on the track, the service account is missing the *Release to
+production* permission — it must be granted in Play Console under Users and
+permissions. To fall back to internal for a run: `npm run release:play -- --track internal`.
 
 If it fails on credentials, check that `android/play.properties` exists (see
 [android/play.properties.example](android/play.properties.example)) and that its
@@ -64,9 +67,10 @@ service account has release permissions — the purchase-verifier account does n
 Do NOT tag, commit, or push — leave that to the user. Report:
 
 - the new versionCode / versionName
-- the release notes you wrote
-- that a draft is waiting on the internal track, with the reminder that
+- the release notes you wrote, called out as **going to real users**
+- that a draft is waiting on the **production** track, with the reminder that
   **rollout, the Data safety form, and any policy declarations are console-only**
 - the exact commands for the next steps, so they can copy them:
-  - promote to production: `npm run release:promote -- --from-track internal --promote-track production`
+  - commit the bump: `git add -A && git commit -m "release: v<versionName> (versionCode <n>)"`
   - tag the release: `git tag v<versionName> && git push --tags`
+  - staged rollout to 10% instead of full: `npm run release:promote -- --from-track production --promote-track production --release-status inProgress --user-fraction 0.1`

@@ -27,8 +27,8 @@ android {
         applicationId "com.degreatahsan.footballtriviabattle"
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
-        versionCode 6
-        versionName "1.3.1"
+        versionCode 7
+        versionName "1.3.2"
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
         aaptOptions {
              // Files and dirs to omit from the packaged assets dir, modified to accommodate modern web apps.
@@ -57,15 +57,16 @@ android {
     }
 }
 
-// Defaults are deliberately conservative: internal track, uploaded as a DRAFT
-// so nothing reaches users until it is rolled out from the Play Console.
-// Override per-run instead of editing this, e.g.
-//   gradlew.bat publishReleaseBundle --track production --release-status inProgress --user-fraction 0.1
+// Publishes straight to the production track, but always as a DRAFT — the
+// upload lands in the console as a production draft and reaches nobody until
+// rollout is pressed there. Override per-run instead of editing this, e.g.
+//   gradlew.bat -p android publishReleaseBundle --track internal
+//   gradlew.bat -p android publishReleaseBundle --release-status inProgress --user-fraction 0.1
 play {
     if (playPropertiesFile.exists()) {
         serviceAccountCredentials.set(file(playProperties['serviceAccountFile']))
     }
-    track.set("internal")
+    track.set("production")
     releaseStatus.set(ReleaseStatus.DRAFT)
     defaultToAppBundles.set(true)
 }

@@ -62,15 +62,19 @@ hand in the console. The whole flow is the `/release` slash command
 npm run release:play      # cap:sync:release -> bundleRelease -> upload
 ```
 
-Defaults live in the `play { }` block in `android/app/build.gradle`: **internal
-track, DRAFT status**. A successful run puts a draft in the console; nothing
-reaches users until rollout is pressed there. Override per-run rather than
-editing the block — flags pass straight through:
+Defaults live in the `play { }` block in `android/app/build.gradle`:
+**production track, DRAFT status**. A successful run puts a production draft in
+the console; nothing reaches users until rollout is pressed there. Override
+per-run rather than editing the block — flags pass straight through:
 
 ```
-npm run release:play -- --track production --release-status inProgress --user-fraction 0.1
-npm run release:promote -- --from-track internal --promote-track production
+npm run release:play -- --track internal
+npm run release:play -- --release-status inProgress --user-fraction 0.1
 ```
+
+Publishing to production needs the *Release to production* permission on the
+service account; internal-only needs *Release apps to testing tracks*. A `403`
+naming the track means that grant is missing.
 
 Credentials come from a gitignored `android/play.properties` (template:
 `play.properties.example`), same pattern as `keystore.properties`. It needs a

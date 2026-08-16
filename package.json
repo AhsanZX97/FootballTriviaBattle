@@ -15,8 +15,8 @@
     "start:server": "tsx server/index.ts",
     "lint": "oxlint",
     "preview": "vite preview",
-    "release:play": "npm run cap:sync:release && cd android && gradlew.bat publishReleaseBundle",
-    "release:promote": "cd android && gradlew.bat promoteReleaseArtifact",
+    "release:play": "npm run cap:sync:release && android\\gradlew.bat -p android publishReleaseBundle",
+    "release:promote": "android\\gradlew.bat -p android promoteReleaseArtifact",
     "cap:sync": "npm run build && npx cap sync android",
     "android": "npm run build && npx cap sync android && npx cap run android",
     "android:open": "npx cap open android"

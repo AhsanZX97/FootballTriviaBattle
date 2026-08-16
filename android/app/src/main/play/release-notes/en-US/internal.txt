@@ -1,3 +1,3 @@
-- New: earn coins by watching a short ad, up to 5 times a day
-- New: coin packs available to purchase
+- More trivia: fresh questions across clubs, leagues, national teams, players, records and the World Cup
+- Italian now covers more categories, including records and World Cup questions
 - Fixes and performance improvements
