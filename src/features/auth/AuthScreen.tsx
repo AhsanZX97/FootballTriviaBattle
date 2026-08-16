@@ -7,6 +7,7 @@ import '../menu/IntroScreen.css'
 import './AuthScreen.css'
 import { useT } from '../../services/i18n/store'
 import type { MessageKey } from '../../services/i18n/messages/en'
+import { analytics } from '../../services/analytics'
 
 type Mode = 'signin' | 'signup' | 'reset-request' | 'reset-confirm'
 
@@ -55,6 +56,14 @@ export function AuthScreen({ onBack, onAuthenticated, initialMode = 'signin', st
     if (state.status === 'signedIn') onAuthenticated?.()
     // intentionally keyed on status alone — fire only on the signedOut/loading → signedIn transition
   }, [state.status])
+
+  // The top of the account funnel, and the number that decides what the 0%
+  // signup rate actually means: a tiny count here says the gate is buried, a
+  // large one says the gate is seen and declined. Keyed on mode so switching
+  // tabs to sign-up counts, not just landing on it.
+  useEffect(() => {
+    if (mode === 'signup') analytics.track('signup_shown', {})
+  }, [mode])
 
   function clearErrorOnEdit() {
     if (state.error) store.clearError()

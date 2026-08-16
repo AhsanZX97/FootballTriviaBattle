@@ -6,6 +6,17 @@ import { questionsFromMatchPayload } from '../../services/trivia/bank/localised'
 import { i18nStore } from '../../services/i18n/store'
 import { authStore } from '../auth/store'
 import { randomName } from './randomName'
+import { analytics } from '../../services/analytics'
+
+/**
+ * server/bot.ts fills a lonely queue after this long. Bots draw their names
+ * from the same randomName() generator anonymous players use, so nothing in
+ * the 'matched' payload distinguishes one — the queue wait is the only signal
+ * available client-side. Treat `likelyBot` as a strong proxy, not proof: a
+ * real opponent arriving just after the fill window reads the same way.
+ * Keep in sync with BOT_QUEUE_TIMEOUT_MS in server/index.ts.
+ */
+const BOT_FILL_MS = 8_000
 
 /** Handed to onMatchReady once the lobby's countdown finishes; carries the
  * live socket over so the match doesn't need to reconnect (and lose its room). */
@@ -94,6 +105,8 @@ export function createLobbyStore(connectFn: ConnectFn = connectWithAuth) {
     const attempt = ++connectAttempt
     // Optimistic: also blocks re-entrant quickMatch() calls while connecting.
     set({ phase: 'searching', nameError: null })
+    analytics.track('quickmatch_search_start', {})
+    const queueStartedAt = Date.now()
 
     const newSocket = await connectFn()
     if (attempt !== connectAttempt) {
@@ -105,9 +118,14 @@ export function createLobbyStore(connectFn: ConnectFn = connectWithAuth) {
     socket = newSocket
     socket.onMessage((message) => {
       switch (message.type) {
-        case 'matched':
+        case 'matched': {
           // socket survives into the match, whose own connectionLost handling takes over
           detachClose()
+          const waitedMs = Date.now() - queueStartedAt
+          analytics.track('quickmatch_matched', {
+            waitedMs,
+            likelyBot: waitedMs >= BOT_FILL_MS,
+          })
           set({
             phase: 'found',
             opponentName: message.opponentName,
@@ -116,6 +134,7 @@ export function createLobbyStore(connectFn: ConnectFn = connectWithAuth) {
             questions: questionsFromMatchPayload(message, i18nStore.getLocale()),
           })
           return
+        }
         case 'error':
           detachClose()
           socket?.close()

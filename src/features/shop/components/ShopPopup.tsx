@@ -4,6 +4,7 @@ import { authStore } from '../../auth/store'
 import type { CustomizationSlot, ShopItem } from '../../../types/customization'
 import { previewGoalSound, stopPreview } from '../../../services/sound'
 import { BALL_SKIN_SOURCES, GK_SKIN_SOURCES } from '../../../services/shopCatalogue'
+import { analytics } from '../../../services/analytics'
 import { ShopItemList } from './ShopItemList'
 import { ShopConfirm } from './ShopConfirm'
 import './ShopPopup.css'
@@ -31,6 +32,10 @@ export function ShopPopup({ onClose, store = shopStore }: Props) {
   // Load what the player already owns whenever the shop opens.
   useEffect(() => {
     void store.refresh()
+    // Mount is the open: the popup is unmounted while closed, so this counts
+    // opens rather than renders. Coins ride along because "opened the shop
+    // holding zero coins" is a different story from "opened it able to buy".
+    analytics.track('shop_opened', { coins: authStore.getState().coins })
   }, [store])
 
   // Never leave a preview playing behind a closed shop.

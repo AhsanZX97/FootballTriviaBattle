@@ -1,6 +1,7 @@
 import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
 import { isNative } from './services/platform'
+import { initAnalytics } from './services/analytics'
 import './index.css'
 import App from './App.tsx'
 
@@ -19,9 +20,14 @@ if (isNative) {
   // reveal by hiding the splash. The web path renders synchronously, unchanged.
   void import('./services/native').then(async ({ initNative, hideSplash }) => {
     await initNative()
+    // Strictly after initNative: it hydrates Capacitor Preferences into
+    // localStorage, and the install id is read from there. Starting analytics
+    // any earlier would read an empty store and mint a fresh id every launch.
+    initAnalytics()
     render()
     hideSplash()
   })
 } else {
+  initAnalytics()
   render()
 }

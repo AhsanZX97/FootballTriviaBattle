@@ -1,5 +1,6 @@
 import { coinsApi, type CoinsApi } from '../../services/coins'
 import { showRewardedAd, type RewardedAdOutcome } from '../../services/ads'
+import { analytics } from '../../services/analytics'
 import {
   consume,
   fetchPrices,
@@ -185,6 +186,10 @@ export function createCoinsStore(
       set({ watching: false, error: outcome === 'unavailable' ? UNAVAILABLE_ERROR() : null })
       return outcome === 'unavailable' ? 'unavailable' : 'no_reward'
     }
+
+    // Tracked on the ad completing, not on the claim: the claim can still be
+    // refused by the daily cap, and "watched an ad" is the engagement signal.
+    analytics.track('rewarded_ad_watched', {})
 
     const balance = await api.claimRewardedAd()
     if (balance === null) {

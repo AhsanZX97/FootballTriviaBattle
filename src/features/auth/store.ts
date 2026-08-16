@@ -5,6 +5,7 @@ import { getItem, removeItem, setItem } from '../../services/storage'
 import { dailyKey } from '../../services/dailyChallenges'
 import { loginWithUsername, supabase } from '../../services/supabase'
 import { t } from '../../services/i18n/store'
+import { analytics } from '../../services/analytics'
 
 export interface AuthStore {
   getState(): AuthState
@@ -225,6 +226,13 @@ export function createAuthStore(
       .single()
     const coins = profile?.coins ?? 0
     storage.setItem(COINS_CACHE_KEY, String(coins))
+    // Links every event this install already sent — all the pre-signup play —
+    // to the new account, so a converted player's history stays one funnel
+    // rather than an anonymous stub plus a fresh user. Deliberately not paired
+    // with a reset() on sign-out: one device is one player here, and resetting
+    // would mint a new anonymous id that no longer matches the stored install
+    // id, splitting that player's retention in two.
+    analytics.identify(session.user.id)
     set({
       status: 'signedIn',
       userId: session.user.id,
@@ -251,6 +259,8 @@ export function createAuthStore(
       : await loginWithUsernameFn(usernameOrEmail, password)
     if (error) {
       set({ error: t('auth.error.badCredentials') })
+    } else {
+      analytics.track('signin_done', {})
     }
     // Success intentionally does not flip status here — onAuthStateChange is
     // the single source of truth for signedIn state.
@@ -258,6 +268,9 @@ export function createAuthStore(
 
   async function signUp(username: string, email: string, password: string): Promise<void> {
     set({ error: null })
+    // Fired before validation so the gap between submitted and done measures
+    // every way the form can reject someone, not just server-side failures.
+    analytics.track('signup_submitted', {})
     const usernameError = validateUsername(username)
     if (usernameError) {
       set({ error: usernameError })
@@ -287,6 +300,7 @@ export function createAuthStore(
       options: { data: { username } },
     })
     if (error) set({ error: supabaseErrorMessage(error.message) })
+    else analytics.track('signup_done', {})
     // Success: signup with email confirmation off returns an active session,
     // which onAuthStateChange picks up and flips status to signedIn.
   }

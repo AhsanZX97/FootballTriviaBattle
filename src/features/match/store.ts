@@ -10,6 +10,7 @@ import { i18nStore } from '../../services/i18n/store'
 import { authStore } from '../auth/store'
 import { challengesStore } from '../challenges/store'
 import { supabase } from '../../services/supabase'
+import { analytics } from '../../services/analytics'
 
 /** Seconds per question. Single source of truth so it can be made user-selectable later. */
 export const QUESTION_TIME_SECONDS = 10
@@ -123,6 +124,7 @@ function createMatchStore() {
         questionIndex: 0,
         shootout: createInitialState(),
       })
+      analytics.track('match_start', { mode: 'cpu' })
     } catch (e) {
       set({ phase: 'error', error: e instanceof Error ? e.message : 'failed to load questions' })
     }
@@ -168,6 +170,14 @@ function createMatchStore() {
         shootout.userScore,
         shootout.cpuScore,
       )
+      // Unlike recordCpuResult this fires for signed-out players too, which is
+      // the entire point — today they are the ones we cannot see.
+      analytics.track('match_end', {
+        mode: 'cpu',
+        outcome: shootout.status === 'won' ? 'win' : 'loss',
+        userScore: shootout.userScore,
+        opponentScore: shootout.cpuScore,
+      })
     }
   }
 
@@ -196,6 +206,14 @@ function createMatchStore() {
         if (message.by === 'you') challengesStore.recordAnswer(correct, wasShoot)
         // A kick that ends the match in my favour is a 1v1 win.
         if (wasPlaying && shootout.status === 'won') challengesStore.record1v1Win()
+        if (wasPlaying && isMatchOver(shootout)) {
+          analytics.track('match_end', {
+            mode: '1v1',
+            outcome: shootout.status === 'won' ? 'win' : 'loss',
+            userScore: shootout.userScore,
+            opponentScore: shootout.cpuScore,
+          })
+        }
         return
       }
       case 'rematchVotes':
@@ -212,6 +230,7 @@ function createMatchStore() {
           lastKickBy: null,
           coinsAwarded: null,
         })
+        analytics.track('match_start', { mode: '1v1' })
         return
       case 'opponentLeft': {
         // Leaving mid-match forfeits it to me (mirrors the server's forfeit);
@@ -255,6 +274,7 @@ function createMatchStore() {
       opponentGkSkin: session.opponentGkSkin,
       shootout: { ...createInitialState(), stage: session.youGoFirst ? 'shoot' : 'keep' },
     })
+    analytics.track('match_start', { mode: '1v1' })
   }
 
   /** Sends my kick's outcome to the server; the shootout only advances once it echoes back. */
@@ -276,6 +296,11 @@ function createMatchStore() {
   }
 
   function leaveMatch1v1() {
+    // Walking out before full time is the drop-off signal; leaving from the
+    // result screen is just normal exit, so only the former is tracked.
+    if (state.phase === 'active' && !isMatchOver(state.shootout)) {
+      analytics.track('match_quit', { mode: '1v1', questionIndex: state.questionIndex })
+    }
     closingIntentionally = true
     socket?.send({ type: 'leave' })
     socket?.close()
