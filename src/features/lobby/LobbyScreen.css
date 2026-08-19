@@ -58,12 +58,13 @@
   }
 }
 
-/* static replacement for .lobby__name-row when signed in — same box
-   treatment as the input it replaces, minus the reroll die */
+/* the account name inside .lobby__name-row — same box treatment as the
+   free-text input it replaces, minus the reroll die */
 .lobby__username {
   margin: 0;
+  flex: 1;
+  min-width: 0;
   padding: 14px 16px;
-  width: 100%;
   background: #0a2416;
   color: #ffcf1a;
   font-family: 'Press Start 2P', ui-monospace, Consolas, monospace;
@@ -88,6 +89,44 @@
 .lobby__reroll:active {
   transform: translate(2px, 2px);
   box-shadow: 0 0 0 3px #0a0a0a, 1px 1px 0 3px rgba(0, 0, 0, 0.85);
+}
+
+/* text twin of .lobby__reroll: same yellow key-cap, sized for a word */
+.lobby__rename {
+  flex: none;
+  padding: 0 14px;
+  border: none;
+  border-radius: 0;
+  background: #ffcf1a;
+  color: #1a1206;
+  cursor: pointer;
+  font-family: 'Press Start 2P', ui-monospace, Consolas, monospace;
+  font-size: clamp(8px, 1.1vw, 11px);
+  image-rendering: pixelated;
+  box-shadow: 0 0 0 3px #0a0a0a, 3px 3px 0 3px rgba(0, 0, 0, 0.85);
+}
+
+.lobby__rename:active {
+  transform: translate(2px, 2px);
+  box-shadow: 0 0 0 3px #0a0a0a, 1px 1px 0 3px rgba(0, 0, 0, 0.85);
+}
+
+.lobby__rename:disabled {
+  opacity: 0.55;
+  cursor: default;
+}
+
+/* the way out of the editor: plain text, so it never competes with SAVE */
+.lobby__rename-cancel {
+  margin: -6px 0 0;
+  padding: 0;
+  border: none;
+  background: none;
+  color: #cfe8d8;
+  cursor: pointer;
+  font-family: 'Press Start 2P', ui-monospace, Consolas, monospace;
+  font-size: clamp(8px, 1.1vw, 11px);
+  text-shadow: 2px 2px 0 #000;
 }
 
 .lobby__warning {
@@ -225,6 +264,15 @@
   .lobby__reroll {
     padding: 0 clamp(16px, 1.4vw, 26px);
     font-size: clamp(18px, 1.6vw, 28px);
+  }
+
+  .lobby__rename {
+    padding: 0 clamp(14px, 1.2vw, 22px);
+    font-size: clamp(11px, 1vw, 15px);
+  }
+
+  .lobby__rename-cancel {
+    font-size: clamp(11px, 1vw, 15px);
   }
 
   .lobby__btn {

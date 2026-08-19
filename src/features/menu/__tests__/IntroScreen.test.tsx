@@ -12,6 +12,7 @@ const signedOut = (): AuthState => ({
   customization: defaultCustomization(),
   dailyRewardStreak: 0,
   lastDailyRewardDate: null,
+  isPlayGamesAccount: false,
   error: null,
 })
 
@@ -33,6 +34,21 @@ beforeEach(() => {
 })
 
 describe('IntroScreen', () => {
+  it('offers Play Now as the only way into a match', () => {
+    render(<IntroScreen />)
+    expect(screen.getByRole('button', { name: /play now/i })).toBeDefined()
+    // 1 v CPU is gone: Play Now, Shop and Sign In are the whole menu
+    expect(screen.getAllByRole('button')).toHaveLength(3)
+    expect(screen.queryByRole('button', { name: /cpu/i })).toBeNull()
+  })
+
+  it('calls onPlayNow when Play Now is clicked', () => {
+    const onPlayNow = vi.fn()
+    render(<IntroScreen onPlayNow={onPlayNow} />)
+    fireEvent.click(screen.getByRole('button', { name: /play now/i }))
+    expect(onPlayNow).toHaveBeenCalled()
+  })
+
   it('shows a Sign In button when signed out', () => {
     render(<IntroScreen />)
     expect(screen.getByRole('button', { name: /sign in/i })).toBeDefined()
@@ -81,5 +97,33 @@ describe('IntroScreen', () => {
     expect(shopButton.hasAttribute('disabled')).toBe(false)
     fireEvent.click(shopButton)
     expect(onShop).toHaveBeenCalled()
+  })
+})
+
+describe('IntroScreen with a Play Games account', () => {
+  const playGamesState = (): AuthState => ({
+    ...signedOut(),
+    status: 'signedIn',
+    userId: 'u1',
+    username: 'AhsanDeGreat',
+    email: 'pgs-a_123@players.invalid',
+    isPlayGamesAccount: true,
+  })
+
+  it('offers neither Sign Out nor Sign In', () => {
+    authState = playGamesState()
+    render(<IntroScreen />)
+
+    expect(screen.queryByRole('button', { name: /sign out/i })).toBeNull()
+    expect(screen.queryByRole('button', { name: /sign in/i })).toBeNull()
+    // Play Now and Shop are the whole menu for these players.
+    expect(screen.getAllByRole('button')).toHaveLength(2)
+  })
+
+  it('still offers Sign Out to an ordinary email account', () => {
+    authState = { ...playGamesState(), email: 'bob@example.com', isPlayGamesAccount: false }
+    render(<IntroScreen />)
+
+    expect(screen.getByRole('button', { name: /sign out/i })).toBeDefined()
   })
 })

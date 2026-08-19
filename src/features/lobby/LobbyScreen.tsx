@@ -8,6 +8,7 @@ import './LobbyScreen.css'
 import { lobbyStore } from './store'
 import type { MatchReadySession } from './store'
 import { PreMatchCountdown } from './components/PreMatchCountdown'
+import { UsernameRow } from './components/UsernameRow'
 import { useT } from '../../services/i18n/store'
 
 type Props = {
@@ -49,8 +50,13 @@ export function LobbyScreen({ onBack, onMatchReady, onFriendlyMatch }: Props) {
 
         {state.phase === 'idle' && (
           <>
-            {signedIn ? (
-              <p className="lobby__username">{auth.username}</p>
+            {signedIn && auth.username !== null ? (
+              <UsernameRow
+                username={auth.username}
+                error={auth.error}
+                onRename={authStore.renameUsername}
+                onClearError={authStore.clearError}
+              />
             ) : (
               <div className="lobby__name-row">
                 <input

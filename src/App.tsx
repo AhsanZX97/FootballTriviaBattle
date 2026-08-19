@@ -188,12 +188,7 @@ function App() {
   } else {
     content = (
       <IntroScreen
-        onPlay={() => {
-          void matchStore.start()
-          setMatchExit('intro')
-          setScreen('match')
-        }}
-        onOneVOne={() => {
+        onPlayNow={() => {
           // fresh identity each visit — the lobby never reuses last session's name
           lobbyStore.rerollName()
           setScreen('lobby')

@@ -25,6 +25,14 @@ export interface AuthState {
   /** Calendar day (YYYY-MM-DD) the daily reward was last claimed, or null. Used
    * to decide whether today's reward is still available. */
   lastDailyRewardDate: string | null
+  /**
+   * True when this account was minted by the Play Games path (its profile
+   * carries a `pgs_player_id`). Such an account has no password and an
+   * unroutable `@players.invalid` email, so there is no way back into it
+   * except Play Games' own automatic sign-in — which is why the UI offers
+   * these players no sign-out.
+   */
+  isPlayGamesAccount: boolean
   /** Surfaced on sign-in/sign-up failure; cleared on the next attempt. */
   error: string | null
 }

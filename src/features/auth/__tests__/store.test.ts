@@ -15,6 +15,8 @@ interface FakeSession {
 interface FakeProfile {
   username: string
   coins: number
+  /** Present only for accounts minted by the Play Games path. */
+  pgs_player_id?: string | null
 }
 
 /** Minimal fake matching the subset of the supabase-js client the store
@@ -506,5 +508,173 @@ describe('subscribe', () => {
     store.applyCoinsUpdate(3)
 
     expect(listener).not.toHaveBeenCalled()
+  })
+})
+
+describe('renameUsername', () => {
+  async function signedInStore() {
+    const fake = createFakeSupabase({ u1: { username: 'bob', coins: 5 } })
+    const store = createAuthStore({ supabaseClient: fake.client as never, storage: fakeStorage() })
+    await fake.emit('INITIAL_SESSION', session('u1', 'bob@example.com'))
+    return { fake, store }
+  }
+
+  it('updates the username when the RPC accepts the rename', async () => {
+    const { fake, store } = await signedInStore()
+    fake.rpc.mockResolvedValueOnce({ data: { ok: true, username: 'ahsan' }, error: null })
+
+    expect(await store.renameUsername('ahsan')).toBe(true)
+
+    expect(fake.rpc).toHaveBeenCalledWith('rename_username', { p_username: 'ahsan' })
+    expect(store.getState()).toMatchObject({ username: 'ahsan', error: null })
+  })
+
+  it('trims surrounding whitespace before validating', async () => {
+    const { fake, store } = await signedInStore()
+    fake.rpc.mockResolvedValueOnce({ data: { ok: true, username: 'ahsan' }, error: null })
+
+    await store.renameUsername('  ahsan  ')
+
+    expect(fake.rpc).toHaveBeenCalledWith('rename_username', { p_username: 'ahsan' })
+  })
+
+  it('rejects an invalid username before hitting the network', async () => {
+    const { fake, store } = await signedInStore()
+
+    expect(await store.renameUsername('no spaces')).toBe(false)
+
+    expect(fake.rpc).not.toHaveBeenCalled()
+    expect(store.getState()).toMatchObject({ username: 'bob', error: t('auth.error.usernameFormat') })
+  })
+
+  it('reports a taken username and leaves the current one in place', async () => {
+    const { fake, store } = await signedInStore()
+    fake.rpc.mockResolvedValueOnce({ data: { ok: false, error: 'taken' }, error: null })
+
+    expect(await store.renameUsername('someoneelse')).toBe(false)
+
+    expect(store.getState()).toMatchObject({ username: 'bob', error: t('auth.error.usernameTaken') })
+  })
+
+  it('reports a generic failure when the RPC errors', async () => {
+    const { fake, store } = await signedInStore()
+    fake.rpc.mockResolvedValueOnce({ data: null, error: { message: 'boom' } })
+
+    expect(await store.renameUsername('ahsan')).toBe(false)
+
+    expect(store.getState().username).toBe('bob')
+    expect(store.getState().error).toBeTruthy()
+  })
+
+  it('is a no-op when the name is unchanged', async () => {
+    const { fake, store } = await signedInStore()
+
+    expect(await store.renameUsername('bob')).toBe(true)
+
+    expect(fake.rpc).not.toHaveBeenCalled()
+  })
+
+  it('does nothing when signed out', async () => {
+    const fake = createFakeSupabase()
+    const store = createAuthStore({ supabaseClient: fake.client as never, storage: fakeStorage() })
+    await fake.emit('INITIAL_SESSION', null)
+
+    expect(await store.renameUsername('ahsan')).toBe(false)
+    expect(fake.rpc).not.toHaveBeenCalled()
+  })
+})
+
+describe('silent Play Games sign-in', () => {
+  function pgsDeps(authCode: string | null) {
+    return {
+      playGamesAuthCodeFn: vi.fn(async () => authCode),
+      signInWithPlayGamesFn: vi.fn(async (_code: string) => ({ error: null as string | null })),
+    }
+  }
+
+  it('redeems the auth code when boot finds no existing session', async () => {
+    const fake = createFakeSupabase()
+    const deps = pgsDeps('code-1')
+    createAuthStore({ supabaseClient: fake.client as never, storage: fakeStorage(), ...deps })
+
+    await fake.emit('INITIAL_SESSION', null)
+
+    expect(deps.playGamesAuthCodeFn).toHaveBeenCalled()
+    expect(deps.signInWithPlayGamesFn).toHaveBeenCalledWith('code-1')
+  })
+
+  it('does nothing when Play Games has no code to give', async () => {
+    const fake = createFakeSupabase()
+    const deps = pgsDeps(null)
+    const store = createAuthStore({ supabaseClient: fake.client as never, storage: fakeStorage(), ...deps })
+
+    await fake.emit('INITIAL_SESSION', null)
+
+    expect(deps.signInWithPlayGamesFn).not.toHaveBeenCalled()
+    expect(store.getState().status).toBe('signedOut')
+  })
+
+  it('never runs when boot restores a session', async () => {
+    const fake = createFakeSupabase({ u1: { username: 'bob', coins: 5 } })
+    const deps = pgsDeps('code-1')
+    createAuthStore({ supabaseClient: fake.client as never, storage: fakeStorage(), ...deps })
+
+    await fake.emit('INITIAL_SESSION', session('u1', 'bob@example.com'))
+
+    expect(deps.playGamesAuthCodeFn).not.toHaveBeenCalled()
+  })
+
+  it('does not sign a player straight back in after they sign out', async () => {
+    const fake = createFakeSupabase()
+    const deps = pgsDeps('code-1')
+    createAuthStore({ supabaseClient: fake.client as never, storage: fakeStorage(), ...deps })
+
+    await fake.emit('INITIAL_SESSION', null)
+    await fake.emit('SIGNED_OUT', null)
+
+    expect(deps.signInWithPlayGamesFn).toHaveBeenCalledTimes(1)
+  })
+
+  it('leaves the player signed out when the backend rejects the code', async () => {
+    const fake = createFakeSupabase()
+    const deps = pgsDeps('code-1')
+    deps.signInWithPlayGamesFn.mockResolvedValue({ error: 'pgs_rejected' })
+    const store = createAuthStore({ supabaseClient: fake.client as never, storage: fakeStorage(), ...deps })
+
+    await fake.emit('INITIAL_SESSION', null)
+
+    expect(store.getState().status).toBe('signedOut')
+    // Silent and optional: a failure is not something to interrupt with.
+    expect(store.getState().error).toBeNull()
+  })
+})
+
+describe('isPlayGamesAccount', () => {
+  it('is true for a profile carrying a Play Games player id', async () => {
+    const fake = createFakeSupabase({ u1: { username: 'bob', coins: 5, pgs_player_id: 'a_123' } })
+    const store = createAuthStore({ supabaseClient: fake.client as never, storage: fakeStorage() })
+
+    await fake.emit('INITIAL_SESSION', session('u1', 'pgs-a_123@players.invalid'))
+
+    expect(store.getState().isPlayGamesAccount).toBe(true)
+  })
+
+  it('is false for an ordinary email account', async () => {
+    const fake = createFakeSupabase({ u1: { username: 'bob', coins: 5 } })
+    const store = createAuthStore({ supabaseClient: fake.client as never, storage: fakeStorage() })
+
+    await fake.emit('INITIAL_SESSION', session('u1', 'bob@example.com'))
+
+    expect(store.getState().isPlayGamesAccount).toBe(false)
+  })
+
+  it('resets on sign-out', async () => {
+    const fake = createFakeSupabase({ u1: { username: 'bob', coins: 5, pgs_player_id: 'a_123' } })
+    const store = createAuthStore({ supabaseClient: fake.client as never, storage: fakeStorage() })
+    await fake.emit('INITIAL_SESSION', session('u1', 'pgs-a_123@players.invalid'))
+
+    await fake.emit('SIGNED_OUT', null)
+
+    expect(store.getState().isPlayGamesAccount).toBe(false)
   })
 })

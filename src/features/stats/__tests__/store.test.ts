@@ -18,7 +18,7 @@ const entry = (over: Partial<MatchHistoryEntry> = {}): MatchHistoryEntry => ({
 function makeApi(stats: MatchStats): { api: StatsApi; fetchStats: ReturnType<typeof vi.fn> } {
   const fetchStats = vi.fn<() => Promise<MatchStats>>().mockResolvedValue(stats)
   return {
-    api: { fetchStats, recordCpuMatch: vi.fn().mockResolvedValue(undefined) },
+    api: { fetchStats },
     fetchStats,
   }
 }
@@ -58,7 +58,7 @@ describe('statsStore', () => {
   it('surfaces an error but still ends in the loaded state when the fetch throws', async () => {
     const fetchStats = vi.fn<() => Promise<MatchStats>>().mockRejectedValue(new Error('network'))
     const store = createStatsStore({
-      api: { fetchStats, recordCpuMatch: vi.fn() },
+      api: { fetchStats },
       auth: authSeam('signedIn'),
     })
 

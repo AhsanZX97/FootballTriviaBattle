@@ -177,6 +177,10 @@ export function initAnalytics(): void {
         capture_pageview: false,
         capture_pageleave: false,
         disable_session_recording: true,
+        // Web vitals are on by default and fire LCP/CLS/INP events on every
+        // load. Meaningless for a single-screen canvas game with no routes,
+        // and they were outnumbering the real events 2:1 in the first test.
+        capture_performance: false,
       })
       analytics.attach({
         capture: (name, props) => posthog.capture(name, props),

@@ -4,30 +4,22 @@ import type { ServerMessage } from '../../types/multiplayer'
 import type { MultiplayerSocket } from '../../services/multiplayer/socket'
 import type { MatchReadySession } from '../lobby/store'
 import { applyAnswer, createInitialState, isMatchOver } from '../../game/shootout'
-import { getQuestions } from '../../services/trivia/questionSource'
 import { questionsFromMatchPayload } from '../../services/trivia/bank/localised'
 import { i18nStore } from '../../services/i18n/store'
 import { authStore } from '../auth/store'
 import { challengesStore } from '../challenges/store'
-import { supabase } from '../../services/supabase'
 import { analytics } from '../../services/analytics'
 
 /** Seconds per question. Single source of truth so it can be made user-selectable later. */
 export const QUESTION_TIME_SECONDS = 10
-/** Questions drawn once at match start from the bundled football bank. */
-export const QUESTION_BATCH = 30
 
-export type MatchMode = 'cpu' | '1v1'
-export type MatchPhase = 'idle' | 'loading' | 'active' | 'rematchStarting' | 'error'
+export type MatchPhase = 'idle' | 'active' | 'rematchStarting'
 
 export interface MatchState {
-  mode: MatchMode
   phase: MatchPhase
   questions: Question[]
   questionIndex: number
   shootout: ShootoutState
-  error?: string
-  // 1v1-only — unused (left at their defaults) in 'cpu' mode.
   opponentName: string | null
   /** Opponent's equipped keeper skin id; null = stock keeper (anonymous
    * opponent, or one with nothing equipped). */
@@ -55,7 +47,6 @@ export interface MatchState {
 }
 
 const initialState: MatchState = {
-  mode: 'cpu',
   phase: 'idle',
   questions: [],
   questionIndex: 0,
@@ -94,92 +85,6 @@ function createMatchStore() {
 
   const getCurrentQuestion = (): Question | undefined =>
     state.questions[state.questionIndex]
-
-  /** Best-effort vs-CPU coin award — rate-limited server-side (see
-   * award_cpu_win in the Supabase migration), so a failure or a
-   * rate-limit response here is silent and never blocks the result screen. */
-  async function awardCpuWinIfSignedIn() {
-    if (authStore.getState().status !== 'signedIn') return
-    const before = authStore.getState().coins
-    try {
-      const { data, error } = await supabase.rpc('award_cpu_win')
-      if (!error && typeof data === 'number') {
-        authStore.applyCoinsUpdate(data)
-        const gained = data - before
-        if (gained > 0) set({ coinsAwarded: gained })
-      }
-    } catch {
-      // best-effort; network/RPC failures never surface to the player
-    }
-  }
-
-  async function start() {
-    set({ ...initialState, phase: 'loading' })
-    try {
-      const questions = await getQuestions(QUESTION_BATCH)
-      if (questions.length === 0) throw new Error('no questions available')
-      set({
-        phase: 'active',
-        questions,
-        questionIndex: 0,
-        shootout: createInitialState(),
-      })
-      analytics.track('match_start', { mode: 'cpu' })
-    } catch (e) {
-      set({ phase: 'error', error: e instanceof Error ? e.message : 'failed to load questions' })
-    }
-  }
-
-  /** Best-effort vs-CPU history write — logs every finished CPU game (win or
-   * loss) for the stat tab. Unlike the coin award it isn't rate-limited, and a
-   * failure here is silent so it never blocks the result screen. */
-  async function recordCpuResult(outcome: 'win' | 'loss', userScore: number, cpuScore: number) {
-    if (authStore.getState().status !== 'signedIn') return
-    try {
-      await supabase.rpc('record_cpu_match', {
-        p_outcome: outcome,
-        p_user_score: userScore,
-        p_opponent_score: cpuScore,
-      })
-    } catch {
-      // best-effort; network/RPC failures never surface to the player
-    }
-  }
-
-  /** Resolve the current kick. `correct === false` also covers a timeout. CPU mode only. */
-  function submitAnswer(correct: boolean) {
-    if (state.phase !== 'active' || isMatchOver(state.shootout)) return
-    // Capture the stage before it flips: a correct answer on 'shoot' is a scored
-    // penalty (for the daily challenge), on 'keep' it's a save.
-    const wasShoot = state.shootout.stage === 'shoot'
-    const shootout = applyAnswer(state.shootout, correct)
-    // ponytail: index wraps so a long sudden death never runs the pool dry;
-    // swap for a no-repeat draw if question reuse becomes noticeable.
-    const questionIndex = (state.questionIndex + 1) % state.questions.length
-    set({ shootout, questionIndex })
-    challengesStore.recordAnswer(correct, wasShoot)
-    // isMatchOver guard above means this only ever fires once, on the
-    // playing -> won/lost transition.
-    if (isMatchOver(shootout)) {
-      if (shootout.status === 'won') {
-        void awardCpuWinIfSignedIn()
-        challengesStore.recordCpuWin()
-      }
-      void recordCpuResult(
-        shootout.status === 'won' ? 'win' : 'loss',
-        shootout.userScore,
-        shootout.cpuScore,
-      )
-      // Unlike recordCpuResult this fires for signed-out players too, which is
-      // the entire point — today they are the ones we cannot see.
-      analytics.track('match_end', {
-        mode: 'cpu',
-        outcome: shootout.status === 'won' ? 'win' : 'loss',
-        userScore: shootout.userScore,
-        opponentScore: shootout.cpuScore,
-      })
-    }
-  }
 
   function nextQuestionIndex() {
     return state.questions.length === 0 ? 0 : (state.questionIndex + 1) % state.questions.length
@@ -267,7 +172,6 @@ function createMatchStore() {
     })
     set({
       ...initialState,
-      mode: '1v1',
       phase: 'active',
       questions: session.questions,
       opponentName: session.opponentName,
@@ -319,8 +223,6 @@ function createMatchStore() {
     getState,
     subscribe,
     getCurrentQuestion,
-    start,
-    submitAnswer,
     start1v1,
     submitAnswer1v1,
     voteRematch1v1,

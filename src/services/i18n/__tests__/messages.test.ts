@@ -54,10 +54,6 @@ describe('message catalogues', () => {
   // rather than the check being loosened.
   const SHARED_WITH_ENGLISH = new Set<string>([
     'intro.logoAlt',
-    'intro.oneVOne',
-    'intro.oneVCpu',
-    'lobby.title',
-    'match.cpu',
     'prematch.vs',
     'stats.vs',
     'friends.online',

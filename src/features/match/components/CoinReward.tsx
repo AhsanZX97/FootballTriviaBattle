@@ -9,8 +9,8 @@ type Props = {
 }
 
 /** Spinning gold coin + "+N", shown above the result on screens where the
- * player gained coins. Renders nothing when there was no gain (CPU loss,
- * forfeit quitter, rate-limited award), so it never says "+0". */
+ * player gained coins. Renders nothing when there was no gain (a loss, a
+ * forfeit quitter, a rate-limited award), so it never says "+0". */
 export function CoinReward({ amount }: Props) {
   const t = useT()
   if (!amount || amount <= 0) return null

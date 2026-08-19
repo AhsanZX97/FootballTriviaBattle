@@ -21,8 +21,7 @@ function fakeAuth(status = 'signedIn') {
   }
 }
 
-/** A 2026 date whose active set contains every id in `ids`. With 3 of 4 drawn
- * daily, such a date is common, so the scan finds one quickly. */
+/** A 2026 date whose active set contains every id in `ids`. */
 function dateWith(...ids: DailyChallengeId[]): Date {
   for (let d = 1; d <= 200; d++) {
     const dt = new Date(2026, 0, d, 12)
@@ -47,7 +46,7 @@ describe('challenges store', () => {
   })
 
   it('starts with three challenges at zero progress', () => {
-    const store = createChallengesStore({ storage, auth, api, now: () => dateWith('win_2_cpu') })
+    const store = createChallengesStore({ storage, auth, api, now: () => dateWith('answer_15') })
     const { challenges } = store.getState()
     expect(challenges).toHaveLength(3)
     challenges.forEach((c) => {
@@ -55,14 +54,6 @@ describe('challenges store', () => {
       expect(c.complete).toBe(false)
       expect(c.claimed).toBe(false)
     })
-  })
-
-  it('advances the CPU-win challenge and completes it at the goal', () => {
-    const store = createChallengesStore({ storage, auth, api, now: () => dateWith('win_2_cpu') })
-    store.recordCpuWin()
-    expect(progressOf(store, 'win_2_cpu')?.progress).toBe(1)
-    store.recordCpuWin()
-    expect(progressOf(store, 'win_2_cpu')).toMatchObject({ progress: 2, complete: true })
   })
 
   it('counts a scored penalty toward both the answer and penalty challenges', () => {
@@ -110,8 +101,8 @@ describe('challenges store', () => {
   })
 
   it('refuses to claim an incomplete challenge', async () => {
-    const store = createChallengesStore({ storage, auth, api, now: () => dateWith('win_2_cpu') })
-    const ok = await store.claim('win_2_cpu')
+    const store = createChallengesStore({ storage, auth, api, now: () => dateWith('score_5_pens') })
+    const ok = await store.claim('score_5_pens')
     expect(ok).toBe(false)
     expect(api.claimChallenge).not.toHaveBeenCalled()
   })
@@ -139,18 +130,18 @@ describe('challenges store', () => {
   })
 
   it('persists progress across store instances on the same day', () => {
-    const day = () => dateWith('win_2_cpu')
+    const day = () => dateWith('win_1v1')
     const first = createChallengesStore({ storage, auth, api, now: day })
-    first.recordCpuWin()
+    first.record1v1Win()
     const second = createChallengesStore({ storage, auth, api, now: day })
-    expect(progressOf(second, 'win_2_cpu')?.progress).toBe(1)
+    expect(progressOf(second, 'win_1v1')?.progress).toBe(1)
   })
 
   it('resets to a fresh, empty set on a new day', () => {
-    let current = dateWith('win_2_cpu')
+    let current = dateWith('win_1v1')
     const store = createChallengesStore({ storage, auth, api, now: () => current })
-    store.recordCpuWin()
-    expect(progressOf(store, 'win_2_cpu')?.progress).toBe(1)
+    store.record1v1Win()
+    expect(progressOf(store, 'win_1v1')?.progress).toBe(1)
 
     current = new Date(current.getFullYear(), current.getMonth(), current.getDate() + 1, 12)
     store.refresh()

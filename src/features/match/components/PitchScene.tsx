@@ -48,7 +48,7 @@ const LABEL_KEYS = {
 type Props = {
   stage: Stage
   feedback: SceneFeedback | null
-  /** Who scored the conceded goal — defaults to CPU outside 1v1. */
+  /** Who scored the conceded goal. Falls back to the generic OPPONENT label. */
   opponentLabel?: string
   /** Equipped ballSkin item id (auth.customization.ballSkin). 'default' or an
    * id with no bundled art falls back to the stock ball. */
@@ -59,8 +59,8 @@ type Props = {
   gkSkin?: string
   /** The opponent's equipped gkSkin item id (server-read from their profile,
    * via 'matched'). Dresses the keeper we shoot against — stage 'shoot'.
-   * Absent (vs CPU / anonymous opponent), 'default' or an id with no bundled
-   * art falls back to the stock keeper. */
+   * Absent (anonymous opponent), 'default' or an id with no bundled art falls
+   * back to the stock keeper. */
   opponentGkSkin?: string
 }
 
@@ -69,7 +69,7 @@ type Props = {
 export function PitchScene({
   stage,
   feedback,
-  opponentLabel = 'CPU',
+  opponentLabel,
   ballSkin,
   gkSkin,
   opponentGkSkin,
@@ -82,7 +82,7 @@ export function PitchScene({
   )
   const label =
     feedback === 'concede'
-      ? t('scene.scores', { name: opponentLabel })
+      ? t('scene.scores', { name: opponentLabel ?? t('match.opponent') })
       : feedback
         ? t(LABEL_KEYS[feedback])
         : null

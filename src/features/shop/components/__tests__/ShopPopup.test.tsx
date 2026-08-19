@@ -75,6 +75,7 @@ beforeEach(() => {
     customization: defaultCustomization(),
     dailyRewardStreak: 0,
     lastDailyRewardDate: null,
+    isPlayGamesAccount: false,
     error: null,
   }
 })

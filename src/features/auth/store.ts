@@ -3,7 +3,8 @@ import type { Customization, CustomizationSlot } from '../../types/customization
 import { defaultCustomization } from '../../types/customization'
 import { getItem, removeItem, setItem } from '../../services/storage'
 import { dailyKey } from '../../services/dailyChallenges'
-import { loginWithUsername, supabase } from '../../services/supabase'
+import { loginWithUsername, signInWithPlayGames, supabase } from '../../services/supabase'
+import { playGamesAuthCode } from '../../services/native/playGames'
 import { t } from '../../services/i18n/store'
 import { analytics } from '../../services/analytics'
 
@@ -24,6 +25,11 @@ export interface AuthStore {
   /** Reflects a slot the shop has already equipped server-side, so the change
    * shows without a full profile refetch. */
   applyCustomizationUpdate(slot: CustomizationSlot, itemId: string): void
+  /** Changes the signed-in player's username through the `rename_username`
+   * RPC (clients cannot write `profiles` directly). Resolves true once the new
+   * name is live in state; false leaves a translated reason in `error` and the
+   * old name untouched. */
+  renameUsername(next: string): Promise<boolean>
   /** Emails an 8-digit recovery code (OTP-code flow — no deep link/redirect
    * needed, unlike Supabase's default reset-link email). Never reveals
    * whether the address has an account: a failure here is a real send
@@ -57,6 +63,7 @@ interface AuthSession {
 
 interface ProfileRow {
   username: string
+  pgs_player_id: string | null
   coins: number
   gk_skin: string
   ball_skin: string
@@ -137,6 +144,7 @@ const initialState = (cachedCoins: number): AuthState => ({
   customization: defaultCustomization(),
   dailyRewardStreak: 0,
   lastDailyRewardDate: null,
+  isPlayGamesAccount: false,
   error: null,
 })
 
@@ -182,15 +190,24 @@ export function createAuthStore(
     supabaseClient?: AuthSupabaseClient
     storage?: StorageLike
     loginWithUsernameFn?: (username: string, password: string) => Promise<{ error: string | null }>
+    playGamesAuthCodeFn?: () => Promise<string | null>
+    signInWithPlayGamesFn?: (authCode: string) => Promise<{ error: string | null }>
   } = {},
 ) {
   const supabaseClient = deps.supabaseClient ?? (supabase as unknown as AuthSupabaseClient)
   const storage = deps.storage ?? { getItem, setItem, removeItem }
   const loginWithUsernameFn = deps.loginWithUsernameFn ?? loginWithUsername
+  const playGamesAuthCodeFn = deps.playGamesAuthCodeFn ?? playGamesAuthCode
+  const signInWithPlayGamesFn = deps.signInWithPlayGamesFn ?? signInWithPlayGames
 
   const cachedCoins = Number.parseInt(storage.getItem(COINS_CACHE_KEY) ?? '', 10)
   let state: AuthState = initialState(Number.isFinite(cachedCoins) ? cachedCoins : 0)
   const listeners = new Set<Listener>()
+
+  // One shot per launch, and only from the boot hydration. Without this a
+  // player who signs out would be signed straight back in by the SIGNED_OUT
+  // event they just caused — sign out has to mean signed out.
+  let playGamesAttempted = false
 
   const getState = () => state
   const subscribe = (l: Listener): (() => void) => {
@@ -200,6 +217,29 @@ export function createAuthStore(
   const set = (patch: Partial<AuthState>) => {
     state = { ...state, ...patch }
     listeners.forEach((l) => l())
+  }
+
+  /**
+   * The zero-tap path: Play Games has usually already signed this player in by
+   * the time the app boots, so trade that for a Supabase session before they
+   * ever see the account screen. Deliberately silent — every failure leaves
+   * the player signed out with the ordinary sign-in screen in front of them,
+   * and none of them is worth an error message.
+   */
+  async function attemptPlayGamesSignIn(): Promise<void> {
+    if (playGamesAttempted) return
+    playGamesAttempted = true
+
+    const authCode = await playGamesAuthCodeFn()
+    if (!authCode) {
+      analytics.track('pgs_signin', { outcome: 'unavailable' })
+      return
+    }
+
+    const { error } = await signInWithPlayGamesFn(authCode)
+    // Success flips status through onAuthStateChange, same as every other
+    // sign-in path — setSession fires it.
+    analytics.track('pgs_signin', { outcome: error ? 'failed' : 'done' })
   }
 
   async function handleSessionChange(session: AuthSession | null): Promise<void> {
@@ -214,14 +254,18 @@ export function createAuthStore(
         customization: defaultCustomization(),
         dailyRewardStreak: 0,
         lastDailyRewardDate: null,
+        isPlayGamesAccount: false,
         error: null,
       })
+      await attemptPlayGamesSignIn()
       return
     }
 
     const { data: profile } = await supabaseClient
       .from('profiles')
-      .select('username, coins, gk_skin, ball_skin, goal_sound, daily_reward_streak, last_daily_reward_date')
+      .select(
+        'username, coins, gk_skin, ball_skin, goal_sound, daily_reward_streak, last_daily_reward_date, pgs_player_id',
+      )
       .eq('id', session.user.id)
       .single()
     const coins = profile?.coins ?? 0
@@ -232,6 +276,7 @@ export function createAuthStore(
     // with a reset() on sign-out: one device is one player here, and resetting
     // would mint a new anonymous id that no longer matches the stored install
     // id, splitting that player's retention in two.
+    playGamesAttempted = true
     analytics.identify(session.user.id)
     set({
       status: 'signedIn',
@@ -242,6 +287,7 @@ export function createAuthStore(
       customization: readCustomization(profile),
       dailyRewardStreak: profile?.daily_reward_streak ?? 0,
       lastDailyRewardDate: profile?.last_daily_reward_date ?? null,
+      isPlayGamesAccount: profile?.pgs_player_id != null,
       error: null,
     })
   }
@@ -348,6 +394,41 @@ export function createAuthStore(
     set({ customization: { ...state.customization, [slot]: itemId } })
   }
 
+  async function renameUsername(next: string): Promise<boolean> {
+    if (state.status !== 'signedIn') return false
+    set({ error: null })
+    // Free-text field: trailing spaces are a typo, not an intent to fail
+    // validation, and citext would store them verbatim.
+    const trimmed = next.trim()
+    if (trimmed === state.username) return true
+
+    const formatError = validateUsername(trimmed)
+    if (formatError) {
+      set({ error: formatError })
+      return false
+    }
+
+    const { data, error } = await supabaseClient.rpc('rename_username', { p_username: trimmed })
+    if (error || data == null || typeof data !== 'object') {
+      set({ error: error ? supabaseErrorMessage(error.message) : t('auth.error.generic') })
+      return false
+    }
+
+    const row = data as { ok?: boolean; error?: string; username?: string }
+    if (row.ok !== true) {
+      // 'format' can only mean the RPC's rules and validateUsername's have
+      // drifted apart — a bug, not something to explain to the player — so
+      // only 'taken' gets a specific message.
+      set({ error: row.error === 'taken' ? t('auth.error.usernameTaken') : t('auth.error.generic') })
+      return false
+    }
+
+    // Trust the returned name over the submitted one: it is what the profiles
+    // row now holds, and what every other player will see.
+    set({ username: row.username ?? trimmed })
+    return true
+  }
+
   async function requestPasswordReset(email: string): Promise<void> {
     set({ error: null })
     const emailError = validateEmail(email)
@@ -394,6 +475,7 @@ export function createAuthStore(
     applyCoinsUpdate,
     claimDailyReward,
     applyCustomizationUpdate,
+    renameUsername,
     requestPasswordReset,
     confirmPasswordReset,
   }

@@ -33,11 +33,14 @@ describe('pickDailyChallenges', () => {
     ids.forEach((id) => expect(pool).toContain(id))
   })
 
-  it('varies the set across different days', () => {
-    const a = pickDailyChallenges('2026-07-24')
-    const b = pickDailyChallenges('2026-07-25')
-    // Not a hard guarantee for every pair, but these two known keys differ.
-    expect(a).not.toEqual(b)
+  // The pool is currently exactly DAILY_CHALLENGE_COUNT long (1 v CPU's
+  // challenge retired with the mode), so the same set is drawn every day —
+  // only its order varies. Restore a variety assertion if the pool grows.
+  it('offers every pooled challenge while the pool matches the daily count', () => {
+    const pool = DAILY_CHALLENGE_POOL.map((c) => c.id)
+    expect(pool).toHaveLength(DAILY_CHALLENGE_COUNT)
+    expect([...pickDailyChallenges('2026-07-24')].sort()).toEqual([...pool].sort())
+    expect([...pickDailyChallenges('2026-07-25')].sort()).toEqual([...pool].sort())
   })
 })
 

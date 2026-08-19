@@ -100,18 +100,90 @@ migrate to the new publishing API"`. Google retired the v3 `inappproducts`
 endpoint (now "One-time products") and GPP 3.12.1 never migrated. It does not
 affect `publishReleaseBundle`. Manage in-app products in the console.
 
+## Play Games sign-in (zero-tap accounts)
+
+Android players get an account without a signup form: Play Games Services v2
+signs them in automatically at launch, and that identity becomes a Supabase
+user. **Username is the identity** — PGS never returns an email, so the auth
+user carries a synthetic `pgs-<playerId>@players.invalid` address that exists
+only because GoTrue demands one. Renaming lives on the 1v1 screen.
+
+The chain, and why each hop exists:
+
+```
+PlayGamesPlugin.java   auto sign-in -> requestServerSideAccess -> auth code
+  -> services/native/playGames.ts    (null for every failure; never prompts)
+  -> services/supabase.ts            signInWithPlayGames(authCode)
+  -> functions/pgs-signin            redeems the code with the client SECRET,
+                                     reads games/v1/players/me, creates or
+                                     finds the user, mints a session
+  -> supabase.auth.setSession        -> onAuthStateChange -> signedIn
+```
+
+The code is redeemed server-side because redeeming needs the OAuth client
+secret, which can never ship in an APK. The device proves nothing on its own.
+
+**It is inert until configured.** `android/app/src/main/res/values/play_games.xml`
+holds two placeholders reading `UNSET`; while either is unset the plugin never
+calls `PlayGamesSdk.initialize` (initialising with a bogus project id crashes
+on launch) and every player just gets the normal sign-in screen. Setup, once:
+
+1. Play Console > Play Games Services > Setup and management > **Configuration**
+   — create the PGS project, link the app, add OAuth clients for the **upload
+   key SHA-1 and the Play App Signing SHA-1**. Both, or release builds fail.
+2. Put the numeric Project ID and the **web** OAuth client id (not the Android
+   one) into `play_games.xml`.
+3. `supabase secrets set GOOGLE_OAUTH_CLIENT_ID=... GOOGLE_OAUTH_CLIENT_SECRET=...`
+   (the web client's), then `supabase functions deploy pgs-signin`.
+4. Run `supabase/migrations/0013_play_games_accounts.sql`.
+5. **Publish the PGS configuration.** Until it is published only accounts on
+   the PGS testers list can sign in at all — that list is the whole gate, and
+   publishing is one-way (there is no unpublish). It is a separate button from
+   the app release, so the config can go live while the app is still internal.
+
+**A Play Games account is not offered a sign-out at all.** It has no password
+and an unroutable `@players.invalid` email, so signing out would strand the
+player on a sign-in screen that cannot let them back in — the account is only
+reachable through Play Games' own automatic sign-in. `AuthState.isPlayGamesAccount`
+(derived from `profiles.pgs_player_id`) drives that, and IntroScreen renders
+neither Sign Out nor Sign In for those players.
+
+Sign-out still has to mean signed out for everyone else: the store attempts the
+silent path **once per launch**, from boot hydration only (`playGamesAttempted`).
+Without that flag the SIGNED_OUT event would immediately re-sign-in the player
+who just left. The flag is in-memory, so a cold start does re-attempt — which is
+exactly why the sign-out button is hidden rather than merely discouraged.
+
+Junk accounts are accepted deliberately — but `profiles.username` is unique, so
+a silent account permanently claims a name. Generated names are
+`Player_1234`-shaped for exactly that reason.
+
 ## Multiplayer dev
 
 - `npm run dev` (Vite, port 5173) + `npm run dev:server` (WS server, port 8787).
 - The server's origin check only allows `http://localhost:5173`. If Vite grabs
   5174 because a stale Vite is still on 5173, the socket handshake fails with
   "HTTP Authentication failed" — kill the stray process, don't change the port.
-- Quick match falls back to a **bot** after 8s alone in the queue (`server/bot.ts`).
-  So a single tab that sits on "searching" *will* get matched — that's the fill,
-  not a real opponent. Set `BOT_FILL_ENABLED=false` when testing real pairing.
+- **There are two bots, at two layers.** Server fill: a lonely queue is paired
+  with a bot after 8s (`BOT_QUEUE_TIMEOUT_MS`, `src/services/multiplayer/bot.ts`).
+  Client fallback: if the server never answers at all — down, offline, or a
+  handshake that hangs — the lobby gives up at 12s and plays a bot *on the
+  device* (`src/services/multiplayer/localSocket.ts`), which fakes the whole
+  `ServerMessage` side of a match so `matchStore`/`MatchScreen` never know.
+  So a tab sitting on "searching" *always* gets matched, with or without a
+  server. `BOT_FILL_ENABLED=false` only disables the first one — to test real
+  pairing, keep the server up and pair two tabs inside 12s.
+- The local fallback never emits `coinsAwarded`, so an offline win pays nothing
+  and writes no match history. Daily-challenge counters do advance (they are
+  client-side and already client-trusted).
+- Room rules and bot behaviour are shared with the client: they live in
+  `src/game/room.ts` and `src/services/multiplayer/bot.ts`, and `server/room.ts`
+  / `server/bot.ts` are re-export shims.
 - `dev:server` loads `.env.development.local` (gitignored). 1v1 coin awards
   only work locally if that file sets `SUPABASE_URL` and
   `SUPABASE_SERVICE_ROLE_KEY`; the server's boot log says ENABLED or DISABLED
-  either way, and `/healthz` reports `coinAwards`. Vs-CPU coin awards are a
-  separate path (client → `award_cpu_win` RPC, straight to Supabase) and work
-  regardless of the WS server's config.
+  either way, and `/healthz` reports `coinAwards`.
+
+
+## Additional Notes
+- Treat a question as a question — answer it, then stop. Treat an imperative ("add," "fix," "build") as the go-ahead to work: make reasonable assumptions, no preamble/summaries, only ask if genuinely blocked. Don't explain things I didn't ask about.

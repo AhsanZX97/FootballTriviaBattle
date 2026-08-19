@@ -12,6 +12,7 @@ function createFakeStore(state: AuthState): AuthStore {
     signIn: async () => {},
     signUp: async () => {},
     signOut: async () => {},
+    renameUsername: async () => true,
     clearError: () => {},
     applyCoinsUpdate: () => {},
     claimDailyReward: async () => null,
@@ -30,6 +31,7 @@ const signedOut: AuthState = {
   customization: defaultCustomization(),
   dailyRewardStreak: 0,
   lastDailyRewardDate: null,
+  isPlayGamesAccount: false,
   error: null,
 }
 

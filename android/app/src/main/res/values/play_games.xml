@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Play Games Services identifiers. Both are public (they ship inside the APK),
+  so they live in git rather than in a gitignored properties file — unlike the
+  keystore/service-account credentials.
+
+  Fill both in after creating the Play Games Services project:
+    game_services_project_id  Play Console > Play Games Services > Setup and
+                              management > Configuration. The numeric "Project
+                              ID" shown at the top.
+    play_games_web_client_id  The **web** OAuth client id from the linked
+                              Google Cloud project (the one whose secret the
+                              pgs-signin Edge Function holds). NOT the Android
+                              client id.
+
+  While either is left as UNSET the native plugin reports Play Games as
+  unavailable and never initialises the SDK — the app builds and runs exactly
+  as it does today, and players get the ordinary sign-in screen. Initialising
+  with a bogus project id would crash on launch, which is why this is gated
+  rather than left to fail loudly.
+-->
+<resources>
+    <string name="game_services_project_id" translatable="false">625827199282</string>
+    <string name="play_games_web_client_id" translatable="false">625827199282-r4b3iuvgsten5c8p5mblg9lcp4tn66l1.apps.googleusercontent.com</string>
+</resources>

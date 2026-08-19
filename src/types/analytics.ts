@@ -31,7 +31,16 @@ export type AnalyticsEvent =
    * fills after 8s, so a wait at or above that is almost certainly a bot.
    * Without this we cannot tell whether 1v1 has ever had two real players.
    */
-  | { name: 'quickmatch_matched'; props: { waitedMs: number; likelyBot: boolean } }
+  | {
+      name: 'quickmatch_matched'
+      props: {
+        waitedMs: number
+        likelyBot: boolean
+        /** True when the server never answered and the player was given a
+         * local bot instead (see services/multiplayer/localSocket.ts). */
+        offline: boolean
+      }
+    }
   /** The account gate was actually rendered. */
   | { name: 'signup_shown'; props: Record<string, never> }
   /** Create-account form submitted (before we know if it succeeded). */
@@ -40,6 +49,13 @@ export type AnalyticsEvent =
   | { name: 'signup_done'; props: Record<string, never> }
   /** Returning player signed in. */
   | { name: 'signin_done'; props: Record<string, never> }
+  /**
+   * The silent Play Games sign-in attempt at launch, whatever came of it.
+   * `unavailable` is the common case and not a failure — web, no Play
+   * Services, a player who declined — while `failed` means Play Games gave us
+   * a code our backend then refused, which is ours to fix.
+   */
+  | { name: 'pgs_signin'; props: { outcome: 'done' | 'unavailable' | 'failed' } }
   /** Shop surface opened. */
   | { name: 'shop_opened'; props: { coins: number } }
   /** Rewarded video watched to completion. */

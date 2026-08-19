@@ -34,6 +34,48 @@ export const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
   auth: { storage: createAuthStorageAdapter() },
 })
 
+interface SessionResponse {
+  session?: { access_token: string; refresh_token: string }
+  error?: string
+}
+
+/**
+ * Trades a Play Games server auth code for a Supabase session. The code is
+ * useless to anyone but our backend — redeeming it needs the OAuth client
+ * secret, which only the `pgs-signin` Edge Function holds — so posting it
+ * here is what turns "Play Games says this device is a player" into "Supabase
+ * says this request is that user".
+ *
+ * Never throws: every failure (declined, unconfigured, network, a backend that
+ * couldn't mint a session) resolves to `{ error }`, and the caller falls back
+ * to the ordinary sign-in screen.
+ */
+export async function signInWithPlayGames(authCode: string): Promise<{ error: string | null }> {
+  try {
+    const res = await fetch(`${SUPABASE_URL}/functions/v1/pgs-signin`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${SUPABASE_ANON_KEY}`,
+      },
+      body: JSON.stringify({ authCode }),
+    })
+
+    const body = (await res.json().catch(() => null)) as SessionResponse | null
+    if (!res.ok || !body?.session) {
+      return { error: body?.error ?? 'pgs_rejected' }
+    }
+
+    const { error } = await supabase.auth.setSession({
+      access_token: body.session.access_token,
+      refresh_token: body.session.refresh_token,
+    })
+    return { error: error ? error.message : null }
+  } catch {
+    return { error: 'network_error' }
+  }
+}
+
 interface LoginWithUsernameResponse {
   session?: { access_token: string; refresh_token: string }
   error?: string

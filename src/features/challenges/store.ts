@@ -160,10 +160,6 @@ export function createChallengesStore(
     if (wasShoot) bump('score_5_pens', 1)
   }
 
-  function recordCpuWin(): void {
-    bump('win_2_cpu', 1)
-  }
-
   function record1v1Win(): void {
     bump('win_1v1', 1)
   }
@@ -201,7 +197,6 @@ export function createChallengesStore(
     subscribe,
     refresh,
     recordAnswer,
-    recordCpuWin,
     record1v1Win,
     claim,
   }

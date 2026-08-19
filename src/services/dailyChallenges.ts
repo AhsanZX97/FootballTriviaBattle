@@ -10,7 +10,6 @@ import { DAILY_CHALLENGE_COUNT, DAILY_REWARD_CYCLE, dailyRewardFor } from '../ty
  * two, so a def carries no prose. */
 export const DAILY_CHALLENGE_POOL: DailyChallengeDef[] = [
   { id: 'answer_15', goal: 15, reward: 5 },
-  { id: 'win_2_cpu', goal: 2, reward: 5 },
   { id: 'score_5_pens', goal: 5, reward: 5 },
   { id: 'win_1v1', goal: 1, reward: 5 },
 ]

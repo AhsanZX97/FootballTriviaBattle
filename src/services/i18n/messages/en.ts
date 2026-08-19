@@ -19,8 +19,7 @@ export const en = {
 
   // --- intro menu ---
   'intro.logoAlt': 'Football Trivia Battle',
-  'intro.oneVOne': '1 v 1',
-  'intro.oneVCpu': '1 v CPU',
+  'intro.playNow': 'PLAY NOW',
   'intro.shop': 'SHOP',
   'intro.signIn': 'SIGN IN',
   'intro.signOut': 'SIGN OUT',
@@ -70,9 +69,12 @@ export const en = {
   'auth.error.generic': 'Something went wrong. Try again.',
 
   // --- lobby ---
-  'lobby.title': '1 V 1',
+  'lobby.title': 'PLAY NOW',
   'lobby.yourName': 'Your name',
   'lobby.randomiseName': 'Randomise name',
+  'lobby.rename': 'RENAME',
+  'lobby.newUsername': 'New username',
+  'lobby.saveName': 'SAVE',
   'lobby.quickMatch': 'QUICK MATCH',
   'lobby.friendlyMatch': 'FRIENDLY MATCH',
   'lobby.signInToChallenge': 'Sign in to challenge friends',
@@ -90,11 +92,8 @@ export const en = {
   'match.kicksAria': '{side} kicks',
   'match.you': 'YOU',
   'match.opponent': 'OPPONENT',
-  'match.cpu': 'CPU',
   'match.yourKick': 'YOUR KICK',
   'match.opponentKick': "{name}'S KICK…",
-  'match.youreShooting': "YOU'RE SHOOTING",
-  'match.youreInGoal': "YOU'RE IN GOAL",
   'match.waitingFor': 'WAITING FOR {name}…',
   'match.connectionLost': 'CONNECTION LOST',
   'match.lobby': 'LOBBY',
@@ -104,10 +103,7 @@ export const en = {
   'match.youLose': 'YOU LOSE',
   'match.opponentLeft': '{name} LEFT',
   'match.rematch': 'REMATCH ({votes}/2)',
-  'match.playAgain': 'PLAY AGAIN',
-  'match.loadingQuestions': 'LOADING QUESTIONS…',
   'match.loadFailed': "COULDN'T LOAD QUESTIONS",
-  'match.retry': 'RETRY',
 
   // --- pitch scene ---
   'scene.goal': 'GOAL!',
@@ -240,8 +236,6 @@ export const en = {
   'daily.claim': 'CLAIM',
   'daily.answer_15.title': 'SHARP SHOOTER',
   'daily.answer_15.desc': 'Answer {goal} questions correctly',
-  'daily.win_2_cpu.title': 'CPU CRUSHER',
-  'daily.win_2_cpu.desc': 'Win {goal} matches vs CPU',
   'daily.score_5_pens.title': 'DEAD-EYE',
   'daily.score_5_pens.desc': 'Score {goal} penalties',
   'daily.win_1v1.title': 'DUELIST',

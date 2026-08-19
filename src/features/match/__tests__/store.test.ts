@@ -13,11 +13,6 @@ const sample: Question[] = Array.from({ length: 4 }, (_, i) => ({
   category: 'Sports',
 }))
 
-const getQuestions = vi.fn<(count: number) => Promise<Question[]>>()
-vi.mock('../../../services/trivia/questionSource', () => ({
-  getQuestions: (count: number) => getQuestions(count),
-}))
-
 const authState: { status: 'signedOut' | 'loading' | 'signedIn'; coins: number } = {
   status: 'signedOut',
   coins: 0,
@@ -28,14 +23,6 @@ vi.mock('../../auth/store', () => ({
     getState: () => authState,
     applyCoinsUpdate: (balance: number) => applyCoinsUpdate(balance),
   },
-}))
-
-const rpc =
-  vi.fn<(fn: string, params?: unknown) => Promise<{ data: unknown; error: { message: string } | null }>>()
-vi.mock('../../../services/supabase', () => ({
-  // Rest-forward so each call's arity is preserved: award_cpu_win is called
-  // with just the fn name, record_cpu_match with a params object.
-  supabase: { rpc: (...args: [string, unknown?]) => rpc(...args) },
 }))
 
 import { matchStore } from '../store'
@@ -85,13 +72,9 @@ function readySession(overrides: Partial<MatchReadySession> = {}, fake = createF
 
 beforeEach(() => {
   matchStore.reset()
-  getQuestions.mockReset()
-  getQuestions.mockResolvedValue(sample)
   authState.status = 'signedOut'
   authState.coins = 0
   applyCoinsUpdate.mockReset()
-  rpc.mockReset()
-  rpc.mockResolvedValue({ data: null, error: null })
 })
 
 describe('matchStore', () => {
@@ -101,140 +84,30 @@ describe('matchStore', () => {
     expect(s.shootout.status).toBe('playing')
   })
 
-  it('loads a question batch and becomes active', async () => {
-    await matchStore.start()
-    expect(matchStore.getState().phase).toBe('active')
-    expect(matchStore.getCurrentQuestion()).toEqual(sample[0])
-  })
-
-  it('advances the question and resolves the kick on an answer', async () => {
-    await matchStore.start()
-    matchStore.submitAnswer(true) // user shoots and scores
-    const s = matchStore.getState()
-    expect(s.shootout.userScore).toBe(1)
-    expect(s.questionIndex).toBe(1)
-    expect(matchStore.getCurrentQuestion()).toEqual(sample[1])
-  })
-
-  it('notifies subscribers on state change', async () => {
+  it('notifies subscribers on state change', () => {
     const spy = vi.fn()
     const unsub = matchStore.subscribe(spy)
-    await matchStore.start()
+    const { session } = readySession()
+    matchStore.start1v1(session)
     expect(spy).toHaveBeenCalled()
     unsub()
   })
 
-  it('ignores answers once the match is over', async () => {
-    await matchStore.start()
-    for (let i = 0; i < 10; i++) matchStore.submitAnswer(true) // win 5-0
-    expect(matchStore.getState().shootout.status).toBe('won')
-    const before = matchStore.getState().shootout
-    matchStore.submitAnswer(false)
-    expect(matchStore.getState().shootout).toBe(before)
-  })
-
-  it('goes to error phase when no questions come back', async () => {
-    getQuestions.mockResolvedValue([])
-    await matchStore.start()
-    expect(matchStore.getState().phase).toBe('error')
-  })
-
-  it('awards a CPU-win coin via RPC when signed in and the match is won', async () => {
-    authState.status = 'signedIn'
-    rpc.mockResolvedValue({ data: 7, error: null })
-    await matchStore.start()
-    for (let i = 0; i < 10; i++) matchStore.submitAnswer(true) // win 5-0
-
-    await vi.waitFor(() => expect(applyCoinsUpdate).toHaveBeenCalledWith(7))
-    expect(rpc).toHaveBeenCalledWith('award_cpu_win')
-  })
-
-  it('records the CPU-win gain (new balance minus old) as coinsAwarded', async () => {
-    authState.status = 'signedIn'
-    authState.coins = 4
-    rpc.mockResolvedValue({ data: 7, error: null })
-    await matchStore.start()
-    for (let i = 0; i < 10; i++) matchStore.submitAnswer(true) // win 5-0
-
-    await vi.waitFor(() => expect(matchStore.getState().coinsAwarded).toBe(3))
-  })
-
-  it('leaves coinsAwarded null when a rate-limited CPU award returns the same balance', async () => {
-    authState.status = 'signedIn'
-    authState.coins = 7
-    rpc.mockResolvedValue({ data: 7, error: null }) // unchanged: rate-limited
-    await matchStore.start()
-    for (let i = 0; i < 10; i++) matchStore.submitAnswer(true)
-
-    await vi.waitFor(() => expect(applyCoinsUpdate).toHaveBeenCalledWith(7))
-    expect(matchStore.getState().coinsAwarded).toBeNull()
-  })
-
-  it('does not attempt a CPU-win award when signed out', async () => {
-    authState.status = 'signedOut'
-    await matchStore.start()
-    for (let i = 0; i < 10; i++) matchStore.submitAnswer(true) // win 5-0
-
-    await Promise.resolve()
-    expect(rpc).not.toHaveBeenCalled()
-    expect(applyCoinsUpdate).not.toHaveBeenCalled()
-  })
-
-  it('does not award a coin on a CPU loss, but still records the result', async () => {
-    authState.status = 'signedIn'
-    await matchStore.start()
-    for (let i = 0; i < 10; i++) matchStore.submitAnswer(false) // lose 0-5
-
-    await Promise.resolve()
-    expect(matchStore.getState().shootout.status).toBe('lost')
-    expect(rpc).not.toHaveBeenCalledWith('award_cpu_win')
-    expect(rpc).toHaveBeenCalledWith('record_cpu_match', {
-      p_outcome: 'loss',
-      p_user_score: 0,
-      p_opponent_score: 5,
-    })
-  })
-
-  it('records a CPU win with the final score when signed in', async () => {
-    authState.status = 'signedIn'
-    await matchStore.start()
-    for (let i = 0; i < 10; i++) matchStore.submitAnswer(true) // win 5-0
-
-    await vi.waitFor(() =>
-      expect(rpc).toHaveBeenCalledWith('record_cpu_match', {
-        p_outcome: 'win',
-        p_user_score: 5,
-        p_opponent_score: 0,
-      }),
-    )
-  })
-
-  it('does not record a CPU result when signed out', async () => {
-    authState.status = 'signedOut'
-    await matchStore.start()
-    for (let i = 0; i < 10; i++) matchStore.submitAnswer(true) // win 5-0
-
-    await Promise.resolve()
-    expect(rpc).not.toHaveBeenCalledWith('record_cpu_match', expect.anything())
-  })
-
-  it('silently ignores a rate-limited (null balance) CPU award response', async () => {
-    authState.status = 'signedIn'
-    rpc.mockResolvedValue({ data: null, error: null })
-    await matchStore.start()
-    for (let i = 0; i < 10; i++) matchStore.submitAnswer(true)
-
-    await vi.waitFor(() => expect(rpc).toHaveBeenCalled())
-    expect(applyCoinsUpdate).not.toHaveBeenCalled()
+  it('serves the current question and advances with the match', () => {
+    const { session, fake } = readySession()
+    matchStore.start1v1(session)
+    expect(matchStore.getCurrentQuestion()).toEqual(sample[0])
+    fake.emit({ type: 'kickResolved', by: 'you', scored: true })
+    expect(matchStore.getState().questionIndex).toBe(1)
+    expect(matchStore.getCurrentQuestion()).toEqual(sample[1])
   })
 })
 
-describe('matchStore 1v1 mode', () => {
+describe('matchStore 1v1 session', () => {
   it('starts on the shoot stage when youGoFirst is true', () => {
     const { session } = readySession({ youGoFirst: true })
     matchStore.start1v1(session)
     const s = matchStore.getState()
-    expect(s.mode).toBe('1v1')
     expect(s.phase).toBe('active')
     expect(s.opponentName).toBe('Bob')
     expect(s.shootout.stage).toBe('shoot')
@@ -370,13 +243,13 @@ describe('matchStore 1v1 mode', () => {
     expect(matchStore.getState().matchAbandoned).toBe(false)
   })
 
-  it('sends leave and resets to idle cpu-mode defaults', () => {
+  it('sends leave and resets to idle defaults', () => {
     const { session, fake } = readySession()
     matchStore.start1v1(session)
     matchStore.leaveMatch1v1()
     expect(fake.sent).toContainEqual({ type: 'leave' })
     expect(fake.isClosed()).toBe(true)
-    expect(matchStore.getState()).toMatchObject({ mode: 'cpu', phase: 'idle' })
+    expect(matchStore.getState()).toMatchObject({ phase: 'idle' })
   })
 
   it('surfaces connectionLost when the socket drops unexpectedly', () => {

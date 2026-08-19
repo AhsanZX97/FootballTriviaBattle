@@ -14,6 +14,7 @@ const initialState: AuthState = {
   customization: defaultCustomization(),
   dailyRewardStreak: 0,
   lastDailyRewardDate: null,
+  isPlayGamesAccount: false,
   error: null,
 }
 
@@ -36,6 +37,7 @@ function createFakeStore(initial: Partial<AuthState> = {}) {
     signIn: vi.fn(async () => {}),
     signUp: vi.fn(async () => {}),
     signOut: vi.fn(async () => {}),
+    renameUsername: vi.fn(async () => true),
     clearError: () => setState({ error: null }),
     applyCoinsUpdate: (balance) => setState({ coins: balance }),
     claimDailyReward: vi.fn(async () => null),

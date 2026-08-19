@@ -1,7 +1,8 @@
-/** The four daily challenges the game can offer. Three are drawn each day (see
- * pickDailyChallenges). Ids and reward amounts are mirrored server-side by
- * claim_daily_challenge in 0008_daily_rewards.sql — keep the two in step. */
-export type DailyChallengeId = 'answer_15' | 'win_2_cpu' | 'score_5_pens' | 'win_1v1'
+/** The daily challenges the game can offer (see pickDailyChallenges). Ids and
+ * reward amounts are mirrored server-side by claim_daily_challenge in
+ * 0008_daily_rewards.sql — keep the two in step. The retired 'win_2_cpu' id is
+ * still handled there; it is simply never offered now that 1 v CPU is gone. */
+export type DailyChallengeId = 'answer_15' | 'score_5_pens' | 'win_1v1'
 
 /** A challenge's static definition: what it asks, how far, and the coin payout.
  * `reward` is display-only — the server owns the amount actually granted. */

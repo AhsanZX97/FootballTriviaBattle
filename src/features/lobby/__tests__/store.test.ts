@@ -43,6 +43,54 @@ function createFakeSocket() {
   }
 }
 
+/** Timers the test fires by hand, so no fallback depends on real time. */
+function fakeClock() {
+  let now = 0
+  let nextId = 1
+  const scheduled = new Map<number, { at: number; fn: () => void }>()
+  return {
+    setTimer: (fn: () => void, ms: number) => {
+      const id = nextId++
+      scheduled.set(id, { at: now + ms, fn })
+      return id as unknown as ReturnType<typeof setTimeout>
+    },
+    clearTimer: (handle: ReturnType<typeof setTimeout>) =>
+      void scheduled.delete(handle as unknown as number),
+    advance(ms: number) {
+      const target = now + ms
+      for (;;) {
+        const due = [...scheduled.entries()]
+          .filter(([, t]) => t.at <= target)
+          .sort((a, b) => a[1].at - b[1].at)[0]
+        if (!due) break
+        scheduled.delete(due[0])
+        now = due[1].at
+        due[1].fn()
+      }
+      now = target
+    },
+    pendingCount: () => scheduled.size,
+  }
+}
+
+/** Stand-in for a real local bot match — just enough shape for the lobby. */
+function fakeLocalMatch() {
+  const closed = { value: false }
+  const socket: MultiplayerSocket = {
+    send: () => {},
+    onMessage: () => () => {},
+    onClose: () => () => {},
+    close: () => void (closed.value = true),
+  }
+  const create = vi.fn(async () => ({
+    socket,
+    opponent: { name: 'LOCAL BOT 01', skill: 0.6, gkSkin: 'gk_green_wall' },
+    youGoFirst: true,
+    questions: [],
+  }))
+  return { create, socket, isClosed: () => closed.value }
+}
+
 describe('initial state', () => {
   it('generates a random name without touching localStorage', () => {
     const store = createLobbyStore()
@@ -196,16 +244,140 @@ describe('quickMatch', () => {
 })
 
 describe('server unreachable', () => {
-  it('warns and returns to idle when the socket closes while searching', async () => {
+  it('falls back to a local bot match when the socket closes while searching', async () => {
     const fake = createFakeSocket()
-    const store = createLobbyStore(() => fake.socket)
+    const clock = fakeClock()
+    const local = fakeLocalMatch()
+    const store = createLobbyStore(() => fake.socket, {
+      createLocal: local.create,
+      setTimer: clock.setTimer,
+      clearTimer: clock.clearTimer,
+    })
     store.setName('Alice')
     await store.quickMatch()
 
     fake.emitClose()
+    // the search is held open so the "match" doesn't land the instant we fail
+    expect(store.getState().phase).toBe('searching')
+    expect(local.create).not.toHaveBeenCalled()
+
+    clock.advance(8_000)
+    await Promise.resolve()
+    await Promise.resolve()
+
+    expect(store.getState().phase).toBe('found')
+    expect(store.getState().opponentName).toBe('LOCAL BOT 01')
+    expect(store.getState().opponentGkSkin).toBe('gk_green_wall')
+    expect(store.getState().nameError).toBeNull()
+    expect(store.getSocket()).toBe(local.socket)
+  })
+
+  it('falls back when the server accepts the socket but never matches', async () => {
+    const fake = createFakeSocket()
+    const clock = fakeClock()
+    const local = fakeLocalMatch()
+    const store = createLobbyStore(() => fake.socket, {
+      createLocal: local.create,
+      setTimer: clock.setTimer,
+      clearTimer: clock.clearTimer,
+    })
+    store.setName('Alice')
+    await store.quickMatch()
+
+    // no close, no 'matched' — the server is simply silent
+    clock.advance(11_000)
+    expect(local.create).not.toHaveBeenCalled() // still inside the server's own bot-fill window
+
+    clock.advance(2_000)
+    await Promise.resolve()
+    await Promise.resolve()
+
+    expect(store.getState().phase).toBe('found')
+    expect(fake.isClosed()).toBe(true) // the dead socket is dropped
+  })
+
+  it('lets a real match beat the fallback, and stops waiting for it', async () => {
+    const fake = createFakeSocket()
+    const clock = fakeClock()
+    const local = fakeLocalMatch()
+    const store = createLobbyStore(() => fake.socket, {
+      createLocal: local.create,
+      setTimer: clock.setTimer,
+      clearTimer: clock.clearTimer,
+    })
+    store.setName('Alice')
+    await store.quickMatch()
+
+    fake.emit({ type: 'matched', opponentName: 'Bob', youGoFirst: true, questions: [] })
+    clock.advance(60_000)
+    await Promise.resolve()
+
+    expect(store.getState().opponentName).toBe('Bob')
+    expect(local.create).not.toHaveBeenCalled()
+    expect(clock.pendingCount()).toBe(0)
+  })
+
+  it('does not fall back after the player cancels', async () => {
+    const fake = createFakeSocket()
+    const clock = fakeClock()
+    const local = fakeLocalMatch()
+    const store = createLobbyStore(() => fake.socket, {
+      createLocal: local.create,
+      setTimer: clock.setTimer,
+      clearTimer: clock.clearTimer,
+    })
+    store.setName('Alice')
+    await store.quickMatch()
+
+    store.cancel()
+    fake.emitClose()
+    clock.advance(60_000)
+    await Promise.resolve()
 
     expect(store.getState().phase).toBe('idle')
-    expect(store.getState().nameError).toMatch(/SERVER/)
+    expect(local.create).not.toHaveBeenCalled()
+  })
+
+  it('falls back when the connection cannot even be built', async () => {
+    const clock = fakeClock()
+    const local = fakeLocalMatch()
+    const store = createLobbyStore(
+      () => {
+        throw new Error('no WebSocket here')
+      },
+      { createLocal: local.create, setTimer: clock.setTimer, clearTimer: clock.clearTimer },
+    )
+    store.setName('Alice')
+    await store.quickMatch()
+
+    expect(store.getState().phase).toBe('searching')
+    clock.advance(8_000)
+    await Promise.resolve()
+    await Promise.resolve()
+
+    expect(store.getState().phase).toBe('found')
+    expect(store.getSocket()).toBe(local.socket)
+  })
+
+  it('discards a local match that arrives after the player cancelled', async () => {
+    const fake = createFakeSocket()
+    const clock = fakeClock()
+    const local = fakeLocalMatch()
+    const store = createLobbyStore(() => fake.socket, {
+      createLocal: local.create,
+      setTimer: clock.setTimer,
+      clearTimer: clock.clearTimer,
+    })
+    store.setName('Alice')
+    await store.quickMatch()
+
+    clock.advance(13_000) // fallback fires; createLocal is mid-flight
+    store.cancel()
+    await Promise.resolve()
+    await Promise.resolve()
+
+    expect(store.getState().phase).toBe('idle')
+    expect(local.isClosed()).toBe(true)
     expect(store.getSocket()).toBeNull()
   })
 

@@ -7,8 +7,6 @@ import type { MatchHistoryEntry, MatchStats } from '../types/stats'
 export interface StatsApi {
   /** The signed-in player's win/loss tally + last five games. */
   fetchStats(): Promise<MatchStats>
-  /** Log a finished vs-CPU match (win or loss). Best-effort — never throws. */
-  recordCpuMatch(outcome: 'win' | 'loss', userScore: number, cpuScore: number): Promise<void>
 }
 
 const EMPTY_STATS: MatchStats = { wins: 0, losses: 0, recent: [] }
@@ -27,17 +25,4 @@ async function fetchStats(): Promise<MatchStats> {
   }
 }
 
-async function recordCpuMatch(
-  outcome: 'win' | 'loss',
-  userScore: number,
-  cpuScore: number,
-): Promise<void> {
-  const { error } = await supabase.rpc('record_cpu_match', {
-    p_outcome: outcome,
-    p_user_score: userScore,
-    p_opponent_score: cpuScore,
-  })
-  if (error) console.error('[stats] record_cpu_match failed', error)
-}
-
-export const statsApi: StatsApi = { fetchStats, recordCpuMatch }
+export const statsApi: StatsApi = { fetchStats }

@@ -27,6 +27,13 @@
             android:name="com.google.android.gms.ads.APPLICATION_ID"
             android:value="ca-app-pub-7656537208669381~7347214967" />
 
+        <!-- Play Games Services project id. The value lives in
+             res/values/play_games.xml; while it reads UNSET the native plugin
+             never initialises the SDK, so the placeholder is inert. -->
+        <meta-data
+            android:name="com.google.android.gms.games.APP_ID"
+            android:value="@string/game_services_project_id" />
+
         <provider
             android:name="androidx.core.content.FileProvider"
             android:authorities="${applicationId}.fileprovider"
