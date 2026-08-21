@@ -8,6 +8,8 @@ import { questionsFromMatchPayload } from '../../services/trivia/bank/localised'
 import { i18nStore } from '../../services/i18n/store'
 import { authStore } from '../auth/store'
 import { challengesStore } from '../challenges/store'
+import { localProgressStore } from '../progress/store'
+import { awardForLocalResult } from '../../game/awards'
 import { analytics } from '../../services/analytics'
 
 /** Seconds per question. Single source of truth so it can be made user-selectable later. */
@@ -86,6 +88,46 @@ function createMatchStore() {
   const getCurrentQuestion = (): Question | undefined =>
     state.questions[state.questionIndex]
 
+  /**
+   * Bank a finished match on-device when nobody is signed in.
+   *
+   * Signed in against the real server, the server is the authority: it writes
+   * the history row and pushes `coinsAwarded`, and this does nothing. Signed
+   * out, that path pays nothing at all (no userId to credit) and the offline
+   * bot fallback never sends `coinsAwarded` either — so the same result would
+   * silently be worth zero. This is what makes a pre-account match count.
+   *
+   * The amount comes from the shared `awardForLocalResult`, so the coins a
+   * player banks here are exactly what the server would have paid them; the
+   * balance doesn't shift when they later sign in.
+   */
+  function recordLocalResult(shootout: ShootoutState, byForfeit: boolean): void {
+    if (authStore.getState().status === 'signedIn') return
+
+    const won = shootout.status === 'won'
+    localProgressStore.recordMatch({
+      outcome: won ? 'win' : 'loss',
+      userScore: shootout.userScore,
+      opponentScore: shootout.cpuScore,
+      opponentName: state.opponentName ?? 'Player',
+      byDisconnect: byForfeit,
+      createdAt: localProgressStore.timestamp(),
+    })
+
+    const amount = awardForLocalResult({
+      won,
+      byForfeit,
+      kicksTaken: shootout.kicks.length,
+      myScore: shootout.userScore,
+      opponentScore: shootout.cpuScore,
+    })
+    if (amount <= 0) return
+    localProgressStore.addCoins(amount)
+    // Same field the server's `coinsAwarded` sets, so the result screen shows
+    // the reward identically whether it was earned locally or paid out.
+    set({ coinsAwarded: amount })
+  }
+
   function nextQuestionIndex() {
     return state.questions.length === 0 ? 0 : (state.questionIndex + 1) % state.questions.length
   }
@@ -112,6 +154,7 @@ function createMatchStore() {
         // A kick that ends the match in my favour is a 1v1 win.
         if (wasPlaying && shootout.status === 'won') challengesStore.record1v1Win()
         if (wasPlaying && isMatchOver(shootout)) {
+          recordLocalResult(shootout, false)
           analytics.track('match_end', {
             mode: '1v1',
             outcome: shootout.status === 'won' ? 'win' : 'loss',
@@ -141,13 +184,17 @@ function createMatchStore() {
         // Leaving mid-match forfeits it to me (mirrors the server's forfeit);
         // leaving after the final kick changes nothing about the result.
         const abandoned = !isMatchOver(state.shootout)
+        const forfeited: ShootoutState = { ...state.shootout, status: 'won' }
         set({
           opponentLeft: true,
           matchAbandoned: abandoned,
-          shootout: abandoned ? { ...state.shootout, status: 'won' } : state.shootout,
+          shootout: abandoned ? forfeited : state.shootout,
         })
         // A mid-match forfeit is a win in my favour — counts for the daily challenge.
-        if (abandoned) challengesStore.record1v1Win()
+        if (abandoned) {
+          challengesStore.record1v1Win()
+          recordLocalResult(forfeited, true)
+        }
         return
       }
       case 'coinsAwarded':

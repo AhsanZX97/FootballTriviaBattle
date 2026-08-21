@@ -1,6 +1,7 @@
 import { useEffect, useState, useSyncExternalStore } from 'react'
 import { shopStore, type ShopStore } from '../store'
 import { authStore } from '../../auth/store'
+import { localProgressStore } from '../../progress/store'
 import {
   DEFAULT_ITEM_ID,
   type CustomizationSlot,
@@ -36,6 +37,7 @@ export function CustomizePanel({ store = shopStore }: Props) {
   const [slot, setSlot] = useState<CustomizationSlot>('gkSkin')
   const shop = useSyncExternalStore(store.subscribe, store.getState)
   const auth = useSyncExternalStore(authStore.subscribe, authStore.getState)
+  const local = useSyncExternalStore(localProgressStore.subscribe, localProgressStore.getState)
 
   useEffect(() => {
     void store.refresh()
@@ -44,7 +46,10 @@ export function CustomizePanel({ store = shopStore }: Props) {
   // Never leave a preview playing behind a closed popup.
   useEffect(() => stopPreview, [])
 
-  const equippedId = auth.customization[slot]
+  // Signed out the equipped look lives on-device; it is applied to the profile
+  // at sign-in for whichever slots survive the server's re-charge.
+  const equippedId =
+    auth.status === 'signedIn' ? auth.customization[slot] : local.customization[slot]
   const owned = shop.items[slot].filter((item) => shop.owned.includes(item.id))
   // DEFAULT always leads the list — it's the way back to the stock look.
   const rows = [defaultRow(slot), ...owned]

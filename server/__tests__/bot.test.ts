@@ -18,7 +18,7 @@ const rngOf = (...values: number[]) => {
 describe('createBotProfile', () => {
   it('gives the bot a name that fits the lobby name format', () => {
     const profile = createBotProfile(rngOf(0.5))
-    expect(profile.name).toMatch(/^[A-Z]+ [A-Z]+ \d\d$/)
+    expect(profile.name).toMatch(/^[A-Za-z][A-Za-z0-9_]*[A-Za-z0-9]$/)
   })
 
   it('maps the lowest roll to the minimum skill and the highest to the maximum', () => {

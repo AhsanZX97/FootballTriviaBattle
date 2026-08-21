@@ -2,7 +2,9 @@ import { useSyncExternalStore } from 'react'
 import { useBottomBanner } from '../../services/ads'
 import bg from '../../assets/bg.jpg'
 import logo from '../../assets/logo.png'
+import coinSprite from '../../assets/sprites/coin.png'
 import { authStore } from '../auth/store'
+import { localProgressStore } from '../progress/store'
 import './IntroScreen.css'
 import { useT } from '../../services/i18n/store'
 
@@ -19,7 +21,11 @@ export function IntroScreen({ onPlayNow, onSignIn, onShop }: Props) {
   const t = useT()
   useBottomBanner(true) // ad banner sits under the menu for as long as it's open
   const auth = useSyncExternalStore(authStore.subscribe, authStore.getState)
+  const local = useSyncExternalStore(localProgressStore.subscribe, localProgressStore.getState)
   const signedIn = auth.status === 'signedIn'
+  // Only once the session is settled: flashing "sign in to keep your coins" at
+  // a player who is about to be signed in by Play Games would be a lie.
+  const showLocalCoins = auth.status === 'signedOut' && local.coins > 0
 
   return (
     <main className="intro">
@@ -52,6 +58,30 @@ export function IntroScreen({ onPlayNow, onSignIn, onShop }: Props) {
         ) : (
           <button type="button" className="intro__play intro__play--secondary" onClick={onSignIn}>
             <span className="intro__play-label">{t('intro.signIn')}</span>
+          </button>
+        )}
+
+        {/* The conversion prompt: a pre-account player's coins are real and
+            visible, and this is the only place that says what keeps them. */}
+        {showLocalCoins && (
+          <div className="intro__local-coins">
+            <span className="intro__local-coins-total">
+              <img className="intro__local-coins-icon" src={coinSprite} alt="" aria-hidden />
+              {t('intro.localCoins', { coins: local.coins })}
+            </span>
+            <span className="intro__local-coins-cta">{t('intro.localCoinsCta')}</span>
+          </div>
+        )}
+
+        {/* The payoff, shown once after the claim lands. Tapping dismisses it. */}
+        {signedIn && auth.welcomeCoins !== null && (
+          <button
+            type="button"
+            className="intro__claimed"
+            onClick={() => authStore.clearWelcomeNotice()}
+          >
+            <img className="intro__local-coins-icon" src={coinSprite} alt="" aria-hidden />
+            {t('intro.claimed', { coins: auth.welcomeCoins })}
           </button>
         )}
 

@@ -7,6 +7,7 @@ import {
 import { getItem, removeItem, setItem } from '../../services/storage'
 import { supabase } from '../../services/supabase'
 import { authStore } from '../auth/store'
+import { localProgressStore } from '../progress/store'
 
 /** One challenge as the UI needs it: its definition plus this player's progress
  * and whether the reward has been banked today. */
@@ -38,6 +39,11 @@ export interface ChallengeApi {
 export interface ChallengesAuthSeam {
   getState(): { status: string }
   applyCoinsUpdate(balance: number): void
+}
+
+/** Where a signed-out player's challenge rewards go. Injected for tests. */
+export interface ChallengesProgressSeam {
+  addCoins(amount: number): void
 }
 
 interface PersistShape {
@@ -73,12 +79,14 @@ export function createChallengesStore(
   deps: {
     api?: ChallengeApi
     auth?: ChallengesAuthSeam
+    progress?: ChallengesProgressSeam
     storage?: StorageLike
     now?: () => Date
   } = {},
 ) {
   const api = deps.api ?? defaultApi
   const auth = deps.auth ?? (authStore as unknown as ChallengesAuthSeam)
+  const progressStore = deps.progress ?? localProgressStore
   const storage = deps.storage ?? { getItem, setItem, removeItem }
   const now = deps.now ?? (() => new Date())
 
@@ -166,12 +174,25 @@ export function createChallengesStore(
 
   /** Cash in a completed challenge. The server guards the payout (once per day);
    * a null return means it was already banked server-side, which we mirror
-   * locally rather than nag. */
+   * locally rather than nag.
+   *
+   * Signed out, the reward is banked on-device instead and follows the player
+   * into whatever account they eventually get. Deliberately not blocked: making
+   * a player sign in *before* they can see a reward land is the friction this
+   * whole local-first path exists to remove. */
   async function claim(id: DailyChallengeId): Promise<boolean> {
     ensureToday()
-    if (auth.getState().status !== 'signedIn') return false
     const view = state.challenges.find((c) => c.def.id === id)
     if (!view || !view.complete || view.claimed || claiming) return false
+
+    if (auth.getState().status !== 'signedIn') {
+      // No round trip, so no `claiming` spinner — this lands instantly.
+      progressStore.addCoins(view.def.reward)
+      claimed[id] = true
+      persist()
+      rebuild()
+      return true
+    }
 
     claiming = id
     rebuild()

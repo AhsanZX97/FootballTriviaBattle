@@ -5,6 +5,7 @@ import { getItem, removeItem, setItem } from '../../services/storage'
 import { dailyKey } from '../../services/dailyChallenges'
 import { loginWithUsername, signInWithPlayGames, supabase } from '../../services/supabase'
 import { playGamesAuthCode } from '../../services/native/playGames'
+import { localProgressStore } from '../progress/store'
 import { t } from '../../services/i18n/store'
 import { analytics } from '../../services/analytics'
 
@@ -15,6 +16,8 @@ export interface AuthStore {
   signUp(username: string, email: string, password: string): Promise<void>
   signOut(): Promise<void>
   clearError(): void
+  /** Dismisses the "+N coins claimed" notice once the player has seen it. */
+  clearWelcomeNotice(): void
   /** Applied when a coin balance update arrives out-of-band (1v1 `coinsAwarded`
    * message, or a CPU-win RPC response) without a full profile refetch. */
   applyCoinsUpdate(balance: number): void
@@ -42,6 +45,16 @@ export interface AuthStore {
 }
 
 const COINS_CACHE_KEY = 'ftb.coins'
+
+/**
+ * What a new account is granted on signup, for display only.
+ *
+ * IMPORTANT: the real grant lives in `signup_bonus()` (0016_signup_bonus.sql)
+ * and is applied by the profile-creation trigger — this is only the number the
+ * welcome notice announces. Keep the two in sync; if they drift, the DB wins on
+ * what was actually credited. Same rule as REWARDED_AD_COINS.
+ */
+export const SIGNUP_BONUS_COINS = 100
 const USERNAME_PATTERN = /^[A-Za-z0-9_]+$/
 
 /** Shape of the `claim_daily_reward` RPC's jsonb result. */
@@ -70,6 +83,9 @@ interface ProfileRow {
   goal_sound: string
   daily_reward_streak: number
   last_daily_reward_date: string | null
+  /** False only on an account that has not yet been shown its signup bonus.
+   * Absent on a profile predating 0017, which reads as "already seen". */
+  welcome_bonus_seen?: boolean
 }
 
 type AuthChangeCallback = (event: string, session: AuthSession | null) => void | Promise<void>
@@ -111,6 +127,12 @@ export interface StorageLike {
   removeItem(key: string): void
 }
 
+/** The on-device progress this store drains into a fresh session. Injected so
+ * tests can drive sign-in without the real singleton. */
+export interface AuthProgressSeam {
+  claim(): Promise<{ coins: number; granted: number } | null>
+}
+
 type Listener = () => void
 
 /**
@@ -145,6 +167,7 @@ const initialState = (cachedCoins: number): AuthState => ({
   dailyRewardStreak: 0,
   lastDailyRewardDate: null,
   isPlayGamesAccount: false,
+  welcomeCoins: null,
   error: null,
 })
 
@@ -192,10 +215,12 @@ export function createAuthStore(
     loginWithUsernameFn?: (username: string, password: string) => Promise<{ error: string | null }>
     playGamesAuthCodeFn?: () => Promise<string | null>
     signInWithPlayGamesFn?: (authCode: string) => Promise<{ error: string | null }>
+    progress?: AuthProgressSeam
   } = {},
 ) {
   const supabaseClient = deps.supabaseClient ?? (supabase as unknown as AuthSupabaseClient)
   const storage = deps.storage ?? { getItem, setItem, removeItem }
+  const progress = deps.progress ?? localProgressStore
   const loginWithUsernameFn = deps.loginWithUsernameFn ?? loginWithUsername
   const playGamesAuthCodeFn = deps.playGamesAuthCodeFn ?? playGamesAuthCode
   const signInWithPlayGamesFn = deps.signInWithPlayGamesFn ?? signInWithPlayGames
@@ -255,6 +280,7 @@ export function createAuthStore(
         dailyRewardStreak: 0,
         lastDailyRewardDate: null,
         isPlayGamesAccount: false,
+        welcomeCoins: null,
         error: null,
       })
       await attemptPlayGamesSignIn()
@@ -264,7 +290,7 @@ export function createAuthStore(
     const { data: profile } = await supabaseClient
       .from('profiles')
       .select(
-        'username, coins, gk_skin, ball_skin, goal_sound, daily_reward_streak, last_daily_reward_date, pgs_player_id',
+        'username, coins, gk_skin, ball_skin, goal_sound, daily_reward_streak, last_daily_reward_date, pgs_player_id, welcome_bonus_seen',
       )
       .eq('id', session.user.id)
       .single()
@@ -288,8 +314,51 @@ export function createAuthStore(
       dailyRewardStreak: profile?.daily_reward_streak ?? 0,
       lastDailyRewardDate: profile?.last_daily_reward_date ?? null,
       isPlayGamesAccount: profile?.pgs_player_id != null,
+      welcomeCoins: null,
       error: null,
     })
+    // `welcome_bonus_seen === false` is only ever true for an account whose
+    // profile row was created by 0016's trigger and has not yet been shown the
+    // notice. Older accounts backfilled to true and never see one.
+    await claimLocalProgress(profile?.welcome_bonus_seen === false ? SIGNUP_BONUS_COINS : 0)
+  }
+
+  /**
+   * Drain whatever this device earned while signed out into the session that
+   * just started. Runs after the state is already `signedIn` so the player is
+   * never held on a loading screen waiting for it, and swallows every failure:
+   * the progress store keeps its contents when a claim doesn't land, so the
+   * next launch simply tries again.
+   *
+   * Fires on every session change, not just a fresh sign-in — a token refresh
+   * re-runs this handler. That is harmless twice over: the progress store
+   * refuses to claim when it holds nothing, and refuses to run two at once.
+   */
+  async function claimLocalProgress(signupBonus: number): Promise<void> {
+    const result = await progress.claim()
+    if (result) {
+      storage.setItem(COINS_CACHE_KEY, String(result.coins))
+      set({ coins: result.coins })
+      analytics.track('local_progress_claimed', { granted: result.granted })
+    }
+
+    // One notice, set once, covering both windfalls — the bonus and the claim
+    // land in the same moment for a converting player, and showing the bonus
+    // first would make the total visibly jump a beat later.
+    const total = signupBonus + (result?.granted ?? 0)
+    if (total > 0) set({ welcomeCoins: total })
+
+    if (signupBonus > 0) {
+      analytics.track('signup_bonus_granted', { coins: signupBonus })
+      // Fire-and-forget: worst case the notice shows once more on the next
+      // launch, which is far better than blocking sign-in on this.
+      void supabaseClient.rpc('mark_welcome_bonus_seen')
+    }
+  }
+
+  /** Dismisses the welcome-coins notice once the player has seen it. */
+  function clearWelcomeNotice(): void {
+    set({ welcomeCoins: null })
   }
 
   // supabase-js always fires once on subscribe with the current session (or
@@ -472,6 +541,7 @@ export function createAuthStore(
     signUp,
     signOut,
     clearError,
+    clearWelcomeNotice,
     applyCoinsUpdate,
     claimDailyReward,
     applyCustomizationUpdate,

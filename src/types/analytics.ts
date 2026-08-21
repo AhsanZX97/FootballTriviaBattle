@@ -60,6 +60,16 @@ export type AnalyticsEvent =
   | { name: 'shop_opened'; props: { coins: number } }
   /** Rewarded video watched to completion. */
   | { name: 'rewarded_ad_watched'; props: Record<string, never> }
+  /**
+   * On-device progress banked into an account at sign-in. `granted` is what
+   * actually landed after the server's lifetime cap, so a population of these
+   * says both how much pre-account play converts and how often players are
+   * hitting the ceiling.
+   */
+  | { name: 'local_progress_claimed'; props: { granted: number } }
+  /** The one-off signup bonus landing on a brand-new account. Fires once per
+   * account ever, so a count of these is a clean new-account tally. */
+  | { name: 'signup_bonus_granted'; props: { coins: number } }
 
 /** Event names, derived so a call site can never invent one. */
 export type AnalyticsEventName = AnalyticsEvent['name']

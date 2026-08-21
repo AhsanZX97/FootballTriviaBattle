@@ -2,6 +2,7 @@ import type { CustomizationSlot, PurchaseResult, ShopItem } from '../../types/cu
 import { customizationApi, type CustomizationApi } from '../../services/customization'
 import { catalogueFor } from '../../services/shopCatalogue'
 import { authStore } from '../auth/store'
+import { localProgressStore } from '../progress/store'
 import { t } from '../../services/i18n/store'
 
 export interface ShopState {
@@ -27,9 +28,16 @@ export interface ShopAuthSeam {
   applyCoinsUpdate(balance: number): void
 }
 
+/** The on-device shop a signed-out player uses. Injected for tests. */
+export interface ShopProgressSeam {
+  getState(): { coins: number; pendingPurchases: { id: string }[] }
+  owns(itemId: string): boolean
+  purchaseItem(itemId: string, price: number): boolean
+  equip(slot: CustomizationSlot, itemId: string): boolean
+}
+
 type Listener = () => void
 
-const SIGNED_OUT_ERROR = () => t('shop.error.signedOut')
 const EQUIP_FAILED_ERROR = () => t('shop.error.equipFailed')
 const PURCHASE_FAILED_ERROR = () => t('shop.error.purchaseFailed')
 const INSUFFICIENT_COINS_ERROR = () => t('shop.error.insufficient')
@@ -49,9 +57,12 @@ const emptyState = (): ShopState => ({
 
 /** Exported for tests, which inject a fake api and auth seam; the app uses the
  * `shopStore` singleton. */
-export function createShopStore(deps: { api?: CustomizationApi; auth?: ShopAuthSeam } = {}) {
+export function createShopStore(
+  deps: { api?: CustomizationApi; auth?: ShopAuthSeam; progress?: ShopProgressSeam } = {},
+) {
   const api = deps.api ?? customizationApi
   const auth = deps.auth ?? (authStore as unknown as ShopAuthSeam)
+  const progress = deps.progress ?? (localProgressStore as unknown as ShopProgressSeam)
 
   let state: ShopState = emptyState()
   const listeners = new Set<Listener>()
@@ -69,11 +80,23 @@ export function createShopStore(deps: { api?: CustomizationApi; auth?: ShopAuthS
   const signedIn = () => auth.getState().status === 'signedIn'
   const isOwned = (itemId: string) => state.owned.includes(itemId)
 
+  /** Catalogue price, or null for an id that isn't sold. Display-only prices,
+   * same as everywhere else — the server charges its own when it re-buys. */
+  function priceOf(itemId: string): number | null {
+    for (const slotItems of Object.values(state.items)) {
+      const found = slotItems.find((i) => i.id === itemId)
+      if (found) return found.price
+    }
+    return null
+  }
+
   /** Load what the player already owns. Fire-and-forget on shop open, so a
    * network failure leaves the catalogue browsable rather than crashing. */
   async function refresh(): Promise<void> {
     if (!signedIn()) {
-      set({ owned: [], status: 'loaded' })
+      // Signed out the "owned" list is whatever was bought on-device, so the
+      // Customize tab has something real to show before an account exists.
+      set({ owned: progress.getState().pendingPurchases.map((p) => p.id), status: 'loaded' })
       return
     }
     set({ status: state.status === 'loaded' ? 'loaded' : 'loading' })
@@ -91,11 +114,21 @@ export function createShopStore(deps: { api?: CustomizationApi; auth?: ShopAuthS
    * item the player wasn't actually charged for.
    */
   async function purchase(itemId: string): Promise<PurchaseResult> {
-    if (!signedIn()) {
-      set({ error: SIGNED_OUT_ERROR() })
-      return 'error'
-    }
     if (isOwned(itemId)) return 'already_owned'
+
+    // Signed out: buy with on-device coins. The purchase is provisional — the
+    // server re-charges it at sign-in (see localProgressStore.syncPurchases) —
+    // but the player gets the item now, which is the whole point.
+    if (!signedIn()) {
+      const price = priceOf(itemId)
+      if (price === null) return 'not_found'
+      if (!progress.purchaseItem(itemId, price)) {
+        set({ error: INSUFFICIENT_COINS_ERROR() })
+        return 'insufficient_coins'
+      }
+      set({ owned: [...state.owned, itemId], error: null })
+      return 'ok'
+    }
 
     set({ purchasing: itemId, error: null })
     const { status, coins } = await api.purchaseItem(itemId)
@@ -120,9 +153,12 @@ export function createShopStore(deps: { api?: CustomizationApi; auth?: ShopAuthS
   /** Equip `itemId` in `slot`. The server is the source of truth: the profile
    * only reflects the change once the RPC confirms it. */
   async function equip(slot: CustomizationSlot, itemId: string): Promise<boolean> {
+    // Signed out this is purely local and instant; the chosen look is applied
+    // to the profile at sign-in for whichever slots survived the re-charge.
     if (!signedIn()) {
-      set({ error: SIGNED_OUT_ERROR() })
-      return false
+      const ok = progress.equip(slot, itemId)
+      set({ error: ok ? null : EQUIP_FAILED_ERROR() })
+      return ok
     }
     set({ equipping: true, error: null })
     const ok = await api.setCustomization(slot, itemId)

@@ -9,9 +9,9 @@ type Props = {
 }
 
 /**
- * Language switcher in the TopBar's right slot. Shown on every screen — the
- * match included — so a player who lands in the wrong language can fix it
- * without backing out of what they're doing.
+ * Language switcher in the TopBar's right slot. Hidden during a match (see
+ * TopBar) — mid-match is no time to be reading a language list — so it only
+ * appears on the menu-side screens.
  *
  * Like SoundControl, the open list is absolutely positioned so expanding it
  * never grows the top bar's row height and knocks the other icons off their

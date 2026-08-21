@@ -87,6 +87,7 @@ beforeEach(() => {
     dailyRewardStreak: 0,
     lastDailyRewardDate: null,
     isPlayGamesAccount: false,
+    welcomeCoins: null,
     error: null,
   }
 })

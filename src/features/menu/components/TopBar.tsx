@@ -5,9 +5,8 @@ import { FriendsButton } from '../../friends/components/FriendsButton'
 import './TopBar.css'
 
 type Props = {
-  /** Current app screen. Coin + friends hide during a match; sound and
-   * language stay — a player in the wrong language shouldn't have to abandon
-   * a match to fix it. */
+  /** Current app screen. Coin, friends and language hide during a match —
+   * only sound stays, so the match view keeps to the scoreboard and the kick. */
   screen: string
   /** Opens the "get coins" popup. Omitted, the counter stays a plain readout. */
   onGetCoins?: () => void
@@ -26,7 +25,7 @@ export function TopBar({ screen, onGetCoins }: Props) {
       <div className="topbar__slot topbar__slot--right">
         {!inMatch && <CoinCounter onPress={onGetCoins} />}
         <SoundControl screen={screen} />
-        <LanguageControl screen={screen} />
+        {!inMatch && <LanguageControl screen={screen} />}
       </div>
     </div>
   )

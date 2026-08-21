@@ -12,6 +12,7 @@ import {
 } from '../../services/billing'
 import type { BuyPackResult, CoinPackOffer } from '../../types/coins'
 import { authStore } from '../auth/store'
+import { localProgressStore } from '../progress/store'
 import { t } from '../../services/i18n/store'
 
 /**
@@ -63,6 +64,12 @@ export interface CoinsAuthSeam {
   applyCoinsUpdate(balance: number): void
 }
 
+/** Where a signed-out player's ad rewards go. Injected for tests. */
+export interface CoinsProgressSeam {
+  adsRemaining(perDay: number): number
+  recordAdReward(coins: number, perDay: number): boolean
+}
+
 /** The Play Billing operations this store drives, as an injectable seam — the
  * real implementations live in services/billing.ts and cannot run under
  * vitest (they need a native WebView). */
@@ -76,7 +83,6 @@ export interface CoinsBillingSeam {
 
 type Listener = () => void
 
-const SIGNED_OUT_ERROR = () => t('coins.error.signedOut')
 const UNAVAILABLE_ERROR = () => t('coins.error.unavailable')
 const RATE_LIMITED_ERROR = () => t('coins.error.rateLimited')
 const SIGNED_OUT_BUY_ERROR = () => t('coins.error.signedOutBuy')
@@ -108,12 +114,14 @@ export function createCoinsStore(
     auth?: CoinsAuthSeam
     showAd?: () => Promise<RewardedAdOutcome>
     billing?: CoinsBillingSeam
+    progress?: CoinsProgressSeam
   } = {},
 ) {
   const api = deps.api ?? coinsApi
   const auth = deps.auth ?? (authStore as unknown as CoinsAuthSeam)
   const showAd = deps.showAd ?? showRewardedAd
   const billing = deps.billing ?? defaultBilling
+  const progress = deps.progress ?? localProgressStore
 
   let state: CoinsState = emptyState()
   const listeners = new Set<Listener>()
@@ -142,7 +150,8 @@ export function createCoinsStore(
    * server is the one that says no. */
   async function refreshAdAllowance(): Promise<void> {
     if (!signedIn()) {
-      set({ remaining: null })
+      // Signed out the allowance is tracked on-device, so it is always known.
+      set({ remaining: progress.adsRemaining(REWARDED_ADS_PER_DAY) })
       return
     }
     set({ remaining: await api.rewardedAdsRemaining() })
@@ -172,9 +181,12 @@ export function createCoinsStore(
    */
   async function watchAdForCoins(): Promise<WatchAdResult> {
     if (state.watching) return 'busy'
-    if (!signedIn()) {
-      set({ error: SIGNED_OUT_ERROR() })
-      return 'signed_out'
+    // Signed out, the reward is banked on-device. The ad impression is real
+    // either way, and refusing to pay a player without an account is exactly
+    // the friction this whole local-first path exists to remove.
+    if (!signedIn() && progress.adsRemaining(REWARDED_ADS_PER_DAY) <= 0) {
+      set({ error: RATE_LIMITED_ERROR() })
+      return 'rate_limited'
     }
 
     set({ watching: true, error: null })
@@ -190,6 +202,16 @@ export function createCoinsStore(
     // Tracked on the ad completing, not on the claim: the claim can still be
     // refused by the daily cap, and "watched an ad" is the engagement signal.
     analytics.track('rewarded_ad_watched', {})
+
+    if (!signedIn()) {
+      const paid = progress.recordAdReward(REWARDED_AD_COINS, REWARDED_ADS_PER_DAY)
+      set({
+        watching: false,
+        error: paid ? null : RATE_LIMITED_ERROR(),
+        remaining: progress.adsRemaining(REWARDED_ADS_PER_DAY),
+      })
+      return paid ? 'ok' : 'rate_limited'
+    }
 
     const balance = await api.claimRewardedAd()
     if (balance === null) {

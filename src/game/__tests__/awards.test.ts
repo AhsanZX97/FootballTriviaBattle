@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
-import { settleMatch } from '../awards'
-import { KICKS_PER_SIDE } from '../../src/game/shootout'
+import { awardForLocalResult, settleMatch } from '../awards'
+import { KICKS_PER_SIDE } from '../shootout'
 
 const bothAuthed = { aUserId: 'user-a', bUserId: 'user-b' }
 const aAnon = { aUserId: null, bUserId: 'user-b' }
@@ -118,5 +118,35 @@ describe('settleMatch — early forfeits', () => {
         { userId: 'user-b', amount: 1 },
       ]),
     )
+  })
+})
+
+describe('awardForLocalResult — signed-out play', () => {
+  const completed = { byForfeit: false, kicksTaken: FULL }
+
+  it('pays a local win the same 3 coins the server would have', () => {
+    expect(awardForLocalResult({ ...completed, won: true, myScore: 3, opponentScore: 1 })).toBe(3)
+  })
+
+  it('pays a completed local loss the same 1 coin the server would have', () => {
+    expect(awardForLocalResult({ ...completed, won: false, myScore: 1, opponentScore: 3 })).toBe(1)
+  })
+
+  it('pays a forfeit win once the match reached halfway', () => {
+    expect(
+      awardForLocalResult({ won: true, byForfeit: true, kicksTaken: HALFWAY, myScore: 0, opponentScore: 1 }),
+    ).toBe(3)
+  })
+
+  it('pays nothing when the opponent leaves early and I was not ahead', () => {
+    expect(
+      awardForLocalResult({ won: true, byForfeit: true, kicksTaken: 1, myScore: 0, opponentScore: 0 }),
+    ).toBe(0)
+  })
+
+  it('still pays an early forfeit when I was already leading', () => {
+    expect(
+      awardForLocalResult({ won: true, byForfeit: true, kicksTaken: 1, myScore: 2, opponentScore: 0 }),
+    ).toBe(3)
   })
 })

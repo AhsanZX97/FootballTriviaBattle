@@ -13,16 +13,30 @@ const signedOut = (): AuthState => ({
   dailyRewardStreak: 0,
   lastDailyRewardDate: null,
   isPlayGamesAccount: false,
+  welcomeCoins: null,
   error: null,
 })
 
 let authState: AuthState = signedOut()
 const signOut = vi.fn(async () => {})
+const clearWelcomeNotice = vi.fn()
 vi.mock('../../auth/store', () => ({
   authStore: {
     getState: () => authState,
     subscribe: () => () => {},
     signOut: () => signOut(),
+    clearWelcomeNotice: () => clearWelcomeNotice(),
+  },
+}))
+
+// getState must return a stable reference — useSyncExternalStore treats a new
+// object as a new snapshot and re-renders forever. The real store only swaps
+// this object on an actual change, so the mock has to behave the same way.
+let localProgress = { coins: 0, matches: [] }
+vi.mock('../../progress/store', () => ({
+  localProgressStore: {
+    getState: () => localProgress,
+    subscribe: () => () => {},
   },
 }))
 
@@ -30,7 +44,9 @@ import { IntroScreen } from '../IntroScreen'
 
 beforeEach(() => {
   authState = signedOut()
+  localProgress = { coins: 0, matches: [] }
   signOut.mockClear()
+  clearWelcomeNotice.mockClear()
 })
 
 describe('IntroScreen', () => {
@@ -125,5 +141,48 @@ describe('IntroScreen with a Play Games account', () => {
     render(<IntroScreen />)
 
     expect(screen.getByRole('button', { name: /sign out/i })).toBeDefined()
+  })
+})
+
+describe('IntroScreen — on-device progress', () => {
+  it('tells a signed-out player what they have earned and how to keep it', () => {
+    localProgress = { coins: 47, matches: [] }
+    render(<IntroScreen />)
+
+    expect(screen.getByText(/47 COINS EARNED/i)).toBeDefined()
+    expect(screen.getByText(/sign in to save them/i)).toBeDefined()
+  })
+
+  it('stays quiet when the player has earned nothing yet', () => {
+    localProgress = { coins: 0, matches: [] }
+    render(<IntroScreen />)
+
+    expect(screen.queryByText(/COINS EARNED/i)).toBeNull()
+  })
+
+  it('stays quiet while the session is still resolving', () => {
+    // Play Games may be about to sign this player in — promising them a
+    // sign-in prompt they will never see would be a lie.
+    localProgress = { coins: 47, matches: [] }
+    authState = { ...signedOut(), status: 'loading' }
+    render(<IntroScreen />)
+
+    expect(screen.queryByText(/COINS EARNED/i)).toBeNull()
+  })
+
+  it('announces the welcome coins once signed in, and dismisses on tap', () => {
+    authState = { ...signedOut(), status: 'signedIn', userId: 'u1', welcomeCoins: 42 }
+    render(<IntroScreen />)
+
+    const notice = screen.getByRole('button', { name: /\+42 COINS/i })
+    fireEvent.click(notice)
+    expect(clearWelcomeNotice).toHaveBeenCalled()
+  })
+
+  it('shows no notice when there were no welcome coins', () => {
+    authState = { ...signedOut(), status: 'signedIn', userId: 'u1', welcomeCoins: null }
+    render(<IntroScreen />)
+
+    expect(screen.queryByRole('button', { name: /\+\d+ COINS/i })).toBeNull()
   })
 })

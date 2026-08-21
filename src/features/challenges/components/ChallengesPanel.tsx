@@ -61,7 +61,7 @@ export function ChallengesPanel() {
                   <button
                     type="button"
                     className="daily-challenge__claim"
-                    disabled={!signedIn || !complete || claiming}
+                    disabled={!complete || claiming}
                     onClick={() => void challengesStore.claim(def.id)}
                   >
                     {claiming ? '…' : t('daily.claim')}

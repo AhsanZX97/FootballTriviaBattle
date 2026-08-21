@@ -1,5 +1,6 @@
 import { useState, useSyncExternalStore } from 'react'
 import { authStore } from '../../auth/store'
+import { localProgressStore } from '../../progress/store'
 import { CoinReward } from '../../match/components/CoinReward'
 import { claimableReward } from '../../../services/dailyChallenges'
 import { DAILY_REWARD_CYCLE, dailyRewardFor } from '../../../types/daily'
@@ -16,22 +17,44 @@ type Props = {
 
 const DAYS = Array.from({ length: DAILY_REWARD_CYCLE }, (_, i) => i + 1)
 
-/** The 7-day login-reward tracker plus its Claim button. Server-authoritative:
- * the streak state comes from the profile and claiming goes through the RPC.
- * Reused by the auto popup and the account tab's Daily panel. */
+/** The 7-day login-reward tracker plus its Claim button. Reused by the auto
+ * popup and the account tab's Daily panel.
+ *
+ * Signed in this is server-authoritative — streak from the profile, payout
+ * through the RPC. Signed out the very same cycle runs against on-device state
+ * and pays on-device coins, because "come back tomorrow" is the one hook that
+ * has to work *before* a player has any reason to make an account. The streak
+ * carries into the profile when they eventually claim. */
 export function DailyRewardCard({ onClaimed }: Props) {
   const t = useT()
   const auth = useSyncExternalStore(authStore.subscribe, authStore.getState)
+  const local = useSyncExternalStore(localProgressStore.subscribe, localProgressStore.getState)
   const [busy, setBusy] = useState(false)
   const [burst, setBurst] = useState<number | null>(null)
 
   const signedIn = auth.status === 'signedIn'
-  const status = claimableReward(auth.dailyRewardStreak, auth.lastDailyRewardDate)
+  // While `loading`, neither source is settled — read the account's (zeroed)
+  // state rather than offering a local claim the session is about to replace.
+  const useLocal = auth.status === 'signedOut'
+  const status = useLocal
+    ? claimableReward(local.dailyRewardStreak, local.lastDailyRewardDate)
+    : claimableReward(auth.dailyRewardStreak, auth.lastDailyRewardDate)
   // Days strictly before today in the current cycle are already banked.
   const claimedCount = status.claimable ? status.day - 1 : status.day
 
   async function handleClaim() {
     if (busy || !status.claimable) return
+
+    if (useLocal) {
+      // Purely local: no round trip, so no busy state to show.
+      const res = localProgressStore.claimDailyReward()
+      if (res) {
+        setBurst(res.reward)
+        onClaimed?.(res.reward)
+      }
+      return
+    }
+
     setBusy(true)
     const res = await authStore.claimDailyReward()
     setBusy(false)
@@ -78,8 +101,9 @@ export function DailyRewardCard({ onClaimed }: Props) {
         <div className="daily-reward__burst">
           <CoinReward amount={burst} />
         </div>
-      ) : !signedIn ? (
-        <p className="daily-reward__note">{t('dailyReward.signInNote')}</p>
+      ) : !signedIn && !useLocal ? (
+        // Still resolving the session — say nothing rather than flash a claim.
+        <p className="daily-reward__note">{t('common.loading')}</p>
       ) : status.claimable ? (
         <button
           type="button"

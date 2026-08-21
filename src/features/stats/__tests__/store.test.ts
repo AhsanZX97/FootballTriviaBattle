@@ -25,6 +25,7 @@ function makeApi(stats: MatchStats): { api: StatsApi; fetchStats: ReturnType<typ
 
 const authSeam = (status: string): StatsAuthSeam => ({ getState: () => ({ status }) })
 
+
 describe('statsStore', () => {
   beforeEach(() => vi.clearAllMocks())
 

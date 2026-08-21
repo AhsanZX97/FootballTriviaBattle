@@ -33,6 +33,16 @@ export interface AuthState {
    * these players no sign-out.
    */
   isPlayGamesAccount: boolean
+  /**
+   * Coins to celebrate on the intro after signing in: the one-off signup bonus,
+   * plus anything banked out of on-device progress. Deliberately a single
+   * total — for a player converting after pre-account play both land in the
+   * same moment, and two separate notices would just compete.
+   *
+   * Null whenever there is nothing to celebrate, so the notice shows only when
+   * coins actually arrived. Cleared once acknowledged.
+   */
+  welcomeCoins: number | null
   /** Surfaced on sign-in/sign-up failure; cleared on the next attempt. */
   error: string | null
 }

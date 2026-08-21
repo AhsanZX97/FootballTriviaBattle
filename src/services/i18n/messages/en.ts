@@ -24,6 +24,9 @@ export const en = {
   'intro.signIn': 'SIGN IN',
   'intro.signOut': 'SIGN OUT',
   'intro.pressStart': 'PRESS START',
+  'intro.localCoins': '{coins} COINS EARNED',
+  'intro.localCoinsCta': 'Sign in to save them',
+  'intro.claimed': 'WELCOME! +{coins} COINS',
 
   // --- language picker ---
   'language.title': 'LANGUAGE',
@@ -134,7 +137,6 @@ export const en = {
   'shop.confirmBuyAria': 'Confirm purchase',
   'shop.confirmEquipAria': 'Equip item',
   'shop.previewAria': 'Preview {name}',
-  'shop.error.signedOut': 'Sign in to customize your character.',
   'shop.error.equipFailed': 'Could not equip that item.',
   'shop.error.purchaseFailed': 'Could not complete that purchase.',
   'shop.error.insufficient': 'Not enough coins.',
@@ -180,6 +182,7 @@ export const en = {
   'friends.error.alreadyFriends': 'You are already friends.',
   'friends.error.alreadyPending': 'Request already pending.',
   'friends.error.self': "You can't add yourself.",
+  'friends.signInNote': 'Sign in to add friends and challenge them to a match.',
   'friends.error.sendFailed': 'Could not send request.',
 
   // --- live challenges ---
@@ -207,7 +210,6 @@ export const en = {
   'getcoins.leftToday': '{remaining} of {max} left today',
   'getcoins.coinPacks': 'COIN PACKS',
   'getcoins.getCoinsAria': 'Get coins',
-  'coins.error.signedOut': 'Sign in to earn coins.',
   'coins.error.unavailable': 'No ad available right now. Try again in a moment.',
   'coins.error.rateLimited': "That's all the ad rewards for now — check back later.",
   'coins.error.signedOutBuy': 'Sign in to buy coins.',
@@ -226,11 +228,12 @@ export const en = {
   'stats.winShort': 'W',
   'stats.lossShort': 'L',
   'stats.vs': 'vs {name}',
+  'stats.signInNote': 'Sign in to keep a record of every match you play.',
   'stats.error.loadFailed': 'Could not load your stats.',
 
   // --- daily challenges ---
   'daily.heading': 'DAILY CHALLENGES',
-  'daily.signInNote': 'Sign in to earn challenge rewards.',
+  'daily.signInNote': 'Sign in to save your rewards.',
   'daily.done': 'DONE',
   'daily.claimedAria': 'Claimed',
   'daily.claim': 'CLAIM',
@@ -246,7 +249,6 @@ export const en = {
   'dailyReward.aria': 'Daily login reward',
   'dailyReward.milestone': 'DAY {day}',
   'dailyReward.dayShort': 'D{day}',
-  'dailyReward.signInNote': 'Sign in to claim your daily reward.',
   'dailyReward.claiming': 'CLAIMING…',
   'dailyReward.claim': 'CLAIM +{amount}',
   'dailyReward.claimed': 'Claimed! Come back tomorrow.',

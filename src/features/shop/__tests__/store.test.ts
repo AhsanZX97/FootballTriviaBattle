@@ -23,7 +23,31 @@ function makeDeps(overrides: ApiOverrides = {}, status = 'signedIn') {
       coinUpdates.push(balance)
     },
   }
-  return { api, auth, applied, coinUpdates }
+  // Stands in for localProgressStore: signed out, buying and equipping happen
+  // on-device against local coins.
+  let coins = 500
+  const bought: Array<{ id: string; price: number }> = []
+  const equipped: Array<[CustomizationSlot, string]> = []
+  const progress = {
+    getState: () => ({ coins, pendingPurchases: bought }),
+    owns: (itemId: string) => itemId === 'default' || bought.some((b) => b.id === itemId),
+    purchaseItem: vi.fn((itemId: string, price: number) => {
+      if (coins < price) return false
+      coins -= price
+      bought.push({ id: itemId, price })
+      return true
+    }),
+    equip: vi.fn((slot: CustomizationSlot, itemId: string) => {
+      if (itemId !== 'default' && !bought.some((b) => b.id === itemId)) return false
+      equipped.push([slot, itemId])
+      return true
+    }),
+    /** Test-only: set the on-device balance. */
+    setCoins: (n: number) => {
+      coins = n
+    },
+  }
+  return { api, auth, applied, coinUpdates, progress, bought, equipped }
 }
 
 describe('shop store', () => {
@@ -146,15 +170,29 @@ describe('shop store purchase', () => {
     expect(deps.coinUpdates).toEqual([])
   })
 
-  it('refuses to buy while signed out without calling the api', async () => {
+  it('buys with on-device coins while signed out, without calling the api', async () => {
     const deps = makeDeps({}, 'signedOut')
     const store = createShopStore(deps)
 
     const result = await store.purchase('celebration_yell')
 
-    expect(result).toBe('error')
+    expect(result).toBe('ok')
     expect(deps.api.purchaseItem).not.toHaveBeenCalled()
-    expect(store.getState().error).toBe('Sign in to customize your character.')
+    expect(deps.bought).toEqual([{ id: 'celebration_yell', price: 100 }])
+    expect(store.getState().owned).toContain('celebration_yell')
+    expect(store.getState().error).toBeNull()
+  })
+
+  it('refuses a signed-out purchase the on-device balance cannot cover', async () => {
+    const deps = makeDeps({}, 'signedOut')
+    deps.progress.setCoins(10)
+    const store = createShopStore(deps)
+
+    const result = await store.purchase('celebration_yell')
+
+    expect(result).toBe('insufficient_coins')
+    expect(deps.bought).toEqual([])
+    expect(store.getState().error).toBeTruthy()
   })
 
   it('does not buy the same item twice', async () => {
@@ -207,15 +245,28 @@ describe('shop store equip', () => {
     expect(store.getState().error).toBe('Could not equip that item.')
   })
 
-  it('rejects an equip while signed out without calling the api', async () => {
+  it('equips on-device while signed out, without calling the api', async () => {
+    const deps = makeDeps({}, 'signedOut')
+    const store = createShopStore(deps)
+    await store.purchase('celebration_yell')
+
+    await store.equip('goalSound', 'celebration_yell')
+
+    expect(deps.api.setCustomization).not.toHaveBeenCalled()
+    // The profile is untouched — there is no profile yet.
+    expect(deps.applied).toEqual([])
+    expect(deps.equipped).toEqual([['goalSound', 'celebration_yell']])
+    expect(store.getState().error).toBeNull()
+  })
+
+  it('refuses to equip something not owned on-device', async () => {
     const deps = makeDeps({}, 'signedOut')
     const store = createShopStore(deps)
 
     await store.equip('goalSound', 'celebration_yell')
 
-    expect(deps.api.setCustomization).not.toHaveBeenCalled()
-    expect(deps.applied).toEqual([])
-    expect(store.getState().error).toBe('Sign in to customize your character.')
+    expect(deps.equipped).toEqual([])
+    expect(store.getState().error).toBeTruthy()
   })
 
   it('notifies subscribers when an equip fails', async () => {

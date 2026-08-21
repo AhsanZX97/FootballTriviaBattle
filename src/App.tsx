@@ -16,6 +16,7 @@ import { ShopPopup } from './features/shop/components/ShopPopup'
 import { GetCoinsPopup } from './features/coins/components/GetCoinsPopup'
 import { coinsStore } from './features/coins/store'
 import { DailyRewardPopup } from './features/challenges/components/DailyRewardPopup'
+import { localProgressStore } from './features/progress/store'
 import { claimableReward } from './services/dailyChallenges'
 import type { MatchReadySession } from './features/lobby/store'
 import { playTheme, stopTheme } from './services/sound'
@@ -44,9 +45,16 @@ function App() {
   const [dailyDismissed, setDailyDismissed] = useState(false)
 
   const auth = useSyncExternalStore(authStore.subscribe, authStore.getState)
+  const local = useSyncExternalStore(localProgressStore.subscribe, localProgressStore.getState)
+  // Signed out, the same cycle runs against on-device state — a player with no
+  // account is exactly who this reward is meant to bring back tomorrow. Never
+  // while `loading`: the session may still resolve into a signed-in profile
+  // whose streak is the real one.
   const dailyClaimable =
-    auth.status === 'signedIn' &&
-    claimableReward(auth.dailyRewardStreak, auth.lastDailyRewardDate).claimable
+    auth.status === 'signedIn'
+      ? claimableReward(auth.dailyRewardStreak, auth.lastDailyRewardDate).claimable
+      : auth.status === 'signedOut' &&
+        claimableReward(local.dailyRewardStreak, local.lastDailyRewardDate).claimable
   const showDailyReward =
     screen === 'intro' &&
     dailyClaimable &&

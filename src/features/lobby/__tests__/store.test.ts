@@ -94,7 +94,7 @@ function fakeLocalMatch() {
 describe('initial state', () => {
   it('generates a random name without touching localStorage', () => {
     const store = createLobbyStore()
-    expect(store.getState().name).toMatch(/^[A-Z]+ [A-Z]+ \d{2}$/)
+    expect(store.getState().name).toMatch(/^[A-Za-z][A-Za-z0-9_]*[A-Za-z0-9]$/)
     expect(localStorage.getItem('ftb:playerName')).toBeNull()
   })
 })
@@ -113,7 +113,7 @@ describe('rerollName', () => {
     const store = createLobbyStore()
     store.setName('CUSTOM NAME')
     store.rerollName()
-    expect(store.getState().name).toMatch(/^[A-Z]+ [A-Z]+ \d{2}$/)
+    expect(store.getState().name).toMatch(/^[A-Za-z][A-Za-z0-9_]*[A-Za-z0-9]$/)
   })
 })
 

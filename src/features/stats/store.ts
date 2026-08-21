@@ -52,7 +52,13 @@ export function createStatsStore(deps: { api?: StatsApi; auth?: StatsAuthSeam } 
   const signedIn = () => auth.getState().status === 'signedIn'
 
   /** Load the player's record + recent games. Called each time the stat tab
-   * opens. A signed-out caller resets to the empty record without a request. */
+   * opens.
+   *
+   * Signed out this stays empty and the panel prompts for sign-in, even though
+   * matches *are* being logged on-device for the claim. Match history is the
+   * one surface where showing the local copy would undercut the ask: a player
+   * who can already see their record has no reason to make an account, and
+   * unlike coins there is nothing here they lose by waiting. */
   async function refresh(): Promise<void> {
     if (!signedIn()) {
       set({ ...emptyState(), status: 'loaded' })

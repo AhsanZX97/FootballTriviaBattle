@@ -17,6 +17,8 @@ interface FakeProfile {
   coins: number
   /** Present only for accounts minted by the Play Games path. */
   pgs_player_id?: string | null
+  /** False only on a brand-new account that has not been shown its bonus. */
+  welcome_bonus_seen?: boolean
 }
 
 /** Minimal fake matching the subset of the supabase-js client the store
@@ -163,6 +165,139 @@ describe('hydration on construction', () => {
       coins: 0,
       error: null,
     })
+  })
+})
+
+describe('claiming on-device progress at sign-in', () => {
+  const fakeProgress = (result: { coins: number; granted: number } | null) => ({
+    claim: vi.fn(async () => result),
+  })
+
+  it('banks local progress and shows the granted amount once signed in', async () => {
+    const fake = createFakeSupabase({ u1: { username: 'bob', coins: 5 } })
+    const storage = fakeStorage()
+    const progress = fakeProgress({ coins: 47, granted: 42 })
+    const store = createAuthStore({ supabaseClient: fake.client as never, storage, progress })
+
+    await fake.emit('INITIAL_SESSION', session('u1', 'bob@example.com'))
+
+    expect(progress.claim).toHaveBeenCalledOnce()
+    expect(store.getState()).toMatchObject({ status: 'signedIn', coins: 47, welcomeCoins: 42 })
+    expect(storage.setItem).toHaveBeenCalledWith('ftb.coins', '47')
+  })
+
+  it('leaves the profile balance alone when there is nothing to claim', async () => {
+    const fake = createFakeSupabase({ u1: { username: 'bob', coins: 5 } })
+    const progress = fakeProgress(null)
+    const store = createAuthStore({
+      supabaseClient: fake.client as never,
+      storage: fakeStorage(),
+      progress,
+    })
+
+    await fake.emit('INITIAL_SESSION', session('u1', 'bob@example.com'))
+
+    expect(store.getState()).toMatchObject({ coins: 5, welcomeCoins: null })
+  })
+
+  it('shows no notice when the cap trimmed the whole grant away', async () => {
+    const fake = createFakeSupabase({ u1: { username: 'bob', coins: 5 } })
+    const progress = fakeProgress({ coins: 5, granted: 0 })
+    const store = createAuthStore({
+      supabaseClient: fake.client as never,
+      storage: fakeStorage(),
+      progress,
+    })
+
+    await fake.emit('INITIAL_SESSION', session('u1', 'bob@example.com'))
+
+    expect(store.getState().welcomeCoins).toBeNull()
+  })
+
+  it('never claims for a signed-out session', async () => {
+    const fake = createFakeSupabase()
+    const progress = fakeProgress({ coins: 10, granted: 10 })
+    createAuthStore({ supabaseClient: fake.client as never, storage: fakeStorage(), progress })
+
+    await fake.emit('INITIAL_SESSION', null)
+
+    expect(progress.claim).not.toHaveBeenCalled()
+  })
+
+  it('dismisses the notice when acknowledged', async () => {
+    const fake = createFakeSupabase({ u1: { username: 'bob', coins: 5 } })
+    const progress = fakeProgress({ coins: 47, granted: 42 })
+    const store = createAuthStore({
+      supabaseClient: fake.client as never,
+      storage: fakeStorage(),
+      progress,
+    })
+
+    await fake.emit('INITIAL_SESSION', session('u1', 'bob@example.com'))
+    store.clearWelcomeNotice()
+
+    expect(store.getState().welcomeCoins).toBeNull()
+  })
+})
+
+describe('the signup bonus notice', () => {
+  const noProgress = { claim: vi.fn(async () => null) }
+
+  beforeEach(() => noProgress.claim.mockClear())
+
+  it('announces the bonus on a brand-new account and marks it seen', async () => {
+    const fake = createFakeSupabase({ u1: { username: 'bob', coins: 100, welcome_bonus_seen: false } })
+    const store = createAuthStore({
+      supabaseClient: fake.client as never,
+      storage: fakeStorage(),
+      progress: noProgress,
+    })
+
+    await fake.emit('INITIAL_SESSION', session('u1', 'bob@example.com'))
+
+    expect(store.getState()).toMatchObject({ coins: 100, welcomeCoins: 100 })
+    expect(fake.rpc).toHaveBeenCalledWith('mark_welcome_bonus_seen')
+  })
+
+  it('says nothing on a returning account', async () => {
+    const fake = createFakeSupabase({ u1: { username: 'bob', coins: 250, welcome_bonus_seen: true } })
+    const store = createAuthStore({
+      supabaseClient: fake.client as never,
+      storage: fakeStorage(),
+      progress: noProgress,
+    })
+
+    await fake.emit('INITIAL_SESSION', session('u1', 'bob@example.com'))
+
+    expect(store.getState().welcomeCoins).toBeNull()
+    expect(fake.rpc).not.toHaveBeenCalledWith('mark_welcome_bonus_seen')
+  })
+
+  it('treats a profile predating the column as already seen', async () => {
+    const fake = createFakeSupabase({ u1: { username: 'bob', coins: 5 } })
+    const store = createAuthStore({
+      supabaseClient: fake.client as never,
+      storage: fakeStorage(),
+      progress: noProgress,
+    })
+
+    await fake.emit('INITIAL_SESSION', session('u1', 'bob@example.com'))
+
+    expect(store.getState().welcomeCoins).toBeNull()
+  })
+
+  it('folds the bonus and a local claim into one total', async () => {
+    const fake = createFakeSupabase({ u1: { username: 'bob', coins: 100, welcome_bonus_seen: false } })
+    const store = createAuthStore({
+      supabaseClient: fake.client as never,
+      storage: fakeStorage(),
+      progress: { claim: vi.fn(async () => ({ coins: 142, granted: 42 })) },
+    })
+
+    await fake.emit('INITIAL_SESSION', session('u1', 'bob@example.com'))
+
+    // One notice for both windfalls, not 100 then a jump to 142.
+    expect(store.getState()).toMatchObject({ coins: 142, welcomeCoins: 142 })
   })
 })
 

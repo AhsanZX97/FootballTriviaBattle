@@ -47,7 +47,24 @@ function makeDeps({ api = {}, outcome = 'rewarded', status = 'signedIn', billing
     consume: vi.fn(async () => {}),
     listUnconsumed: vi.fn(async (): Promise<PendingPurchase[]> => []),
   }
-  return { api: fullApi, auth, showAd, billing: billingSeam, coinUpdates }
+  // Stands in for localProgressStore: a signed-out player's ad rewards land
+  // here instead of on an account.
+  let adsUsed = 0
+  const localCoins: number[] = []
+  const progress = {
+    adsRemaining: (perDay: number) => Math.max(0, perDay - adsUsed),
+    recordAdReward: vi.fn((coins: number, perDay: number) => {
+      if (adsUsed >= perDay) return false
+      adsUsed++
+      localCoins.push(coins)
+      return true
+    }),
+    /** Test-only: pretend the day's allowance is already spent. */
+    exhaust: (perDay: number) => {
+      adsUsed = perDay
+    },
+  }
+  return { api: fullApi, auth, showAd, billing: billingSeam, progress, coinUpdates, localCoins }
 }
 
 describe('coins store', () => {
@@ -115,14 +132,27 @@ describe('coins store', () => {
     expect(store.getState().watching).toBe(false)
   })
 
-  it('refuses to show an ad at all when signed out', async () => {
+  it('pays a signed-out player on-device rather than refusing the ad', async () => {
     const deps = makeDeps({ status: 'signedOut' })
     const store = createCoinsStore(deps)
 
-    await expect(store.watchAdForCoins()).resolves.toBe('signed_out')
+    await expect(store.watchAdForCoins()).resolves.toBe('ok')
+
+    expect(deps.showAd).toHaveBeenCalled()
+    // No account to credit, so the server claim is never attempted.
+    expect(deps.api.claimRewardedAd).not.toHaveBeenCalled()
+    expect(deps.localCoins).toEqual([25])
+    expect(store.getState().error).toBeNull()
+  })
+
+  it('refuses a signed-out ad once the on-device daily allowance is spent', async () => {
+    const deps = makeDeps({ status: 'signedOut' })
+    deps.progress.exhaust(5)
+    const store = createCoinsStore(deps)
+
+    await expect(store.watchAdForCoins()).resolves.toBe('rate_limited')
 
     expect(deps.showAd).not.toHaveBeenCalled()
-    expect(deps.api.claimRewardedAd).not.toHaveBeenCalled()
     expect(store.getState().error).toBeTruthy()
   })
 
@@ -146,12 +176,12 @@ describe('coins store', () => {
     expect(store.getState().remaining).toBeNull()
   })
 
-  it('does not hit the network on refresh when signed out', async () => {
+  it('reads the allowance on-device when signed out, without hitting the network', async () => {
     const deps = makeDeps({ status: 'signedOut' })
     const store = createCoinsStore(deps)
     await store.refresh()
     expect(deps.api.rewardedAdsRemaining).not.toHaveBeenCalled()
-    expect(store.getState().remaining).toBeNull()
+    expect(store.getState().remaining).toBe(5)
   })
 
   it('notifies subscribers as the ad runs', async () => {

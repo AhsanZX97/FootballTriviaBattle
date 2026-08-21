@@ -107,17 +107,51 @@ describe('challenges store', () => {
     expect(api.claimChallenge).not.toHaveBeenCalled()
   })
 
-  it('refuses to claim when signed out', async () => {
+  it('banks the reward on-device when signed out, without hitting the server', async () => {
+    const progress = { addCoins: vi.fn() }
     const store = createChallengesStore({
       storage,
       auth: fakeAuth('signedOut'),
       api,
+      progress,
       now: () => dateWith('win_1v1'),
     })
     store.record1v1Win()
     const ok = await store.claim('win_1v1')
-    expect(ok).toBe(false)
+    expect(ok).toBe(true)
+    expect(progress.addCoins).toHaveBeenCalledWith(5)
     expect(api.claimChallenge).not.toHaveBeenCalled()
+    expect(progressOf(store, 'win_1v1')?.claimed).toBe(true)
+  })
+
+  it('does not double-bank a challenge already claimed while signed out', async () => {
+    const progress = { addCoins: vi.fn() }
+    const store = createChallengesStore({
+      storage,
+      auth: fakeAuth('signedOut'),
+      api,
+      progress,
+      now: () => dateWith('win_1v1'),
+    })
+    store.record1v1Win()
+    await store.claim('win_1v1')
+    await store.claim('win_1v1')
+    expect(progress.addCoins).toHaveBeenCalledTimes(1)
+  })
+
+  it('does not bank locally when signed in — the server pays instead', async () => {
+    const progress = { addCoins: vi.fn() }
+    const store = createChallengesStore({
+      storage,
+      auth,
+      api,
+      progress,
+      now: () => dateWith('win_1v1'),
+    })
+    store.record1v1Win()
+    await store.claim('win_1v1')
+    expect(progress.addCoins).not.toHaveBeenCalled()
+    expect(api.claimChallenge).toHaveBeenCalled()
   })
 
   it('marks claimed without banking coins when the server reports already-claimed', async () => {

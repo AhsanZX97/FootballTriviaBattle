@@ -1,5 +1,6 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useSyncExternalStore } from 'react'
 import { friendsStore } from '../store'
+import { authStore } from '../../auth/store'
 import { useSuppressBanner } from '../../../services/ads'
 import { FriendList } from './FriendList'
 import { CustomizePanel } from '../../shop/components/CustomizePanel'
@@ -21,7 +22,11 @@ type Props = {
  * friend/request lists on open. */
 export function FriendsPopup({ onClose, onChallenge }: Props) {
   const t = useT()
-  const [tab, setTab] = useState<Tab>('friends')
+  const auth = useSyncExternalStore(authStore.subscribe, authStore.getState)
+  const signedIn = auth.status === 'signedIn'
+  // Friends is the one tab that cannot work at all without an account, so a
+  // signed-out player opens on Daily — something they can actually use.
+  const [tab, setTab] = useState<Tab>(signedIn ? 'friends' : 'daily')
 
   // Hide the native bottom banner while open: the username search field opens
   // the Android keyboard, which otherwise shoves the banner up over the popup.
@@ -96,8 +101,21 @@ export function FriendsPopup({ onClose, onChallenge }: Props) {
 
         <div className="friends-popup__body">
           {tab === 'daily' && <ChallengesPanel />}
-          {tab === 'friends' && <FriendList onChallenge={onChallenge} />}
-          {tab === 'stats' && <StatsPanel />}
+          {/* Friends and stats are account-only: one needs someone to befriend
+              you, the other needs somewhere durable to keep a record. Both say
+              so rather than rendering an empty shell. */}
+          {tab === 'friends' &&
+            (signedIn ? (
+              <FriendList onChallenge={onChallenge} />
+            ) : (
+              <p className="friends-popup__signin">{t('friends.signInNote')}</p>
+            ))}
+          {tab === 'stats' &&
+            (signedIn ? (
+              <StatsPanel />
+            ) : (
+              <p className="friends-popup__signin">{t('stats.signInNote')}</p>
+            ))}
           {tab === 'customize' && <CustomizePanel />}
         </div>
       </div>

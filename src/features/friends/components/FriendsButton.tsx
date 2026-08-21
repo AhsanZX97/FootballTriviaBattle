@@ -7,18 +7,20 @@ import profileIcon from '../../../assets/sprites/profile.png'
 import './FriendsButton.css'
 import { useT } from '../../../services/i18n/store'
 
-/** Profile icon in the TopBar's left slot. Only shown when signed in (friends
- * need an account). Carries a red badge with the count of incoming friend
- * requests and opens the friends popup. */
+/** Profile icon in the TopBar's left slot. Opens the account popup, which a
+ * signed-out player needs just as much as a signed-in one: it is where the
+ * daily reward, the challenges and the Customize tab live, and all three work
+ * without an account. Only the friends and stats tabs inside it ask for one.
+ *
+ * The request badge is signed-in-only for the obvious reason — there are no
+ * friend requests without an account to receive them. */
 export function FriendsButton() {
   const t = useT()
   const auth = useSyncExternalStore(authStore.subscribe, authStore.getState)
   const friends = useSyncExternalStore(friendsStore.subscribe, friendsStore.getState)
   const [open, setOpen] = useState(false)
 
-  if (auth.status !== 'signedIn') return null
-
-  const pending = friends.incoming.length
+  const pending = auth.status === 'signedIn' ? friends.incoming.length : 0
 
   return (
     <>

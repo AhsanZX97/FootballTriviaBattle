@@ -179,3 +179,80 @@
     animation: none;
   }
 }
+
+/* Pre-account coin notice. A child of the flex column, so it takes its own
+   max-width rather than sizing .intro__content — that container must stay
+   width-free or the whole menu reflows. */
+.intro__local-coins {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  max-width: min(92%, 420px);
+  padding: 10px 16px;
+  text-align: center;
+  border: 2px solid #ffd447;
+  background: rgba(0, 0, 0, 0.55);
+  box-shadow: 4px 4px 0 rgba(0, 0, 0, 0.5);
+}
+
+.intro__local-coins-total {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  font-size: clamp(8px, 1.1vw, 12px);
+  letter-spacing: 0.1em;
+  line-height: 1.5;
+  color: #ffd447;
+  text-shadow: 2px 2px 0 #000;
+}
+
+.intro__local-coins-cta {
+  font-size: clamp(7px, 0.95vw, 10px);
+  letter-spacing: 0.08em;
+  line-height: 1.5;
+  color: #fff;
+  text-shadow: 2px 2px 0 #000;
+}
+
+.intro__local-coins-icon {
+  width: 16px;
+  height: 16px;
+  image-rendering: pixelated;
+  flex-shrink: 0;
+}
+
+/* The post-claim confirmation. A button because tapping dismisses it. */
+.intro__claimed {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  max-width: min(92%, 420px);
+  padding: 10px 16px;
+  font: inherit;
+  font-size: clamp(8px, 1.1vw, 12px);
+  letter-spacing: 0.1em;
+  line-height: 1.5;
+  text-align: center;
+  color: #0d1f0d;
+  background: #7ed957;
+  border: 2px solid #0d1f0d;
+  box-shadow: 4px 4px 0 rgba(0, 0, 0, 0.5);
+  cursor: pointer;
+  animation: intro-claimed-in 260ms steps(4);
+}
+
+@keyframes intro-claimed-in {
+  from {
+    transform: translateY(8px);
+    opacity: 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .intro__claimed {
+    animation: none;
+  }
+}
