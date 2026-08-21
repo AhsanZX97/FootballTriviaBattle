@@ -1,6 +1,6 @@
-- Sign in instantly on Android with Play Games - no email or password needed
-- Change your player name any time from the 1v1 screen
-- Never wait around for an opponent: if the connection drops, you'll be matched with a practice opponent straight away
-- Smoother match animations and a cleaner 1v1 lobby
-- Your record now tracks 1v1 matches only
+- Start playing straight away - no account needed
+- Coins, daily rewards and shop items you earn are kept on your device
+- Sign in whenever you like and everything you earned comes with you, plus a welcome coin bonus
+- Daily challenges and your daily reward streak now run while you're signed out
+- Clearer prompts showing what signing in saves
 - Bug fixes and performance improvements
