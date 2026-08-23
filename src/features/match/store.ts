@@ -147,7 +147,10 @@ function createMatchStore() {
           shootout,
           questionIndex: nextQuestionIndex(),
           lastKickBy: message.by,
-          pendingKick: message.by === 'you' ? false : state.pendingKick,
+          // Any resolved kick means nothing of mine is in flight any more.
+          // Clearing only on `by: 'you'` left the flag set whenever the server
+          // dropped my kick, which hid the question on my *next* turn.
+          pendingKick: false,
         })
         // Only my own kicks count as answered questions / scored penalties.
         if (message.by === 'you') challengesStore.recordAnswer(correct, wasShoot)
@@ -228,9 +231,22 @@ function createMatchStore() {
     analytics.track('match_start', { mode: '1v1' })
   }
 
-  /** Sends my kick's outcome to the server; the shootout only advances once it echoes back. */
+  /**
+   * Sends my kick's outcome to the server; the shootout only advances once it
+   * echoes back.
+   *
+   * The server's kick clock starts the moment it sends `kickResolved`, while
+   * ours only gets here after the opponent's replay animation, the question
+   * timer and my own animation. A slow device can overrun that deadline, in
+   * which case the server has already timed the kick out and moved on — it
+   * answers a kick for a stage it isn't on with silence, so sending one would
+   * set `pendingKick` with nothing left to clear it. Bail instead: the kick is
+   * already lost, and the next question stays reachable.
+   */
   function submitAnswer1v1(scored: boolean) {
     if (!socket || state.phase !== 'active') return
+    if (state.pendingKick || isMatchOver(state.shootout)) return
+    if (state.shootout.stage !== 'shoot') return
     socket.send({ type: 'kickResult', scored })
     set({ pendingKick: true })
   }

@@ -170,6 +170,50 @@ describe('matchStore 1v1 session', () => {
     expect(s.questionIndex).toBe(1)
   })
 
+  // Regression: the server's kick clock starts when it sends kickResolved, but
+  // ours only reaches submitAnswer1v1 after the opponent's replay animation,
+  // the question timer and my own animation. A slow device blows that deadline,
+  // the server times the kick out, and our late kickResult lands on a turn the
+  // server has already moved past. It answers those with silence — so sending
+  // one anyway used to strand pendingKick and hide the *next* question.
+  it('ignores a kick submitted after the server already resolved that turn', () => {
+    const { session, fake } = readySession()
+    matchStore.start1v1(session)
+
+    // server-side timeout resolves my kick before my animation finishes
+    fake.emit({ type: 'kickResolved', by: 'you', scored: false })
+    fake.sent.length = 0
+
+    matchStore.submitAnswer1v1(true)
+
+    expect(fake.sent).toEqual([])
+    expect(matchStore.getState().pendingKick).toBe(false)
+  })
+
+  it('ignores a second kick while one is already pending', () => {
+    const { session, fake } = readySession()
+    matchStore.start1v1(session)
+    matchStore.submitAnswer1v1(true)
+    fake.sent.length = 0
+
+    matchStore.submitAnswer1v1(false)
+
+    expect(fake.sent).toEqual([])
+  })
+
+  // Belt and braces for any other route that could leave the flag set: once a
+  // kick has resolved, nothing is in flight, so the question must never stay hidden.
+  it("clears pendingKick on the opponent's kickResolved too", () => {
+    const { session, fake } = readySession()
+    matchStore.start1v1(session)
+    matchStore.submitAnswer1v1(true)
+    expect(matchStore.getState().pendingKick).toBe(true)
+
+    fake.emit({ type: 'kickResolved', by: 'opponent', scored: true })
+
+    expect(matchStore.getState().pendingKick).toBe(false)
+  })
+
   it("applies the opponent's kickResolved through the flipped stage mapping", () => {
     const { session, fake } = readySession({ youGoFirst: false }) // start on 'keep'
     matchStore.start1v1(session)

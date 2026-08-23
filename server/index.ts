@@ -38,9 +38,16 @@ console.log(
     : `[config] coin awards DISABLED — SUPABASE_URL ${SUPABASE_URL ? 'set' : 'MISSING'}, SUPABASE_SERVICE_ROLE_KEY ${SUPABASE_SERVICE_ROLE_KEY ? 'set' : 'MISSING'}`,
 )
 
-// Grace window for a stalled kick (dropped connection, closed tab): roughly
-// the 10s question timer + the ~2.6s feedback animation + a buffer.
-const KICK_TIMEOUT_MS = 20_000
+// Grace window for a stalled kick (dropped connection, closed tab).
+//
+// This clock starts when `kickResolved` goes out, but the client cannot answer
+// for most of it: it replays the opponent's kick (~2.6s), *then* shows the 10s
+// question, *then* animates my own kick (~2.6s) before `kickResult` is sent.
+// That is 15.2s of unavoidable spend, and the question countdown re-arms a
+// setTimeout per tick so it drifts long on a loaded device. The old 20s left
+// under 5s of slack; a hitch or a slow link overran it and the player's kick
+// was timed out from under them. Budget the full client turn plus real margin.
+const KICK_TIMEOUT_MS = 30_000
 
 // How long a friend challenge stays live before it auto-expires (the target
 // never answered). Kept short so a stale invite doesn't linger on either side.
