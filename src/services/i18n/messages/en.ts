@@ -261,6 +261,9 @@ export const en = {
   'sound.masterVolume': 'master volume',
   'sound.mute': 'MUTE',
   'sound.unmute': 'UNMUTE',
+
+  // --- social ---
+  'social.twitterAria': 'Follow the developer on Twitter',
 } satisfies Record<string, string>
 
 export type MessageKey = keyof typeof en

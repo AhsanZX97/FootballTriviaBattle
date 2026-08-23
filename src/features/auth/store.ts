@@ -130,7 +130,12 @@ export interface StorageLike {
 /** The on-device progress this store drains into a fresh session. Injected so
  * tests can drive sign-in without the real singleton. */
 export interface AuthProgressSeam {
-  claim(): Promise<{ coins: number; granted: number } | null>
+  claim(): Promise<{
+    coins: number
+    granted: number
+    streak: number
+    lastDate: string | null
+  } | null>
 }
 
 type Listener = () => void
@@ -338,7 +343,15 @@ export function createAuthStore(
     const result = await progress.claim()
     if (result) {
       storage.setItem(COINS_CACHE_KEY, String(result.coins))
-      set({ coins: result.coins })
+      // The streak comes back with the balance because the profile was read
+      // before the claim ran. Without refreshing it here, a player who took
+      // today's login reward on-device would be shown a live Claim button that
+      // the server has already been told to refuse.
+      set({
+        coins: result.coins,
+        dailyRewardStreak: result.streak,
+        lastDailyRewardDate: result.lastDate,
+      })
       analytics.track('local_progress_claimed', { granted: result.granted })
     }
 

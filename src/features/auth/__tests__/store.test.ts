@@ -169,8 +169,10 @@ describe('hydration on construction', () => {
 })
 
 describe('claiming on-device progress at sign-in', () => {
-  const fakeProgress = (result: { coins: number; granted: number } | null) => ({
-    claim: vi.fn(async () => result),
+  const fakeProgress = (
+    result: { coins: number; granted: number; streak?: number; lastDate?: string | null } | null,
+  ) => ({
+    claim: vi.fn(async () => (result ? { streak: 0, lastDate: null, ...result } : null)),
   })
 
   it('banks local progress and shows the granted amount once signed in', async () => {
@@ -240,6 +242,42 @@ describe('claiming on-device progress at sign-in', () => {
   })
 })
 
+describe('the login-reward streak after a claim', () => {
+  it('adopts the streak the claim returned, not the stale pre-claim profile', async () => {
+    // The profile is read before the claim runs, so it still says "never
+    // claimed". If that stuck, the daily-reward popup would offer a Claim the
+    // server has already been told to refuse.
+    const fake = createFakeSupabase({ u1: { username: 'bob', coins: 5 } })
+    const store = createAuthStore({
+      supabaseClient: fake.client as never,
+      storage: fakeStorage(),
+      progress: {
+        claim: vi.fn(async () => ({ coins: 10, granted: 5, streak: 1, lastDate: '2026-08-21' })),
+      },
+    })
+
+    await fake.emit('INITIAL_SESSION', session('u1', 'bob@example.com'))
+
+    expect(store.getState()).toMatchObject({
+      dailyRewardStreak: 1,
+      lastDailyRewardDate: '2026-08-21',
+    })
+  })
+
+  it('leaves the streak alone when there was nothing to claim', async () => {
+    const fake = createFakeSupabase({ u1: { username: 'bob', coins: 5 } })
+    const store = createAuthStore({
+      supabaseClient: fake.client as never,
+      storage: fakeStorage(),
+      progress: { claim: vi.fn(async () => null) },
+    })
+
+    await fake.emit('INITIAL_SESSION', session('u1', 'bob@example.com'))
+
+    expect(store.getState().dailyRewardStreak).toBe(0)
+  })
+})
+
 describe('the signup bonus notice', () => {
   const noProgress = { claim: vi.fn(async () => null) }
 
@@ -291,7 +329,7 @@ describe('the signup bonus notice', () => {
     const store = createAuthStore({
       supabaseClient: fake.client as never,
       storage: fakeStorage(),
-      progress: { claim: vi.fn(async () => ({ coins: 142, granted: 42 })) },
+      progress: { claim: vi.fn(async () => ({ coins: 142, granted: 42, streak: 0, lastDate: null })) },
     })
 
     await fake.emit('INITIAL_SESSION', session('u1', 'bob@example.com'))

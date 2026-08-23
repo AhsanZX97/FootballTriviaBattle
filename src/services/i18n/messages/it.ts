@@ -236,4 +236,6 @@ export const it: Messages = {
   'sound.masterVolume': 'volume generale',
   'sound.mute': 'MUTO',
   'sound.unmute': 'AUDIO',
+
+  'social.twitterAria': 'Segui lo sviluppatore su Twitter',
 }

@@ -9,6 +9,13 @@ export interface ClaimResult {
    * the account's lifetime allowance, so this can be less than what was sent
    * (and is what the UI should show as "+N"). */
   granted: number
+  /** The account's login-reward position *after* the claim. Carried back so the
+   * caller can refresh its copy: it read the profile before the claim ran, and
+   * acting on those stale values means offering a Claim button the server has
+   * already been told to refuse. */
+  streak: number
+  /** Calendar day (YYYY-MM-DD) the account's login reward now counts against. */
+  lastDate: string | null
 }
 
 /**
@@ -48,9 +55,14 @@ async function claimLocalProgress(
     if (error) console.error('[progress] claim_local_progress failed', error)
     return null
   }
-  const row = data as { coins?: number; granted?: number }
+  const row = data as { coins?: number; granted?: number; streak?: number; streak_date?: string | null }
   if (typeof row.coins !== 'number') return null
-  return { coins: row.coins, granted: typeof row.granted === 'number' ? row.granted : 0 }
+  return {
+    coins: row.coins,
+    granted: typeof row.granted === 'number' ? row.granted : 0,
+    streak: typeof row.streak === 'number' ? row.streak : 0,
+    lastDate: typeof row.streak_date === 'string' ? row.streak_date : null,
+  }
 }
 
 export const localProgressApi: LocalProgressApi = { claimLocalProgress }

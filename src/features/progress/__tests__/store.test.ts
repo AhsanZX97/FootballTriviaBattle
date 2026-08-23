@@ -45,7 +45,9 @@ describe('local progress store', () => {
 
   beforeEach(() => {
     storage = fakeStorage()
-    api = { claimLocalProgress: vi.fn(async () => ({ coins: 300, granted: 12 })) }
+    api = {
+      claimLocalProgress: vi.fn(async () => ({ coins: 300, granted: 12, streak: 1, lastDate: null })),
+    }
     shop = fakeShop()
   })
 
@@ -113,7 +115,7 @@ describe('local progress store', () => {
       streak: 0,
       lastDate: null,
     })
-    expect(result).toEqual({ coins: 300, granted: 12 })
+    expect(result).toEqual({ coins: 300, granted: 12, streak: 1, lastDate: null })
     expect(store.getState()).toEqual(emptyLocalProgress())
   })
 
@@ -341,7 +343,7 @@ describe('local progress store', () => {
     store.addCoins(150)
     store.purchaseItem('gold-trim', 100)
 
-    await expect(store.claim()).resolves.toEqual({ coins: 300, granted: 12 })
+    await expect(store.claim()).resolves.toEqual({ coins: 300, granted: 12, streak: 1, lastDate: null })
     expect(store.getState()).toEqual(emptyLocalProgress())
   })
 

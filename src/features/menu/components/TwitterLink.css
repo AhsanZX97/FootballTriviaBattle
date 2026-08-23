@@ -1,0 +1,44 @@
+/* Bare corner icon for the developer's Twitter handle — no plate behind it,
+   the drop shadow alone lifts the bird off the background (same treatment as
+   the top bar's sprite buttons). Fixed to the bottom-right, kept clear of the
+   native ad banner overlay (the var is 0 when no ad is showing) and of the
+   phone's gesture inset. Sits under the popups (z-index 200) so an open dialog
+   covers it. */
+.twitter-link {
+  position: fixed;
+  right: 12px;
+  bottom: calc(12px + var(--ad-banner-height, 0px));
+  z-index: 100;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #1d9bf0;
+  line-height: 0;
+  opacity: 0.9;
+  filter: drop-shadow(2px 2px 0 rgba(0, 0, 0, 0.6));
+  transition: transform 0.04s steps(1), opacity 0.04s steps(1);
+}
+
+.twitter-link__glyph {
+  display: block;
+  width: 26px;
+  height: 26px;
+}
+
+@media (hover: hover) {
+  .twitter-link:hover {
+    opacity: 1;
+    color: #4db5f5;
+  }
+}
+
+.twitter-link:active {
+  opacity: 1;
+  transform: translate(2px, 2px);
+}
+
+/* clear the gesture bar / rounded corners on native */
+.native .twitter-link {
+  right: calc(12px + env(safe-area-inset-right));
+  bottom: calc(12px + env(safe-area-inset-bottom) + var(--ad-banner-height, 0px));
+}

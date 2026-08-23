@@ -240,4 +240,6 @@ export const de: Messages = {
   'sound.masterVolume': 'Gesamtlautstärke',
   'sound.mute': 'STUMM',
   'sound.unmute': 'TON AN',
+
+  'social.twitterAria': 'Dem Entwickler auf Twitter folgen',
 }

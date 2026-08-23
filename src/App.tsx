@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState, useSyncExternalStore } from 'react'
 import { IntroScreen } from './features/menu/IntroScreen'
 import { TopBar } from './features/menu/components/TopBar'
+import { TwitterLink } from './features/menu/components/TwitterLink'
 import { MatchScreen } from './features/match/MatchScreen'
 import { matchStore } from './features/match/store'
 import { LobbyScreen } from './features/lobby/LobbyScreen'
@@ -210,6 +211,9 @@ function App() {
   return (
     <>
       <TopBar screen={screen} onGetCoins={() => setGetCoinsOpen(true)} />
+      {/* the dev's X handle, corner-parked on the menus; a match keeps its
+          corners for the scoreboard and the kick */}
+      {screen !== 'match' && <TwitterLink />}
       {screen !== 'match' && <ChallengeOverlay />}
       {content}
       {friendsPickerOpen && screen === 'lobby' && (
