@@ -1,0 +1,171 @@
+import React from 'react';
+import { AbsoluteFill, interpolate, staticFile } from 'remotion';
+import { CANVAS } from '../theme';
+import { GOLD, Headline } from './Headline';
+import { SpriteStrip, loopFrame } from './SpriteStrip';
+
+/**
+ * A frame-driven port of the game's PitchScene (src/features/match/components).
+ * The actors are placed as percentages of a 16:9 "stage" sized exactly the way
+ * `background-size: cover` sizes bg.jpg, so every coordinate below is the same
+ * number the game's CSS uses — goal corner 39%/38%, penalty spot 50%/80%, and
+ * so on.
+ */
+
+const STAGE_W = Math.max(CANVAS.width, (CANVAS.height * 16) / 9);
+const STAGE_H = (STAGE_W * 9) / 16;
+const STAGE_LEFT = (CANVAS.width - STAGE_W) / 2;
+const STAGE_TOP = (CANVAS.height - STAGE_H) / 2;
+
+const x = (pct: number) => STAGE_LEFT + (pct / 100) * STAGE_W;
+const y = (pct: number) => STAGE_TOP + (pct / 100) * STAGE_H;
+
+/** --keeper-w: 4.9% of the stage, and everything else derives from it. */
+const KEEPER_W = STAGE_W * 0.049;
+const KEEPER_H = (KEEPER_W * 127) / 134;
+const DIVE_W = KEEPER_W * 1.184;
+const DIVE_H = (DIVE_W * 83) / 94;
+const BALL_W = KEEPER_W * 0.45;
+
+/** CSS `steps(n, end)`: hold each slice, then snap to the final value. */
+const stepped = (t: number, n: number) => {
+  const c = Math.max(0, Math.min(1, t));
+  return c >= 1 ? 1 : Math.floor(c * n) / n;
+};
+
+type Outcome = {
+  ball: { to: [number, number]; frames: number; steps: number };
+  keeper: { to: [number, number]; frames: number; steps: number; mirror: boolean };
+  label: string;
+};
+
+const OUTCOMES: Record<'goal' | 'save', Outcome> = {
+  // You score: ball into the top-left corner, keeper guesses right (dives the
+  // other way) — the game's `.scene--goal.scene--goal-wrong-way`.
+  goal: {
+    ball: { to: [39, 38], frames: 21, steps: 7 },
+    keeper: { to: [60, 52], frames: 21, steps: 7, mirror: false },
+    label: 'GOAL!',
+  },
+  // You keep: the shot comes in low left and the keeper gets a glove on it —
+  // `.scene--save`.
+  save: {
+    ball: { to: [39, 47], frames: 15, steps: 5 },
+    keeper: { to: [40, 49], frames: 15, steps: 5, mirror: true },
+    label: 'SAVED!',
+  },
+};
+
+type Props = {
+  frame: number;
+  mode: 'goal' | 'save';
+  /** Frames the ball sits on the spot before it is struck. */
+  suspense?: number;
+};
+
+export const PitchScene: React.FC<Props> = ({ frame, mode, suspense = 30 }) => {
+  const o = OUTCOMES[mode];
+  const t = frame - suspense; // 0 = the instant the ball leaves the foot
+  const flying = t >= 0;
+
+  // --- ball -----------------------------------------------------------------
+  const ballP = flying ? stepped(t / o.ball.frames, o.ball.steps) : 0;
+  const ballX = x(interpolate(ballP, [0, 1], [50, o.ball.to[0]]));
+  const ballY = y(interpolate(ballP, [0, 1], [80, o.ball.to[1]]));
+  // 4-frame spin, one full turn every 0.2s, only while the ball is in flight
+  const spinIndex = loopFrame(Math.max(0, t), 4, 6);
+  const spinning = flying && t < o.ball.frames;
+
+  // --- keeper ---------------------------------------------------------------
+  const diving = t >= 0;
+  const diveIndex = Math.min(5, Math.floor(Math.max(0, t) / 3)); // 6 frames over 0.6s
+  const idleIndex = loopFrame(frame, 16, 48); // 16 frames over 1.6s
+  const keeperP = diving ? stepped(t / o.keeper.frames, o.keeper.steps) : 0;
+  const keeperX = x(interpolate(keeperP, [0, 1], [50, o.keeper.to[0]]));
+  const keeperY = y(interpolate(keeperP, [0, 1], [51, o.keeper.to[1]]));
+
+  // --- outcome label --------------------------------------------------------
+  const labelT = t - 18;
+  const labelScale = labelT < 0 ? 0 : stepped(labelT / 9, 3);
+
+  const spriteShadow = 'drop-shadow(3px 3px 0 rgba(0, 0, 0, 0.6))';
+
+  return (
+    <AbsoluteFill style={{ overflow: 'hidden', imageRendering: 'pixelated' }}>
+      {/* keeper */}
+      <div
+        style={{
+          position: 'absolute',
+          left: keeperX,
+          top: keeperY,
+          transform: `translate(-50%, -100%) scaleX(${o.keeper.mirror && diving ? -1 : 1})`,
+          filter: spriteShadow,
+        }}
+      >
+        {diving ? (
+          <SpriteStrip
+            src="sprites/gk-dive-strip.png"
+            frames={6}
+            index={diveIndex}
+            width={DIVE_W}
+            height={DIVE_H}
+          />
+        ) : (
+          <SpriteStrip
+            src="sprites/gk-idle-strip.png"
+            frames={16}
+            index={idleIndex}
+            width={KEEPER_W}
+            height={KEEPER_H}
+          />
+        )}
+      </div>
+
+      {/* ball */}
+      <div
+        style={{
+          position: 'absolute',
+          left: ballX,
+          top: ballY,
+          transform: 'translate(-50%, -50%)',
+          filter: spriteShadow,
+        }}
+      >
+        {spinning ? (
+          <SpriteStrip
+            src="sprites/ball-spin-strip.png"
+            frames={4}
+            index={spinIndex}
+            width={BALL_W}
+            height={BALL_W}
+          />
+        ) : (
+          <div
+            style={{
+              width: BALL_W,
+              height: BALL_W,
+              backgroundImage: `url(${staticFile('sprites/ball.png')})`,
+              backgroundSize: 'contain',
+              backgroundRepeat: 'no-repeat',
+              imageRendering: 'pixelated',
+            }}
+          />
+        )}
+      </div>
+
+      {/* outcome label, on the grass under the goal */}
+      <div
+        style={{
+          position: 'absolute',
+          left: x(50),
+          top: y(58),
+          transform: `translateX(-50%) scale(${labelScale})`,
+        }}
+      >
+        <Headline size={104} depth={16} outline={8} {...GOLD}>
+          {o.label}
+        </Headline>
+      </div>
+    </AbsoluteFill>
+  );
+};

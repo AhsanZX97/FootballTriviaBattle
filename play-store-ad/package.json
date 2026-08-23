@@ -1,0 +1,27 @@
+{
+  "name": "play-store-ad",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Remotion promo video for Football Quiz: Trivia Battle",
+  "scripts": {
+    "dev": "remotion studio",
+    "render": "remotion render Portrait out/football-trivia-battle-portrait.mp4",
+    "render:landscape": "remotion render Landscape out/football-trivia-battle-landscape.mp4",
+    "render:all": "npm run render && npm run render:landscape",
+    "still": "remotion still Portrait out/poster.png --frame=810",
+    "typecheck": "tsc --noEmit",
+    "upgrade": "remotion upgrade"
+  },
+  "dependencies": {
+    "@remotion/cli": "4.0.400",
+    "@remotion/google-fonts": "4.0.400",
+    "@remotion/media-utils": "4.0.400",
+    "react": "19.2.0",
+    "react-dom": "19.2.0",
+    "remotion": "4.0.400"
+  },
+  "devDependencies": {
+    "@types/react": "19.2.0",
+    "typescript": "5.9.2"
+  }
+}
