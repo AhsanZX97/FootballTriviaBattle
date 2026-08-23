@@ -1,6 +1,5 @@
-- Start playing straight away - no account needed
-- Coins, daily rewards and shop items you earn are kept on your device
-- Sign in whenever you like and everything you earned comes with you, plus a welcome coin bonus
-- Daily challenges and your daily reward streak now run while you're signed out
-- Clearer prompts showing what signing in saves
+- Fixed a bug where a question could be skipped and your penalty taken for you
+- Your kick now has more time to reach the server on slower connections
+- Daily login reward streaks now count correctly
+- Added a link to follow the developer from the main menu
 - Bug fixes and performance improvements
