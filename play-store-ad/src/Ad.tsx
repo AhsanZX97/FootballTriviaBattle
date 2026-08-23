@@ -9,6 +9,7 @@ import { Cta } from './scenes/Cta';
 import { CANVAS, TIMELINE, TOTAL_FRAMES } from './theme';
 
 /** Where the ball is struck / hits, on the master timeline — the sound cues. */
+const WHISTLE = TIMELINE.question.from; // kick-off blows as the question comes up
 const KICK_STRIKE = TIMELINE.kick.from + 30;
 const KICK_IMPACT = TIMELINE.kick.from + 51;
 const SAVE_STRIKE = TIMELINE.save.from + 34;
@@ -65,7 +66,7 @@ export const Ad: React.FC = () => (
       src={staticFile('sounds/theme.mp3')}
       volume={(f) => (f > TOTAL_FRAMES - 45 ? Math.max(0, (TOTAL_FRAMES - f) / 45) * 0.26 : 0.26)}
     />
-    <Sequence from={0} durationInFrames={45}>
+    <Sequence from={WHISTLE} durationInFrames={45}>
       <Audio src={staticFile('sounds/whistle.mp3')} volume={0.7} />
     </Sequence>
     <Sequence from={KICK_STRIKE} durationInFrames={30}>
@@ -74,7 +75,7 @@ export const Ad: React.FC = () => (
     <Sequence from={KICK_IMPACT} durationInFrames={30}>
       <Audio src={staticFile('sounds/net-ripple.ogg')} volume={0.9} />
     </Sequence>
-    <Sequence from={KICK_IMPACT + 2} durationInFrames={110}>
+    <Sequence from={KICK_IMPACT + 2} durationInFrames={45}>
       <Audio src={staticFile('sounds/cheer.mp3')} volume={0.55} />
     </Sequence>
     <Sequence from={SAVE_STRIKE} durationInFrames={30}>

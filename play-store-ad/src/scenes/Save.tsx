@@ -1,7 +1,7 @@
 import React from 'react';
 import { AbsoluteFill, interpolate, staticFile, useCurrentFrame } from 'remotion';
 import { Stadium } from '../components/Stadium';
-import { PitchScene } from '../components/PitchScene';
+import { OutcomeLabel, PitchScene, ballCamera } from '../components/PitchScene';
 import { CaptionBar, Scoreboard, StatusLine } from '../components/Hud';
 import { Panel } from '../components/Pixel';
 import { GOLD, Headline, SILVER } from '../components/Headline';
@@ -18,14 +18,21 @@ export const Save: React.FC = () => {
 
   const dim = interpolate(frame, [0, 8], [0.5, 0], { extrapolateRight: 'clamp' });
   const hit = shake(frame, IMPACT, 12, 12);
+
+  const camera = ballCamera({ frame, mode: 'save', strike: SUSPENSE, impact: IMPACT });
   const won = frame >= WIN;
 
   return (
     <AbsoluteFill
       style={{ transform: `translate(${hit.x}px, ${hit.y}px)`, overflow: 'hidden' }}
     >
-      <Stadium dim={dim} />
-      <PitchScene frame={frame} mode="save" suspense={SUSPENSE} />
+      <AbsoluteFill style={camera}>
+        <Stadium dim={dim} />
+        <PitchScene frame={frame} mode="save" suspense={SUSPENSE} flames label={false} />
+      </AbsoluteFill>
+
+      {/* the call stays out of the camera move — zoomed it would burst the frame */}
+      <OutcomeLabel frame={frame} mode="save" suspense={SUSPENSE} />
 
       <AbsoluteFill style={{ alignItems: 'center', paddingTop: 80, gap: 30 }}>
         <PopIn frame={frame} delay={0} rise={-30}>

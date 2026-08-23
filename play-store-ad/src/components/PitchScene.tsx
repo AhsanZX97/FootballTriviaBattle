@@ -1,8 +1,9 @@
 import React from 'react';
-import { AbsoluteFill, interpolate, staticFile } from 'remotion';
+import { AbsoluteFill, Easing, interpolate, staticFile } from 'remotion';
 import { CANVAS } from '../theme';
 import { GOLD, Headline } from './Headline';
 import { SpriteStrip, loopFrame } from './SpriteStrip';
+import { FlameTrail } from './FlameTrail';
 
 /**
  * A frame-driven port of the game's PitchScene (src/features/match/components).
@@ -56,14 +57,83 @@ const OUTCOMES: Record<'goal' | 'save', Outcome> = {
   },
 };
 
+/** Where the ball sits at flight progress `p` (0 = spot, 1 = target), in canvas px.
+ *  Smooth, unlike the stepped sprite — a camera tracking this never judders. */
+export const ballAnchor = (mode: 'goal' | 'save', p: number) => ({
+  x: x(interpolate(p, [0, 1], [50, OUTCOMES[mode].ball.to[0]])),
+  y: y(interpolate(p, [0, 1], [80, OUTCOMES[mode].ball.to[1]])),
+});
+
+type CameraOptions = {
+  frame: number;
+  mode: 'goal' | 'save';
+  /** Frame the ball is struck — the push-in starts here. */
+  strike: number;
+  /** Frame it arrives; the camera is at full zoom on it. */
+  impact: number;
+  /** Frames to hold the close shot after impact, then to pull back out. */
+  hold?: number;
+  out?: number;
+  zoom?: number;
+};
+
+/**
+ * A camera that rides the ball: it scales about the ball's position and dollies
+ * that point to the middle of frame, so the shot fills the screen as it
+ * arrives, then backs out for the HUD. Returns a style for a wrapper holding
+ * the stadium and the pitch — keep text out of it, or the zoom bursts the frame.
+ *
+ * It tracks `ballAnchor`, the smooth position, not the stepped sprite: hopping
+ * the origin in 7 hard steps would judder the whole world.
+ */
+export const ballCamera = ({
+  frame,
+  mode,
+  strike,
+  impact,
+  hold = 14,
+  out = 20,
+  zoom = 1.7,
+}: CameraOptions): React.CSSProperties => {
+  const keys = [strike, impact, impact + hold, impact + hold + out];
+  const ease = {
+    extrapolateLeft: 'clamp',
+    extrapolateRight: 'clamp',
+    easing: Easing.inOut(Easing.quad),
+  } as const;
+  const scale = interpolate(frame, keys, [1, zoom, zoom, 1], ease);
+  const pull = interpolate(frame, keys, [0, 1, 1, 0], ease);
+  const track = interpolate(frame, [strike, impact], [0, 1], {
+    extrapolateLeft: 'clamp',
+    extrapolateRight: 'clamp',
+  });
+  const at = ballAnchor(mode, track);
+
+  return {
+    transform: `translate(${(CANVAS.width / 2 - at.x) * pull}px, ${(CANVAS.height / 2 - at.y) * pull}px) scale(${scale})`,
+    transformOrigin: `${at.x}px ${at.y}px`,
+  };
+};
+
 type Props = {
   frame: number;
   mode: 'goal' | 'save';
   /** Frames the ball sits on the spot before it is struck. */
   suspense?: number;
+  /** Set the shot on fire — pixel flames dragged behind the ball. */
+  flames?: boolean;
+  /** Render the GOAL!/SAVED! label. Off when a scene places it itself, e.g.
+   *  outside a camera move that would blow it up with the pitch. */
+  label?: boolean;
 };
 
-export const PitchScene: React.FC<Props> = ({ frame, mode, suspense = 30 }) => {
+export const PitchScene: React.FC<Props> = ({
+  frame,
+  mode,
+  suspense = 30,
+  flames = false,
+  label = true,
+}) => {
   const o = OUTCOMES[mode];
   const t = frame - suspense; // 0 = the instant the ball leaves the foot
   const flying = t >= 0;
@@ -75,6 +145,14 @@ export const PitchScene: React.FC<Props> = ({ frame, mode, suspense = 30 }) => {
   // 4-frame spin, one full turn every 0.2s, only while the ball is in flight
   const spinIndex = loopFrame(Math.max(0, t), 4, 6);
   const spinning = flying && t < o.ball.frames;
+  // Travel direction, from the spot to wherever this outcome sends the ball.
+  const dx = x(o.ball.to[0]) - x(50);
+  const dy = y(o.ball.to[1]) - y(80);
+  const len = Math.hypot(dx, dy) || 1;
+  // Fire catches over 3 frames, then gutters out in the 5 after the ball lands.
+  const blaze = !flying
+    ? 0
+    : Math.min(1, (t + 1) / 3) * Math.max(0, 1 - Math.max(0, t - o.ball.frames) / 5);
 
   // --- keeper ---------------------------------------------------------------
   const diving = t >= 0;
@@ -83,10 +161,6 @@ export const PitchScene: React.FC<Props> = ({ frame, mode, suspense = 30 }) => {
   const keeperP = diving ? stepped(t / o.keeper.frames, o.keeper.steps) : 0;
   const keeperX = x(interpolate(keeperP, [0, 1], [50, o.keeper.to[0]]));
   const keeperY = y(interpolate(keeperP, [0, 1], [51, o.keeper.to[1]]));
-
-  // --- outcome label --------------------------------------------------------
-  const labelT = t - 18;
-  const labelScale = labelT < 0 ? 0 : stepped(labelT / 9, 3);
 
   const spriteShadow = 'drop-shadow(3px 3px 0 rgba(0, 0, 0, 0.6))';
 
@@ -121,6 +195,17 @@ export const PitchScene: React.FC<Props> = ({ frame, mode, suspense = 30 }) => {
         )}
       </div>
 
+      {flames && blaze > 0 && (
+        <FlameTrail
+          frame={frame}
+          x={ballX}
+          y={ballY}
+          dir={[dx / len, dy / len]}
+          ball={BALL_W}
+          intensity={blaze}
+        />
+      )}
+
       {/* ball */}
       <div
         style={{
@@ -153,19 +238,31 @@ export const PitchScene: React.FC<Props> = ({ frame, mode, suspense = 30 }) => {
         )}
       </div>
 
-      {/* outcome label, on the grass under the goal */}
-      <div
-        style={{
-          position: 'absolute',
-          left: x(50),
-          top: y(58),
-          transform: `translateX(-50%) scale(${labelScale})`,
-        }}
-      >
-        <Headline size={104} depth={16} outline={8} {...GOLD}>
-          {o.label}
-        </Headline>
-      </div>
+      {label && <OutcomeLabel frame={frame} mode={mode} suspense={suspense} />}
     </AbsoluteFill>
+  );
+};
+
+type LabelProps = { frame: number; mode: 'goal' | 'save'; suspense?: number };
+
+/** The GOAL!/SAVED! call, popped on the grass under the goal. */
+export const OutcomeLabel: React.FC<LabelProps> = ({ frame, mode, suspense = 30 }) => {
+  const labelT = frame - suspense - 18;
+  const scale = labelT < 0 ? 0 : stepped(labelT / 9, 3);
+  if (scale <= 0) return null;
+
+  return (
+    <div
+      style={{
+        position: 'absolute',
+        left: x(50),
+        top: y(58),
+        transform: `translateX(-50%) scale(${scale})`,
+      }}
+    >
+      <Headline size={104} depth={16} outline={8} {...GOLD}>
+        {OUTCOMES[mode].label}
+      </Headline>
+    </div>
   );
 };

@@ -14,8 +14,8 @@ const ANSWERS = ['1974', '1970', '1966', '1962'];
 const CORRECT = 1;
 
 /** Frames, local to this scene. */
-const TAP = 100;
-const RELEASE = 108;
+const TAP = 62;
+const RELEASE = 70;
 const TOTAL_SECONDS = 8;
 
 /** The trivia half of a kick: clock running, four options, one tap. */

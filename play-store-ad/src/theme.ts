@@ -39,8 +39,8 @@ export type SceneId = (typeof ORDER)[number];
 
 const DURATION: Record<SceneId, number> = {
   hook: 105,
-  question: 180,
-  kick: 150,
+  question: 120,
+  kick: 100,
   online: 120,
   save: 150,
   cta: 195,

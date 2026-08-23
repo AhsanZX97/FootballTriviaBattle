@@ -42,11 +42,14 @@ export const Cta: React.FC = () => {
         }}
       >
         <img
-          src={staticFile('logo.png')}
+          src={staticFile('icon.png')}
           width={420}
           height={420}
           style={{
             imageRendering: 'pixelated',
+            // the store icon is a full-bleed square; round it the way a
+            // launcher would so the end card reads as the installed app
+            borderRadius: 92,
             transform: `scale(${logoScale})`,
             filter: 'drop-shadow(10px 10px 0 rgba(0,0,0,0.6))',
           }}
