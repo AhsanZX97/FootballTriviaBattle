@@ -6,7 +6,7 @@ import { Panel, PixelText } from '../components/Pixel';
 import { GOLD, Headline, SILVER } from '../components/Headline';
 import { PopIn } from '../components/PopIn';
 import { SpriteStrip, loopFrame } from '../components/SpriteStrip';
-import { COLOR } from '../theme';
+import { COLOR, useStage } from '../theme';
 import { shake, stepped } from '../anim';
 
 const SLAM = 46; // the frame the two cards meet in the middle
@@ -39,6 +39,7 @@ const PlayerCard: React.FC<{ name: string; label: string; highlight?: boolean }>
 /** Quick match: the pairing that makes every game a live head-to-head. */
 export const Online: React.FC = () => {
   const frame = useCurrentFrame();
+  const { wide } = useStage();
 
   const slide = stepped(frame / SLAM, 6);
   const left = interpolate(slide, [0, 1], [-700, 0]);
@@ -54,8 +55,8 @@ export const Online: React.FC = () => {
         style={{
           alignItems: 'center',
           justifyContent: 'center',
-          gap: 68,
-          paddingBottom: 90,
+          gap: wide ? 46 : 68,
+          paddingBottom: wide ? 120 : 90,
           transform: `translate(${slam.x}px, ${slam.y}px)`,
         }}
       >
@@ -65,7 +66,7 @@ export const Online: React.FC = () => {
           </Headline>
         </PopIn>
 
-        <div style={{ display: 'flex', alignItems: 'center', gap: 40 }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: wide ? 64 : 40 }}>
           <div style={{ transform: `translateX(${left}px)` }}>
             <PlayerCard label="YOU" name="READY" highlight />
           </div>

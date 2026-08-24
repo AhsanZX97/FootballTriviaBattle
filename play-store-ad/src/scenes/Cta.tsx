@@ -11,6 +11,7 @@ import { Stadium } from '../components/Stadium';
 import { Panel, PixelText } from '../components/Pixel';
 import { GOLD, HeadlineLines, Plate } from '../components/Headline';
 import { PopIn } from '../components/PopIn';
+import { useStage } from '../theme';
 
 const CHIPS = ['NO SIGN-UP NEEDED', 'NO ADS MID-MATCH', 'FREE TO PLAY'];
 
@@ -18,6 +19,8 @@ const CHIPS = ['NO SIGN-UP NEEDED', 'NO ADS MID-MATCH', 'FREE TO PLAY'];
 export const Cta: React.FC = () => {
   const frame = useCurrentFrame();
   const { fps } = useVideoConfig();
+  const { wide } = useStage();
+  const icon = wide ? 340 : 420;
 
   const logoIn = spring({
     frame: frame - 2,
@@ -35,56 +38,66 @@ export const Cta: React.FC = () => {
 
       <AbsoluteFill
         style={{
+          flexDirection: wide ? 'row' : 'column',
           alignItems: 'center',
           justifyContent: 'center',
-          gap: 52,
-          padding: '0 70px',
+          gap: wide ? 90 : 52,
+          padding: wide ? '0 120px' : '0 70px',
         }}
       >
         <img
           src={staticFile('icon.png')}
-          width={420}
-          height={420}
+          width={icon}
+          height={icon}
           style={{
             imageRendering: 'pixelated',
             // the store icon is a full-bleed square; round it the way a
             // launcher would so the end card reads as the installed app
-            borderRadius: 92,
+            borderRadius: icon * 0.22,
             transform: `scale(${logoScale})`,
             filter: 'drop-shadow(10px 10px 0 rgba(0,0,0,0.6))',
           }}
         />
 
-        <PopIn frame={frame} delay={16}>
-          <HeadlineLines
-            lines={['FOOTBALL QUIZ', 'TRIVIA BATTLE']}
-            size={58}
-            preset={GOLD}
-            depth={12}
-            outline={7}
-            gap={24}
-          />
-        </PopIn>
+        <div
+          style={{
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'center',
+            gap: wide ? 40 : 52,
+          }}
+        >
+          <PopIn frame={frame} delay={16}>
+            <HeadlineLines
+              lines={['FOOTBALL QUIZ', 'TRIVIA BATTLE']}
+              size={58}
+              preset={GOLD}
+              depth={12}
+              outline={7}
+              gap={24}
+            />
+          </PopIn>
 
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 20, alignItems: 'center' }}>
-          {CHIPS.map((chip, i) => (
-            <PopIn key={chip} frame={frame} delay={30 + i * 8} duration={6}>
-              <Panel padding="20px 32px" spread={4} style={{ background: '#0d2c1b' }}>
-                <PixelText size={26} shadow={0} letterSpacing="0.1em">
-                  {chip}
-                </PixelText>
-              </Panel>
-            </PopIn>
-          ))}
-        </div>
-
-        {/* same plate as the hook's PROVE IT., so the ad opens and closes
-            on the same button */}
-        <PopIn frame={frame} delay={62}>
-          <div style={{ transform: `scale(${pulse})` }}>
-            <Plate size={30}>PLAY FREE ON GOOGLE PLAY</Plate>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 20, alignItems: 'center' }}>
+            {CHIPS.map((chip, i) => (
+              <PopIn key={chip} frame={frame} delay={30 + i * 8} duration={6}>
+                <Panel padding="20px 32px" spread={4} style={{ background: '#0d2c1b' }}>
+                  <PixelText size={26} shadow={0} letterSpacing="0.1em">
+                    {chip}
+                  </PixelText>
+                </Panel>
+              </PopIn>
+            ))}
           </div>
-        </PopIn>
+
+          {/* same plate as the hook's PROVE IT., so the ad opens and closes
+              on the same button */}
+          <PopIn frame={frame} delay={62}>
+            <div style={{ transform: `scale(${pulse})` }}>
+              <Plate size={30}>PLAY FREE ON GOOGLE PLAY</Plate>
+            </div>
+          </PopIn>
+        </div>
       </AbsoluteFill>
     </AbsoluteFill>
   );

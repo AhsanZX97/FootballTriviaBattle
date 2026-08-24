@@ -5,6 +5,7 @@ import { GOLD, Headline, Plate, SILVER, Sparks } from '../components/Headline';
 import { PopIn } from '../components/PopIn';
 import { SpriteStrip, loopFrame } from '../components/SpriteStrip';
 import { shake } from '../anim';
+import { useStage } from '../theme';
 
 /**
  * Opening hook, styled as an arcade poster: the ball drops, the headline pair
@@ -13,6 +14,12 @@ import { shake } from '../anim';
 export const Hook: React.FC = () => {
   const frame = useCurrentFrame();
   const { fps } = useVideoConfig();
+  const { wide } = useStage();
+
+  // The poster is set to the frame's short axis, so it fills either cut.
+  const type = wide
+    ? { ball: 150, ballGap: 66, small: 74, smallGap: 46, big: 126, bigGap: 84, plate: 50 }
+    : { ball: 186, ballGap: 110, small: 58, smallGap: 58, big: 92, bigGap: 130, plate: 44 };
 
   const zoom = interpolate(frame, [0, 105], [1.16, 1.02], { extrapolateRight: 'clamp' });
   // Brighter than the in-game screens — this is a poster, not the HUD.
@@ -47,13 +54,13 @@ export const Hook: React.FC = () => {
           transform: `translate(${bump.x}px, ${bump.y}px)`,
         }}
       >
-        <div style={{ transform: `translateY(${ballY}px)`, marginBottom: 110 }}>
+        <div style={{ transform: `translateY(${ballY}px)`, marginBottom: type.ballGap }}>
           <SpriteStrip
             src="sprites/ball-spin-strip.png"
             frames={4}
             index={loopFrame(frame, 4, landed ? 12 : 5)}
-            width={186}
-            height={186}
+            width={type.ball}
+            height={type.ball}
             style={{
               filter: [
                 'drop-shadow(4px 0 0 #0a0a0a)',
@@ -66,9 +73,9 @@ export const Hook: React.FC = () => {
           />
         </div>
 
-        <PopIn frame={frame} delay={26} rise={-50} style={{ marginBottom: 58 }}>
+        <PopIn frame={frame} delay={26} rise={-50} style={{ marginBottom: type.smallGap }}>
           <Headline
-            size={58}
+            size={type.small}
             letterSpacing="0.03em"
             depth={9}
             outline={7}
@@ -78,10 +85,10 @@ export const Hook: React.FC = () => {
           </Headline>
         </PopIn>
 
-        <PopIn frame={frame} delay={36} rise={-50} style={{ marginBottom: 130 }}>
+        <PopIn frame={frame} delay={36} rise={-50} style={{ marginBottom: type.bigGap }}>
           <div style={{ position: 'relative', display: 'inline-block' }}>
             <Headline
-              size={92}
+              size={type.big}
               depth={16}
               outline={8}
               {...GOLD}
@@ -94,7 +101,7 @@ export const Hook: React.FC = () => {
         </PopIn>
 
         <PopIn frame={frame} delay={62} rise={-36}>
-          <Plate size={44}>PROVE IT.</Plate>
+          <Plate size={type.plate}>PROVE IT.</Plate>
         </PopIn>
       </AbsoluteFill>
     </AbsoluteFill>

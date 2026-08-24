@@ -6,7 +6,7 @@ import { Panel, PixelButton, PixelText } from '../components/Pixel';
 import { GREEN, Headline } from '../components/Headline';
 import { PopIn } from '../components/PopIn';
 import { ClickBurst } from '../components/ClickBurst';
-import { COLOR } from '../theme';
+import { COLOR, useStage } from '../theme';
 import { popOpacity } from '../anim';
 
 const PROMPT = 'Pelé won his third World Cup with Brazil in which year?';
@@ -21,6 +21,7 @@ const TOTAL_SECONDS = 8;
 /** The trivia half of a kick: clock running, four options, one tap. */
 export const Question: React.FC = () => {
   const frame = useCurrentFrame();
+  const { wide } = useStage();
 
   const answered = frame >= RELEASE;
   const clockFrame = Math.min(frame, RELEASE);
@@ -36,28 +37,51 @@ export const Question: React.FC = () => {
 
       <AbsoluteFill
         style={{
-          padding: '80px 60px 300px',
+          // 16:9 sets the board and the clock beside the question instead of
+          // stacking them — the same pieces, turned on their side.
+          padding: wide ? '40px 110px 150px' : '80px 60px 300px',
           display: 'flex',
-          flexDirection: 'column',
+          flexDirection: wide ? 'row' : 'column',
           alignItems: 'center',
-          gap: 42,
+          justifyContent: 'center',
+          gap: wide ? 80 : 42,
         }}
       >
-        <PopIn frame={frame} delay={0} rise={-30}>
-          <Scoreboard you={{ score: 0, taken: 0 }} cpu={{ score: 0, taken: 0 }} />
-        </PopIn>
+        <div
+          style={{
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'center',
+            gap: wide ? 30 : 42,
+            width: wide ? 620 : '100%',
+          }}
+        >
+          <PopIn frame={frame} delay={0} rise={-30}>
+            <Scoreboard you={{ score: 0, taken: 0 }} cpu={{ score: 0, taken: 0 }} />
+          </PopIn>
 
-        <PopIn frame={frame} delay={4}>
-          <StatusLine icon="ball">YOU'RE SHOOTING</StatusLine>
-        </PopIn>
+          <PopIn frame={frame} delay={4}>
+            <StatusLine icon="ball">YOU'RE SHOOTING</StatusLine>
+          </PopIn>
 
-        <div style={{ width: '100%', opacity: popOpacity(frame, 6) }}>
-          <TimerBar seconds={remaining} progress={progress} />
+          <div style={{ width: '100%', opacity: popOpacity(frame, 6) }}>
+            <TimerBar seconds={remaining} progress={progress} />
+          </div>
+
+          {/* the call lands under the clock in the wide cut, where the
+              question column has no room left under the buttons */}
+          {wide && answered && (
+            <PopIn frame={frame} delay={RELEASE + 2}>
+              <Headline size={48} depth={10} outline={6} {...GREEN}>
+                CORRECT!
+              </Headline>
+            </PopIn>
+          )}
         </div>
 
         <div
           style={{
-            width: '100%',
+            width: wide ? 940 : '100%',
             opacity: popOpacity(frame, 8),
             transform: `translateY(${(1 - popOpacity(frame, 8, 10)) * 60}px)`,
           }}
@@ -67,7 +91,13 @@ export const Question: React.FC = () => {
               {PROMPT}
             </PixelText>
 
-            <div style={{ display: 'grid', gap: 26 }}>
+            <div
+              style={{
+                display: 'grid',
+                gap: 26,
+                gridTemplateColumns: wide ? '1fr 1fr' : '1fr',
+              }}
+            >
               {ANSWERS.map((answer, i) => {
                 const isCorrect = i === CORRECT;
                 const dimmed = answered && !isCorrect;
@@ -94,7 +124,7 @@ export const Question: React.FC = () => {
           </Panel>
         </div>
 
-        {answered && (
+        {!wide && answered && (
           <PopIn frame={frame} delay={RELEASE + 2}>
             <Headline size={46} depth={10} outline={6} {...GREEN}>
               CORRECT!

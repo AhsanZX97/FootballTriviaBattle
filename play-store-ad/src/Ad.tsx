@@ -6,7 +6,7 @@ import { Kick } from './scenes/Kick';
 import { Online } from './scenes/Online';
 import { Save } from './scenes/Save';
 import { Cta } from './scenes/Cta';
-import { CANVAS, TIMELINE, TOTAL_FRAMES } from './theme';
+import { TIMELINE, TOTAL_FRAMES } from './theme';
 
 /** Where the ball is struck / hits, on the master timeline — the sound cues. */
 const WHISTLE = TIMELINE.question.from; // kick-off blows as the question comes up
@@ -27,14 +27,13 @@ const CutFlash: React.FC = () => {
 };
 
 /**
- * The 30-second cut. Everything is authored at 1080x1920; the landscape
- * composition reuses this exact tree inside a framed panel.
+ * The 30-second cut, and the whole of both compositions: the scenes lay
+ * themselves out from `useStage()`, so 1080x1920 and 1920x1080 are the same
+ * six beats, the same lettering and the same sound — only reframed.
  */
 export const Ad: React.FC = () => (
   <AbsoluteFill
     style={{
-      width: CANVAS.width,
-      height: CANVAS.height,
       background: '#04140b',
       overflow: 'hidden',
       imageRendering: 'pixelated',

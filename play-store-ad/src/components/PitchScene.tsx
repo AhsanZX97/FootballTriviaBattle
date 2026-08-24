@@ -1,6 +1,6 @@
 import React from 'react';
 import { AbsoluteFill, Easing, interpolate, staticFile } from 'remotion';
-import { CANVAS } from '../theme';
+import { Stage, useStage } from '../theme';
 import { GOLD, Headline } from './Headline';
 import { SpriteGrid, SpriteStrip, loopFrame } from './SpriteStrip';
 import { FlameTrail } from './FlameTrail';
@@ -12,18 +12,6 @@ import { FlameTrail } from './FlameTrail';
  * number the game's CSS uses — goal corner 39%/38%, penalty spot 50%/80%, and
  * so on.
  */
-
-const STAGE_W = Math.max(CANVAS.width, (CANVAS.height * 16) / 9);
-const STAGE_H = (STAGE_W * 9) / 16;
-const STAGE_LEFT = (CANVAS.width - STAGE_W) / 2;
-const STAGE_TOP = (CANVAS.height - STAGE_H) / 2;
-
-const x = (pct: number) => STAGE_LEFT + (pct / 100) * STAGE_W;
-const y = (pct: number) => STAGE_TOP + (pct / 100) * STAGE_H;
-
-/** --keeper-w: 4.9% of the stage, and everything else derives from it. */
-const KEEPER_W = STAGE_W * 0.049;
-const BALL_W = KEEPER_W * 0.45;
 
 /**
  * The keepers, straight out of the game: the stock one and the shop's skins.
@@ -81,13 +69,14 @@ const OUTCOMES: Record<'goal' | 'save', Outcome> = {
 
 /** Where the ball sits at flight progress `p` (0 = spot, 1 = target), in canvas px.
  *  Smooth, unlike the stepped sprite — a camera tracking this never judders. */
-export const ballAnchor = (mode: 'goal' | 'save', p: number) => ({
-  x: x(interpolate(p, [0, 1], [50, OUTCOMES[mode].ball.to[0]])),
-  y: y(interpolate(p, [0, 1], [80, OUTCOMES[mode].ball.to[1]])),
+export const ballAnchor = (stage: Stage, mode: 'goal' | 'save', p: number) => ({
+  x: stage.x(interpolate(p, [0, 1], [50, OUTCOMES[mode].ball.to[0]])),
+  y: stage.y(interpolate(p, [0, 1], [80, OUTCOMES[mode].ball.to[1]])),
 });
 
 type CameraOptions = {
   frame: number;
+  stage: Stage;
   mode: 'goal' | 'save';
   /** Frame the ball is struck — the push-in starts here. */
   strike: number;
@@ -110,6 +99,7 @@ type CameraOptions = {
  */
 export const ballCamera = ({
   frame,
+  stage,
   mode,
   strike,
   impact,
@@ -129,10 +119,10 @@ export const ballCamera = ({
     extrapolateLeft: 'clamp',
     extrapolateRight: 'clamp',
   });
-  const at = ballAnchor(mode, track);
+  const at = ballAnchor(stage, mode, track);
 
   return {
-    transform: `translate(${(CANVAS.width / 2 - at.x) * pull}px, ${(CANVAS.height / 2 - at.y) * pull}px) scale(${scale})`,
+    transform: `translate(${(stage.width / 2 - at.x) * pull}px, ${(stage.height / 2 - at.y) * pull}px) scale(${scale})`,
     transformOrigin: `${at.x}px ${at.y}px`,
   };
 };
@@ -159,6 +149,8 @@ export const PitchScene: React.FC<Props> = ({
   label = true,
   keeper = 'stock',
 }) => {
+  const stage = useStage();
+  const { x, y, keeperW: KEEPER_W, ballW: BALL_W } = stage;
   const o = OUTCOMES[mode];
   const t = frame - suspense; // 0 = the instant the ball leaves the foot
   const flying = t >= 0;
@@ -276,6 +268,7 @@ type LabelProps = { frame: number; mode: 'goal' | 'save'; suspense?: number };
 
 /** The GOAL!/SAVED! call, popped on the grass under the goal. */
 export const OutcomeLabel: React.FC<LabelProps> = ({ frame, mode, suspense = 30 }) => {
+  const { x, y, wide } = useStage();
   const labelT = frame - suspense - 18;
   const scale = labelT < 0 ? 0 : stepped(labelT / 9, 3);
   if (scale <= 0) return null;
@@ -285,11 +278,11 @@ export const OutcomeLabel: React.FC<LabelProps> = ({ frame, mode, suspense = 30 
       style={{
         position: 'absolute',
         left: x(50),
-        top: y(58),
+        top: y(wide ? 62 : 58),
         transform: `translateX(-50%) scale(${scale})`,
       }}
     >
-      <Headline size={104} depth={16} outline={8} {...GOLD}>
+      <Headline size={wide ? 86 : 104} depth={16} outline={8} {...GOLD}>
         {OUTCOMES[mode].label}
       </Headline>
     </div>

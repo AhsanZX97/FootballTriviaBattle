@@ -7,6 +7,7 @@ import { Panel } from '../components/Pixel';
 import { GOLD, Headline, SILVER } from '../components/Headline';
 import { PopIn } from '../components/PopIn';
 import { shake } from '../anim';
+import { useStage } from '../theme';
 
 const SUSPENSE = 34;
 const IMPACT = SUSPENSE + 15; // the keeper's glove reaches the ball
@@ -15,11 +16,12 @@ const WIN = 92;
 /** Sudden death, the other side of the ball: you are the keeper. */
 export const Save: React.FC = () => {
   const frame = useCurrentFrame();
+  const stage = useStage();
 
   const dim = interpolate(frame, [0, 8], [0.5, 0], { extrapolateRight: 'clamp' });
   const hit = shake(frame, IMPACT, 12, 12);
 
-  const camera = ballCamera({ frame, mode: 'save', strike: SUSPENSE, impact: IMPACT });
+  const camera = ballCamera({ frame, stage, mode: 'save', strike: SUSPENSE, impact: IMPACT });
   const won = frame >= WIN;
 
   return (
@@ -41,7 +43,9 @@ export const Save: React.FC = () => {
       {/* the call stays out of the camera move — zoomed it would burst the frame */}
       <OutcomeLabel frame={frame} mode="save" suspense={SUSPENSE} />
 
-      <AbsoluteFill style={{ alignItems: 'center', paddingTop: 80, gap: 30 }}>
+      <AbsoluteFill
+        style={{ alignItems: 'center', paddingTop: stage.wide ? 30 : 80, gap: stage.wide ? 18 : 30 }}
+      >
         <PopIn frame={frame} delay={0} rise={-30}>
           <Scoreboard
             you={{ score: 4, taken: 5 }}
@@ -62,19 +66,27 @@ export const Save: React.FC = () => {
       </AbsoluteFill>
 
       {won && (
-        <AbsoluteFill style={{ alignItems: 'center', justifyContent: 'center', paddingBottom: 200 }}>
+        <AbsoluteFill
+          style={{
+            alignItems: 'center',
+            // Portrait has room above SAVED!; at 16:9 the goalmouth is there,
+            // so the win lands under the call instead, just over the caption.
+            justifyContent: stage.wide ? 'flex-end' : 'center',
+            paddingBottom: stage.wide ? 152 : 200,
+          }}
+        >
           <PopIn frame={frame} delay={WIN}>
             <Panel
-              padding="44px 72px"
-              style={{ display: 'flex', alignItems: 'center', gap: 32 }}
+              padding={stage.wide ? '30px 56px' : '44px 72px'}
+              style={{ display: 'flex', alignItems: 'center', gap: stage.wide ? 26 : 32 }}
             >
               <img
                 src={staticFile('sprites/trophy.png')}
-                width={92}
-                height={88}
+                width={stage.wide ? 76 : 92}
+                height={stage.wide ? 73 : 88}
                 style={{ imageRendering: 'pixelated', display: 'block' }}
               />
-              <Headline size={64} depth={12} outline={7} {...GOLD}>
+              <Headline size={stage.wide ? 52 : 64} depth={12} outline={7} {...GOLD}>
                 YOU WIN!
               </Headline>
             </Panel>

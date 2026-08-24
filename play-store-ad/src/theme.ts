@@ -1,3 +1,6 @@
+import { useMemo } from 'react';
+import { useVideoConfig } from 'remotion';
+
 /**
  * Palette and layout constants lifted straight from the game so the ad and the
  * app read as the same product. Colours come from MatchScreen.css /
@@ -56,3 +59,45 @@ export const TIMELINE = ORDER.reduce(
 ).map;
 
 export const TOTAL_FRAMES = ORDER.reduce((n, id) => n + DURATION[id], 0);
+
+/**
+ * The 16:9 "stage" every pitch coordinate is measured against, sized exactly
+ * the way `background-size: cover` sizes bg.jpg into the frame — so the same
+ * percentages the game's CSS uses land in the same place at any aspect ratio.
+ * In portrait the stage overflows the sides (the crop the game shows on a
+ * phone); at 16:9 it is the frame itself.
+ */
+export type Stage = {
+  width: number;
+  height: number;
+  /** True for the 1920x1080 cut; scenes lay themselves out sideways. */
+  wide: boolean;
+  x: (pct: number) => number;
+  y: (pct: number) => number;
+  /** --keeper-w: 4.9% of the stage. Everything on the pitch derives from it. */
+  keeperW: number;
+  ballW: number;
+};
+
+export const makeStage = (width: number, height: number): Stage => {
+  const w = Math.max(width, (height * 16) / 9);
+  const h = (w * 9) / 16;
+  const left = (width - w) / 2;
+  const top = (height - h) / 2;
+  const keeperW = w * 0.049;
+  return {
+    width,
+    height,
+    wide: width > height,
+    x: (pct) => left + (pct / 100) * w,
+    y: (pct) => top + (pct / 100) * h,
+    keeperW,
+    ballW: keeperW * 0.45,
+  };
+};
+
+/** `makeStage` for the composition currently rendering. */
+export const useStage = (): Stage => {
+  const { width, height } = useVideoConfig();
+  return useMemo(() => makeStage(width, height), [width, height]);
+};

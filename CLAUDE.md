@@ -185,5 +185,51 @@ a silent account permanently claims a name. Generated names are
   either way, and `/healthz` reports `coinAwards`.
 
 
+## Meta Ads MCP (paid user acquisition)
+
+Meta ads are driven through Meta's **official** MCP server, registered at
+**user** scope:
+
+```
+claude mcp add --transport http meta-ads https://mcp.facebook.com/ads --scope user
+```
+
+User scope on purpose. Local scope keys the server off the project path, and
+`.claude.json` holds this repo under *two* keys differing only in drive-letter
+case (`c:/Users/...` and `C:/Users/...`). A local-scope server written to one
+is invisible to a session running under the other — it silently never appears
+in `/mcp`. User scope sidesteps the casing entirely.
+
+No developer app, no App Review, no long-lived token in a dotfile — auth is
+browser OAuth (PKCE + dynamic client registration) against the Business
+portfolio, scoped `ads_management ads_read catalog_management
+business_management pages_show_list instagram_basic ads_mcp_management`.
+Re-authorise with `/mcp` in an interactive session; a headless session cannot
+run the flow.
+
+**Requires Claude Code >= 2.1.241.** Meta's authorization-server metadata
+returns `issuer: https://www.facebook.com` while advertising itself at
+`https://mcp.facebook.com/ads`, which violates RFC 8414 s3.3. Older clients
+(2.1.223 confirmed) reject it with "Issuer mismatch in authorization server
+metadata" and never reach the browser. Newer ones tolerate it.
+
+Meta-side prerequisites before a campaign can actually spend — none of these
+are things the MCP can create for you:
+
+- a Business portfolio that owns the ad account, with the authorising person
+  on it as admin,
+- a Facebook Page linked to the portfolio (every ad runs *as* a Page),
+- a payment method on the ad account. New accounts also start under a low
+  daily spend limit that rises with billing history.
+
+Campaign objects the agent creates land **paused**; a human turns them on.
+Treat every write tool (budget changes, campaign creation, catalog edits) as
+spend-affecting and confirm before calling it. Docs:
+<https://developers.facebook.com/documentation/ads-commerce/ads-ai-connectors/ads-mcp-server/ads-mcp-server-overview>
+
+Google Ads has its own server (`google-ads-mcp`, stdio via pipx) already wired
+up for the same account family; the Play listing side is `play-store`.
+
+
 ## Additional Notes
 - Treat a question as a question — answer it, then stop. Treat an imperative ("add," "fix," "build") as the go-ahead to work: make reasonable assumptions, no preamble/summaries, only ask if genuinely blocked. Don't explain things I didn't ask about.

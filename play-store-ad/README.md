@@ -21,24 +21,29 @@ npm run render:all
 | `Portrait` | 1080x1920 | Google Ads app campaigns, Shorts/Reels, anywhere vertical |
 | `Landscape` | 1920x1080 | The Play listing's promo video (a YouTube link — YouTube wants 16:9) |
 
-Both play the *same* 30s cut: everything is authored on one 1080x1920 canvas
-(`src/Ad.tsx`), and `Landscape` scales that canvas into a framed phone panel
-with a headline column beside it that changes with each scene.
+Both play the *same* cut, frame for frame: `src/Ad.tsx` is the whole video, and
+each scene reads the composition size off `useStage()` (`src/theme.ts`) and lays
+itself out for it. At 16:9 the question sets its board and clock beside the
+panel instead of above it, the answers go two-across, the end card puts the icon
+next to the copy, and the captions run on one line — same beats, same lettering,
+same sound, reframed rather than re-written. The pitch needs no special case:
+its actors already sit on a 16:9 stage sized the way `background-size: cover`
+sizes `bg.jpg`, so at 1920x1080 that stage simply *is* the frame.
 
 ## Timeline
 
-30 fps, 900 frames. Scene boundaries live in one place, `TIMELINE` in
-`src/theme.ts` — move a number there and the sequences, the cut flashes and the
-landscape headlines all follow.
+30 fps, 790 frames. Scene lengths live in one place, `DURATION` in
+`src/theme.ts` — change one and `TIMELINE` shifts the rest, so the sequences,
+the cut flashes and the sound cues all follow.
 
 | Frames | Scene | Beat |
 | --- | --- | --- |
-| 0–74 | `Hook` | "Think you know football? Prove it." |
-| 75–254 | `Question` | Real question, clock draining, the tap lands on 1970 |
-| 255–404 | `Kick` | Penalty, keeper goes the wrong way, GOAL! |
-| 405–524 | `Online` | Quick match pairs you with a live opponent |
-| 525–674 | `Save` | Sudden death, you're in goal, SAVED! → YOU WIN |
-| 675–899 | `Cta` | Icon, name, promises, the ask |
+| 0–104 | `Hook` | "Think you know football? Prove it." |
+| 105–224 | `Question` | Real question, clock draining, the tap lands on 1970 |
+| 225–324 | `Kick` | Penalty, keeper goes the wrong way, GOAL! |
+| 325–444 | `Online` | Quick match pairs you with a live opponent |
+| 445–594 | `Save` | Sudden death, you're in goal, SAVED! → YOU WIN |
+| 595–789 | `Cta` | Icon, name, promises, the ask |
 
 ## Why it looks like the game
 

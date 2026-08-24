@@ -5,6 +5,7 @@ import { OutcomeLabel, PitchScene, ballCamera } from '../components/PitchScene';
 import { CaptionBar, Scoreboard } from '../components/Hud';
 import { PopIn } from '../components/PopIn';
 import { shake, stepped } from '../anim';
+import { useStage } from '../theme';
 
 const SUSPENSE = 30; // frames the ball sits on the spot before the strike
 const IMPACT = SUSPENSE + 21; // the ball hits the net
@@ -12,13 +13,22 @@ const IMPACT = SUSPENSE + 21; // the ball hits the net
 /** The reward half of a kick: right answer, penalty, back of the net. */
 export const Kick: React.FC = () => {
   const frame = useCurrentFrame();
+  const stage = useStage();
 
   // The match screen lifts its dark scrim the moment the scene takes over.
   const dim = interpolate(frame, [0, 8], [0.5, 0], { extrapolateRight: 'clamp' });
   const kickShake = shake(frame, IMPACT, 14, 16);
 
   // Short hold and a quick pull-out: the goal reads, then the scene cuts.
-  const camera = ballCamera({ frame, mode: 'goal', strike: SUSPENSE, impact: IMPACT, hold: 10, out: 16 });
+  const camera = ballCamera({
+    frame,
+    stage,
+    mode: 'goal',
+    strike: SUSPENSE,
+    impact: IMPACT,
+    hold: 10,
+    out: 16,
+  });
 
   const scored = frame >= IMPACT + 3;
   const pop = scored ? 1 + (1 - stepped((frame - IMPACT - 3) / 9, 3)) * 0.5 : 1;
@@ -35,7 +45,7 @@ export const Kick: React.FC = () => {
       {/* the call stays out of the camera move — zoomed it would burst the frame */}
       <OutcomeLabel frame={frame} mode="goal" suspense={SUSPENSE} />
 
-      <AbsoluteFill style={{ alignItems: 'center', paddingTop: 80 }}>
+      <AbsoluteFill style={{ alignItems: 'center', paddingTop: stage.wide ? 30 : 80 }}>
         <PopIn frame={frame} delay={0} rise={-30}>
           <Scoreboard
             you={{ score: scored ? 1 : 0, taken: scored ? 1 : 0 }}
