@@ -28,7 +28,14 @@ export const Save: React.FC = () => {
     >
       <AbsoluteFill style={camera}>
         <Stadium dim={dim} />
-        <PitchScene frame={frame} mode="save" suspense={SUSPENSE} flames label={false} />
+        <PitchScene
+          frame={frame}
+          mode="save"
+          suspense={SUSPENSE}
+          flames
+          label={false}
+          keeper="greenwall"
+        />
       </AbsoluteFill>
 
       {/* the call stays out of the camera move — zoomed it would burst the frame */}

@@ -2,7 +2,7 @@ import React from 'react';
 import { AbsoluteFill, Easing, interpolate, staticFile } from 'remotion';
 import { CANVAS } from '../theme';
 import { GOLD, Headline } from './Headline';
-import { SpriteStrip, loopFrame } from './SpriteStrip';
+import { SpriteGrid, SpriteStrip, loopFrame } from './SpriteStrip';
 import { FlameTrail } from './FlameTrail';
 
 /**
@@ -23,10 +23,32 @@ const y = (pct: number) => STAGE_TOP + (pct / 100) * STAGE_H;
 
 /** --keeper-w: 4.9% of the stage, and everything else derives from it. */
 const KEEPER_W = STAGE_W * 0.049;
-const KEEPER_H = (KEEPER_W * 127) / 134;
-const DIVE_W = KEEPER_W * 1.184;
-const DIVE_H = (DIVE_W * 83) / 94;
 const BALL_W = KEEPER_W * 0.45;
+
+/**
+ * The keepers, straight out of the game: the stock one and the shop's skins.
+ * Each sheet came in its own shape, so every keeper carries its own cell
+ * aspect and `scale` — the dive box is widened so the character renders at the
+ * same native pixel scale as his own idle sheet and doesn't jump size when the
+ * sheet swaps (the game's PitchScene.css does the identical sum: 1.184 = 94/134
+ * for the stock keeper, 1.2523 = 402/321 for Green Wall).
+ */
+type KeeperArt = {
+  idle: { src: string; cols: number; rows: number; frames: number; loop: number; aspect: number };
+  dive: { src: string; frames: number; aspect: number; scale: number };
+};
+
+const KEEPERS: Record<'stock' | 'greenwall', KeeperArt> = {
+  stock: {
+    idle: { src: 'sprites/gk-idle-strip.png', cols: 16, rows: 1, frames: 16, loop: 48, aspect: 134 / 127 },
+    dive: { src: 'sprites/gk-dive-strip.png', frames: 6, aspect: 94 / 83, scale: 1.184 },
+  },
+  // Green Wall (gk_green_wall, 200 coins). Idle is a 4x3 grid over 1.56s.
+  greenwall: {
+    idle: { src: 'sprites/gk-greenwall-idle.png', cols: 4, rows: 3, frames: 12, loop: 47, aspect: 321 / 311 },
+    dive: { src: 'sprites/gk-greenwall-dive.png', frames: 6, aspect: 402 / 371, scale: 1.2523 },
+  },
+};
 
 /** CSS `steps(n, end)`: hold each slice, then snap to the final value. */
 const stepped = (t: number, n: number) => {
@@ -122,6 +144,8 @@ type Props = {
   suspense?: number;
   /** Set the shot on fire — pixel flames dragged behind the ball. */
   flames?: boolean;
+  /** Which keeper mans the goal; 'greenwall' is the shop skin. */
+  keeper?: keyof typeof KEEPERS;
   /** Render the GOAL!/SAVED! label. Off when a scene places it itself, e.g.
    *  outside a camera move that would blow it up with the pitch. */
   label?: boolean;
@@ -133,6 +157,7 @@ export const PitchScene: React.FC<Props> = ({
   suspense = 30,
   flames = false,
   label = true,
+  keeper = 'stock',
 }) => {
   const o = OUTCOMES[mode];
   const t = frame - suspense; // 0 = the instant the ball leaves the foot
@@ -156,8 +181,10 @@ export const PitchScene: React.FC<Props> = ({
 
   // --- keeper ---------------------------------------------------------------
   const diving = t >= 0;
-  const diveIndex = Math.min(5, Math.floor(Math.max(0, t) / 3)); // 6 frames over 0.6s
-  const idleIndex = loopFrame(frame, 16, 48); // 16 frames over 1.6s
+  const art = KEEPERS[keeper];
+  const diveW = KEEPER_W * art.dive.scale;
+  const diveIndex = Math.min(art.dive.frames - 1, Math.floor(Math.max(0, t) / 3)); // over 0.6s
+  const idleIndex = loopFrame(frame, art.idle.frames, art.idle.loop);
   const keeperP = diving ? stepped(t / o.keeper.frames, o.keeper.steps) : 0;
   const keeperX = x(interpolate(keeperP, [0, 1], [50, o.keeper.to[0]]));
   const keeperY = y(interpolate(keeperP, [0, 1], [51, o.keeper.to[1]]));
@@ -178,19 +205,21 @@ export const PitchScene: React.FC<Props> = ({
       >
         {diving ? (
           <SpriteStrip
-            src="sprites/gk-dive-strip.png"
-            frames={6}
+            src={art.dive.src}
+            frames={art.dive.frames}
             index={diveIndex}
-            width={DIVE_W}
-            height={DIVE_H}
+            width={diveW}
+            height={diveW / art.dive.aspect}
           />
         ) : (
-          <SpriteStrip
-            src="sprites/gk-idle-strip.png"
-            frames={16}
+          <SpriteGrid
+            src={art.idle.src}
+            cols={art.idle.cols}
+            rows={art.idle.rows}
+            frames={art.idle.frames}
             index={idleIndex}
             width={KEEPER_W}
-            height={KEEPER_H}
+            height={KEEPER_W / art.idle.aspect}
           />
         )}
       </div>
