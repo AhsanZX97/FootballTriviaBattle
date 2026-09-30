@@ -2,7 +2,8 @@ import { useEffect, useLayoutEffect, useRef, useState, useSyncExternalStore } fr
 import type { Kick, Stage } from '../../types/match'
 import { getResult, KICKS_PER_SIDE } from '../../game/shootout'
 import { matchStore, QUESTION_TIME_SECONDS } from './store'
-import { PitchScene, preloadSceneArt, type SceneFeedback } from './components/PitchScene'
+import { PitchScene, type SceneFeedback } from './components/PitchScene'
+import type { ShotEvent } from './engine/shotTimeline'
 import { CoinReward } from './components/CoinReward'
 import { PreMatchCountdown } from '../lobby/components/PreMatchCountdown'
 import { fadeOutCrowd, play, playGoalCelebration } from '../../services/sound'
@@ -11,19 +12,6 @@ import { useBottomBanner } from '../../services/ads'
 import { Sprite } from '../../components/Sprite'
 import './MatchScreen.css'
 import { useT } from '../../services/i18n/store'
-
-/** Animation screen duration: 1s suspense delay + 0.7s animation + a beat to read the outcome. */
-export const FEEDBACK_MS = 2600
-
-/** Ball leaves the foot at PitchScene.css's --suspense mark. */
-const KICK_SOUND_MS = 1000
-/** Ball lands (net/keeper/crowd) at --suspense + flight time per outcome. */
-const LAND_MS: Record<SceneFeedback, number> = {
-  goal: 1700,
-  miss: 1700,
-  save: 1500,
-  concede: 1700,
-}
 
 function feedbackOf(stage: Stage, correct: boolean): SceneFeedback {
   if (stage === 'shoot') return correct ? 'goal' : 'miss'
@@ -68,7 +56,7 @@ export function MatchScreen({ onExit, onMainMenu }: Props) {
   // already flipped to the next kicker by the time an opponent kick animates
   const [feedbackStage, setFeedbackStage] = useState<Stage>('shoot')
   const [timeLeft, setTimeLeft] = useState(QUESTION_TIME_SECONDS)
-  const kicksSeenRef = useRef(0)
+  const kicksSeenRef = useRef(state.shootout.kicks.length)
 
   const question = matchStore.getCurrentQuestion()
   const result = getResult(state.shootout)
@@ -77,11 +65,6 @@ export function MatchScreen({ onExit, onMainMenu }: Props) {
   const goalSound = auth.customization.goalSound
   // the keeper we shoot against wears the opponent's equipped skin
   const opponentGkSkin = state.opponentGkSkin ?? undefined
-
-  // warm the equipped skins' sprite sheets before the first animation needs them
-  useEffect(() => {
-    preloadSceneArt(auth.customization.ballSkin, auth.customization.gkSkin, opponentGkSkin)
-  }, [auth.customization.ballSkin, auth.customization.gkSkin, opponentGkSkin])
 
   // countdown — paused while feedback plays and once the match is over. During
   // an opponent's turn it just ticks cosmetically: the server owns their real timeout.
@@ -99,33 +82,34 @@ export function MatchScreen({ onExit, onMainMenu }: Props) {
     return () => clearTimeout(t)
   }, [state.phase, state.shootout.stage, timeLeft, feedback, result, myTurn])
 
-  // sound track for the feedback animation: kick when the ball launches, the
-  // crowd + net when it lands. Cleanup fades the (30s-long) crowd file out as
-  // the next question appears, and kills pending sounds if the screen unmounts.
-  //
-  // 'goal' is the only outcome where the player scores, so it's the one the
-  // shop's goal celebration replaces; a save still gets the stock cheer.
+  // Phaser cues audio and completion from the same clock as its sprites.
   useEffect(() => {
     if (!feedback) return
-    const kickT = setTimeout(() => play('kick'), KICK_SOUND_MS)
-    const landT = setTimeout(() => {
-      if (feedback === 'goal' || feedback === 'concede') play('netRipple')
-      if (feedback === 'goal') playGoalCelebration(goalSound)
-      else play(feedback === 'save' ? 'cheer' : 'shock')
-    }, LAND_MS[feedback])
-    return () => {
-      clearTimeout(kickT)
-      clearTimeout(landT)
-      fadeOutCrowd()
+    return () => fadeOutCrowd()
+  }, [feedback])
+
+  function onPitchEvent(event: ShotEvent, outcome: SceneFeedback) {
+    if (feedback !== outcome || state.connectionLost) return
+    if (event === 'kick') play('kick')
+    if (event === 'impact') {
+      if (outcome === 'goal' || outcome === 'concede') play('netRipple')
+      if (outcome === 'goal') playGoalCelebration(goalSound)
+      else play(outcome === 'save' ? 'cheer' : 'shock')
     }
-  }, [feedback, goalSound])
+    if (event === 'complete') {
+      // Spectated kicks were already applied by the server. Only send our own.
+      if (feedbackIsMine) matchStore.submitAnswer1v1(outcome === 'goal' || outcome === 'save')
+      setFeedback(null)
+      setTimeLeft(QUESTION_TIME_SECONDS)
+    }
+  }
 
   // kickoff / full-time whistles. phase re-enters 'active' after each rematch,
   // so both matches get a kickoff whistle; `!!result` flips exactly once per match.
   useEffect(() => {
     if (state.phase === 'active') play('startWhistle')
   }, [state.phase])
-  const matchOver = result !== null
+  const matchOver = result !== null && (!feedback || state.opponentLeft)
   useEffect(() => {
     if (matchOver) play('finalWhistle')
   }, [matchOver])
@@ -133,19 +117,6 @@ export function MatchScreen({ onExit, onMainMenu }: Props) {
   // ad banner joins the result screen; a rematch (result gone) or the
   // connection-lost screen takes it back down
   useBottomBanner(matchOver && !state.connectionLost)
-
-  // let the animation play, then resolve the kick and reset the clock. A
-  // spectate-side animation (the opponent's kick) already had its outcome
-  // applied via kickResolved — only my own kick needs sending on.
-  useEffect(() => {
-    if (!feedback) return
-    const t = setTimeout(() => {
-      if (feedbackIsMine) matchStore.submitAnswer1v1(feedback === 'goal' || feedback === 'save')
-      setFeedback(null)
-      setTimeLeft(QUESTION_TIME_SECONDS)
-    }, FEEDBACK_MS)
-    return () => clearTimeout(t)
-  }, [feedback, feedbackIsMine])
 
   // Replay the opponent's resolved kick as a feedback animation — their side
   // of the match store already applied it via kickResolved. Layout
@@ -185,7 +156,7 @@ export function MatchScreen({ onExit, onMainMenu }: Props) {
     )
   }
 
-  if (result) {
+  if (result && (!feedback || state.opponentLeft)) {
     return (
       <main className="match match--message">
         <CoinReward amount={state.coinsAwarded} />
@@ -275,6 +246,16 @@ export function MatchScreen({ onExit, onMainMenu }: Props) {
 
   return (
     <main className={`match${showScene ? ' match--scene' : ''}`}>
+      <PitchScene
+        stage={feedback ? feedbackStage : shootout.stage}
+        feedback={feedback}
+        opponentLabel={opponentLabel}
+        ballSkin={auth.customization.ballSkin}
+        gkSkin={auth.customization.gkSkin}
+        opponentGkSkin={opponentGkSkin}
+        dimmed={!showScene}
+        onEvent={onPitchEvent}
+      />
       <section className="match__scoreboard" aria-label={t('match.scoreboardAria')}>
         <div className="match__team">
           <span className="match__team-name">{t('match.you')}</span>
@@ -304,17 +285,7 @@ export function MatchScreen({ onExit, onMainMenu }: Props) {
         )}
       </p>
 
-      {feedback ? (
-        // animation screen: scene replaces the question until the kick resolves
-        <PitchScene
-          stage={feedbackStage}
-          feedback={feedback}
-          opponentLabel={opponentLabel}
-          ballSkin={auth.customization.ballSkin}
-          gkSkin={auth.customization.gkSkin}
-          opponentGkSkin={opponentGkSkin}
-        />
-      ) : showQuestion ? (
+      {!feedback && showQuestion ? (
         <>
           <div className={`match__timer${timeLeft <= 3 ? ' match__timer--low' : ''}`}>
             <span className="match__timer-count">{timeLeft}</span>
@@ -341,21 +312,9 @@ export function MatchScreen({ onExit, onMainMenu }: Props) {
             </div>
           </section>
         </>
-      ) : (
-        // spectating (or the brief gap while my own kick is in flight to the server)
-        <>
-          <PitchScene
-            stage={shootout.stage}
-            feedback={null}
-            ballSkin={auth.customization.ballSkin}
-            gkSkin={auth.customization.gkSkin}
-            opponentGkSkin={opponentGkSkin}
-          />
-          {!myTurn && (
-            <p className="match__waiting">{t('match.waitingFor', { name: opponentLabel })}</p>
-          )}
-        </>
-      )}
+      ) : !feedback && !myTurn ? (
+        <p className="match__waiting">{t('match.waitingFor', { name: opponentLabel })}</p>
+      ) : null}
     </main>
   )
 }

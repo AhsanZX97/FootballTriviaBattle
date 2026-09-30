@@ -29,6 +29,7 @@
 /* lift the UI above the ::before overlay; the .scene positions itself */
 .match > :not(.scene) {
   position: relative;
+  z-index: 1;
 }
 
 @keyframes match-fade-in {

@@ -91,11 +91,10 @@ export const BALL_SKIN_SOURCES: Record<string, { thumb: string; spin: string }> 
  * from each source's unevenly-spaced (sometimes colliding) frames via
  * connected-component detection, the same approach the stock
  * gk-dive-strip.png used. Frame count varies by keeper too (5 or 6).
- * `cssId` selects the matching keyframes/box-size rule in PitchScene.css
- * (`.scene__keeper--<cssId>`) — every keeper's grid shape, cell size and dive
- * frame count differs enough that each needs its own rule; there's no single
- * generic one to parameterize. Keyed by the catalogue id above; an id with no
- * entry here falls back to the stock keeper. */
+ * Phaser's pitchArt metadata describes each grid and dive strip. `cssId` is
+ * retained for catalogue consumers; gameplay no longer uses CSS keyframes.
+ * Keyed by the catalogue id above; an id with no entry here falls back to the
+ * stock keeper. */
 export const GK_SKIN_SOURCES: Record<string, { thumb: string; idle: string; dive: string; cssId: string }> = {
   gk_green_wall: {
     thumb: gkGreenWallThumbSrc,
