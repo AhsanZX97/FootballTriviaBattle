@@ -29,24 +29,30 @@ describe('Phaser pitch art', () => {
     expect(resolvePitchArt({ stage: 'shoot', ballSkin: 'missing' }).spin.columns).toBe(4)
   })
 
-  // The closer camera intentionally crops the sides of the stadium. The user's
-  // mobile framing request supersedes the old whole-goal zoom cap.
-  it.each([[390, 844], [844, 390], [360, 640], [360, 800]])('fills the screen without stretching at %s x %s', (width, height) => {
+  it.each([[390, 844], [844, 390], [360, 640], [360, 800], [800, 1280]])('covers the width without stretching at %s x %s', (width, height) => {
     const layout = pitchLayout(width, height)
     expect(layout.x).toBeLessThanOrEqual(0)
-    expect(layout.y).toBeLessThanOrEqual(0)
     expect(layout.x + layout.width).toBeGreaterThanOrEqual(width)
-    expect(layout.y + layout.height).toBeGreaterThanOrEqual(height)
     expect(layout.width / layout.height).toBeCloseTo(16 / 9)
   })
 
-  it('brings the ball into the foreground on a tall phone', () => {
+  // Posts sit at 35.2% and 66.7% of the stadium art.
+  it.each([[390, 844], [360, 640], [360, 800], [412, 915], [800, 1280]])('shows both goal posts on a %s x %s portrait screen', (width, height) => {
+    const layout = pitchLayout(width, height)
+    expect(layout.x + 0.352 * layout.width).toBeGreaterThan(0)
+    expect(layout.x + 0.667 * layout.width).toBeLessThan(width)
+    expect(layout.x + 0.5 * layout.width).toBeCloseTo(width / 2)
+  })
+
+  it('centres the stadium vertically when it is shorter than a tall phone', () => {
     const layout = pitchLayout(390, 844)
-    expect(layout.x + 0.5 * layout.width).toBeCloseTo(195)
-    expect(layout.y + 0.8 * layout.height).toBeCloseTo(844 * 0.8)
-    // The old capped view rendered the ball just 17px wide on this phone.
-    expect(layout.width * 0.049 * 0.45).toBeGreaterThan(30)
-    expect(layout.x + 0.39 * layout.width).toBeGreaterThan(0)
-    expect(layout.x + 0.61 * layout.width).toBeLessThan(390)
+    expect(layout.height).toBeLessThan(844)
+    expect(layout.y).toBeCloseTo((844 - layout.height) / 2)
+  })
+
+  it('still fills a landscape screen edge to edge', () => {
+    const layout = pitchLayout(844, 390)
+    expect(layout.y).toBeLessThanOrEqual(0)
+    expect(layout.y + layout.height).toBeGreaterThanOrEqual(390)
   })
 })

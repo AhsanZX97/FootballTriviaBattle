@@ -29,10 +29,22 @@ export function resolvePitchArt(skins: PitchSkins) {
     diveScale: keeper ? diveScale[keeperId!] : 1.184,
   }
 }
+// Share of the stadium width that must fit on screen: both posts plus a margin.
+const GOAL_VIEW = 0.4
+
 export function pitchLayout(width: number, height: number) {
-  // Fill the mobile screen and bring the penalty spot into the foreground.
-  // Crop the stadium sides in portrait, keeping every actor on the same scale.
-  const pitchWidth = Math.max(width, height * 16 / 9)
+  // Cover the screen, but never zoom past the whole goal. On a tall phone that
+  // leaves the art short of the screen; `PITCH_BANDS` fill above and below it.
+  const pitchWidth = Math.min(Math.max(width, height * 16 / 9), width / GOAL_VIEW)
   const pitchHeight = pitchWidth * 9 / 16
   return { x: (width - pitchWidth) / 2, y: (height - pitchHeight) / 2, width: pitchWidth, height: pitchHeight }
 }
+
+export interface Band { x: number; y: number; width: number; height: number }
+/** Source-pixel regions of bg.jpg (1280x720) that repeat seamlessly. */
+export const PITCH_BANDS = {
+  // Upper stand tier plus the dark divider beneath it; stacks upward from row 25.
+  crowd: { x: 0, y: 25, width: 1280, height: 115 },
+  // One dark + light grass stripe, clear of pitch markings between the posts' view.
+  grass: { x: 384, y: 525, width: 512, height: 88 },
+} satisfies Record<string, Band>

@@ -6,8 +6,8 @@ import type { PitchState } from '../contracts'
 const harness = vi.hoisted(() => {
   const objects: any[] = []
   const textures = new Map<string, any>()
-  function object(x: number, y: number, key?: string) {
-    const value: any = { x, y, key, visible: true, alpha: 1, width: 100, height: 100 }
+  function object(x: number, y: number, key?: string, frame?: string | number) {
+    const value: any = { x, y, key, frame, visible: true, alpha: 1, width: 100, height: 100 }
     for (const method of ['setOrigin', 'setDepth', 'setScrollFactor', 'setStroke', 'setShadow']) {
       value[method] = () => value
     }
@@ -88,6 +88,24 @@ describe('Phaser match renderer', () => {
     createPitchGame(parent, state, { onEvent: vi.fn(), onReady: vi.fn(), onError: vi.fn() })
     expect(harness.getConfig().scale).toMatchObject({ width: 1170, height: 2532, zoom: 1 / 3 })
     vi.unstubAllGlobals()
+  })
+
+  it('tiles crowd above and grass below when a tall phone outgrows the stadium art', () => {
+    const scene = () => harness.getScene()
+    createPitchGame(document.createElement('div'), state, { onEvent: vi.fn(), onReady: vi.fn(), onError: vi.fn() })
+    scene().scale = { width: 390, height: 844 }
+    scene().update(0, 16)
+    const fills = harness.objects.filter((o) => o.key === 'pitch' && o.frame && o.visible)
+    const crowd = fills.filter((o) => o.frame === 'crowd')
+    const grass = fills.filter((o) => o.frame === 'grass')
+    expect(Math.min(...crowd.map((o) => o.y))).toBeLessThanOrEqual(0)
+    expect(Math.max(...grass.map((o) => o.y + o.displayHeight))).toBeGreaterThanOrEqual(844)
+    expect(Math.min(...grass.map((o) => o.x))).toBeLessThanOrEqual(0)
+    expect(Math.max(...grass.map((o) => o.x + o.displayWidth))).toBeGreaterThanOrEqual(390)
+    expect(harness.objects.filter((o) => o.key === 'pitch' && o.frame === '__BASE')).toHaveLength(1)
+    scene().scale = { width: 844, height: 390 }
+    scene().update(0, 16)
+    expect(harness.objects.filter((o) => o.key === 'pitch' && o.frame !== '__BASE' && o.visible)).toHaveLength(0)
   })
 
   it('smooths the keeper and ball while the stadium keeps crisp pixels', () => {

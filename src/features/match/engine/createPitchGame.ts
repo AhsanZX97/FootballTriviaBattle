@@ -1,6 +1,6 @@
 import Phaser from 'phaser'
 import type { PitchCallbacks, PitchGame, PitchState } from './contracts'
-import { pitchLayout, resolvePitchArt, type Sheet } from './pitchArt'
+import { PITCH_BANDS, pitchLayout, resolvePitchArt, type Sheet } from './pitchArt'
 import { FEEDBACK_MS, KICK_MS, ShotTimeline, impactTime, shotPose, type KeeperReaction } from './shotTimeline'
 import backgroundSrc from '../../../assets/bg.jpg'
 
@@ -28,6 +28,7 @@ export function createPitchGame(parent: HTMLElement, initial: PitchState, callba
     private ball!: Phaser.GameObjects.Sprite
     private label!: Phaser.GameObjects.Text
     private shade!: Phaser.GameObjects.Rectangle
+    private fills: Phaser.GameObjects.Image[] = []
     private shot: ShotTimeline | null = null
     private reaction: KeeperReaction = 'wrong-way'
     private idleElapsed = 0
@@ -58,14 +59,17 @@ export function createPitchGame(parent: HTMLElement, initial: PitchState, callba
           texture.add(frame, 0, (frame % sheet.columns) * width, Math.floor(frame / sheet.columns) * height, width, height)
         }
       }
-      this.pitch = this.add.image(0, 0, 'pitch').setOrigin(0)
+      const pitchTexture = this.textures.get('pitch')
+      for (const [name, band] of Object.entries(PITCH_BANDS)) pitchTexture.add(name, 0, band.x, band.y, band.width, band.height)
+      // Adding frames makes the first one the texture's default, so ask for the whole image.
+      this.pitch = this.add.image(0, 0, 'pitch', '__BASE').setOrigin(0)
       this.keeper = this.add.sprite(0, 0, stock.idle.src, 0).setOrigin(0.5, 1)
       this.ball = this.add.sprite(0, 0, stock.ball.src, 0)
       this.label = this.add.text(0, 0, '', {
         fontFamily: '"Press Start 2P", monospace', fontSize: `${16 * pixelRatio}px`,
         color: '#ffcf1a', stroke: '#0a0a0a', strokeThickness: 4 * pixelRatio, align: 'center',
-      }).setOrigin(0.5)
-      this.shade = this.add.rectangle(0, 0, 1, 1, 0x020a06, 0.72).setOrigin(0)
+      }).setOrigin(0.5).setDepth(2)
+      this.shade = this.add.rectangle(0, 0, 1, 1, 0x020a06, 0.72).setOrigin(0).setDepth(3)
       this.ready = true
       this.startShot()
       this.paint()
@@ -119,6 +123,7 @@ export function createPitchGame(parent: HTMLElement, initial: PitchState, callba
         Math.round(layout.x + point.x * layout.width), Math.round(layout.y + point.y * layout.height),
       ] as const
       this.pitch.setPosition(layout.x, layout.y).setDisplaySize(layout.width, layout.height)
+      this.paintFills(layout)
       const diving = pose?.diving ?? false
       const keeperSheet = diving ? art.dive : art.idle
       const keeperFrame = diving
@@ -135,6 +140,32 @@ export function createPitchGame(parent: HTMLElement, initial: PitchState, callba
         .setVisible(!!state.feedback && visualTime >= impactTime(state.feedback))
       this.shade.setDisplaySize(width, height).setVisible(state.dimmed)
       // Question UI stays accessible above the canvas; actors keep idling behind it.
+    }
+
+    /** Extend the stadium past its edges when a tall phone outgrows the 16:9 art. */
+    private paintFills(layout: ReturnType<typeof pitchLayout>) {
+      const { width, height } = this.scale
+      const scale = layout.width / this.textures.get('pitch').getSourceImage().width
+      let used = 0
+      const tile = (frame: keyof typeof PITCH_BANDS, x: number, y: number) => {
+        const band = PITCH_BANDS[frame]
+        // The crowd replaces the art's roof strip; grass only ever sits below the actors.
+        const image = this.fills[used++] ??= this.add.image(0, 0, 'pitch', frame).setOrigin(0)
+        // Overlap by a pixel so rounding never opens a seam between tiles.
+        image.setTexture('pitch', frame).setDepth(frame === 'crowd' ? 1 : -1).setVisible(true)
+          .setPosition(Math.floor(x), Math.floor(y))
+          .setDisplaySize(Math.ceil(band.width * scale) + 1, Math.ceil(band.height * scale) + 1)
+      }
+      const crowd = PITCH_BANDS.crowd.height * scale
+      for (let y = layout.y + PITCH_BANDS.crowd.y * scale - crowd; y + crowd > 0; y -= crowd) tile('crowd', layout.x, y)
+      const grass = PITCH_BANDS.grass
+      const [grassWidth, grassHeight] = [grass.width * scale, grass.height * scale]
+      const left = layout.x + grass.x * scale
+      const startX = left - Math.ceil(left / grassWidth) * grassWidth
+      for (let y = layout.y + layout.height; y < height; y += grassHeight) {
+        for (let x = startX; x < width; x += grassWidth) tile('grass', x, y)
+      }
+      for (let index = used; index < this.fills.length; index++) this.fills[index].setVisible(false)
     }
   }
 
