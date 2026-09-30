@@ -38,6 +38,7 @@ const harness = vi.hoisted(() => {
         getSourceImage: () => ({ width: 1600, height: 100 }),
         has: () => false,
         add: vi.fn(),
+        setFilter: vi.fn(),
       }),
       on: vi.fn(),
     }
@@ -54,7 +55,12 @@ const harness = vi.hoisted(() => {
   return { objects, textures, Scene, Game, destroy, getScene: () => scene, getConfig: () => config }
 })
 
-vi.mock('phaser', () => ({ default: { Scene: harness.Scene, Game: harness.Game, AUTO: 0, Scale: { RESIZE: 5 } } }))
+vi.mock('phaser', () => ({
+  default: {
+    Scene: harness.Scene, Game: harness.Game, AUTO: 0,
+    Scale: { NONE: 0, RESIZE: 5 }, Textures: { FilterMode: { LINEAR: 0, NEAREST: 1 } },
+  },
+}))
 import { createPitchGame } from '../createPitchGame'
 
 const state: PitchState = { stage: 'shoot', feedback: null, label: null, dimmed: false }
@@ -69,9 +75,29 @@ describe('Phaser match renderer', () => {
   it('creates a pixel-art engine with native input left to the existing UI', () => {
     const onReady = vi.fn()
     createPitchGame(document.createElement('div'), state, { onEvent: vi.fn(), onReady, onError: vi.fn() })
-    expect(harness.getConfig()).toMatchObject({ pixelArt: true, audio: { noAudio: true }, scale: { mode: 5 } })
+    expect(harness.getConfig()).toMatchObject({ pixelArt: true, audio: { noAudio: true }, scale: { mode: 0 } })
     expect(onReady).toHaveBeenCalledOnce()
     expect(harness.objects.length).toBeGreaterThanOrEqual(4)
+  })
+
+  it('renders at device pixel density so the phone does not upscale the canvas', () => {
+    vi.stubGlobal('devicePixelRatio', 3)
+    const parent = document.createElement('div')
+    Object.defineProperty(parent, 'clientWidth', { value: 390 })
+    Object.defineProperty(parent, 'clientHeight', { value: 844 })
+    createPitchGame(parent, state, { onEvent: vi.fn(), onReady: vi.fn(), onError: vi.fn() })
+    expect(harness.getConfig().scale).toMatchObject({ width: 1170, height: 2532, zoom: 1 / 3 })
+    vi.unstubAllGlobals()
+  })
+
+  it('smooths the keeper and ball while the stadium keeps crisp pixels', () => {
+    createPitchGame(document.createElement('div'), state, { onEvent: vi.fn(), onReady: vi.fn(), onError: vi.fn() })
+    const smoothed = [...harness.textures.entries()].filter(([, texture]) => texture.setFilter.mock.calls.length)
+    expect(smoothed.map(([key]) => key)).toEqual(expect.arrayContaining([
+      expect.stringContaining('gk-idle-strip'), expect.stringContaining('gk-dive-strip'), expect.stringContaining('ball'),
+    ]))
+    for (const [, texture] of smoothed) expect(texture.setFilter).toHaveBeenCalledWith(0)
+    expect(harness.textures.get('pitch').setFilter).not.toHaveBeenCalled()
   })
 
   it('moves the ball, reveals the outcome at impact, and emits completion once', () => {

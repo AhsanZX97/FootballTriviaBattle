@@ -10,6 +10,12 @@ export function createPitchGame(parent: HTMLElement, initial: PitchState, callba
   let state = initial
   let disposed = false
   const reducedMotion = window.matchMedia?.('(prefers-reduced-motion: reduce)').matches ?? false
+  // Phaser 3 sizes the canvas in CSS pixels; draw at device pixels and zoom back
+  // down, otherwise a 3x phone stretches every frame. Capped for fill-rate.
+  const pixelRatio = Math.min(3, Math.max(1, window.devicePixelRatio || 1))
+  const deviceSize = () => [
+    Math.round((parent.clientWidth || 844) * pixelRatio), Math.round((parent.clientHeight || 390) * pixelRatio),
+  ] as const
   const sheets = new Map<string, Sheet>()
   const stock = resolvePitchArt({ stage: 'shoot' })
   for (const art of [stock, resolvePitchArt({ ...initial, stage: 'shoot' }), resolvePitchArt({ ...initial, stage: 'keep' })]) {
@@ -42,6 +48,9 @@ export function createPitchGame(parent: HTMLElement, initial: PitchState, callba
       for (const sheet of sheets.values()) {
         if (!this.textures.exists(sheet.src)) continue
         const texture = this.textures.get(sheet.src)
+        // Actor art is painted at high resolution and shrunk on screen; nearest
+        // sampling turns that into stair-stepped edges. The stadium stays pixelated.
+        texture.setFilter(Phaser.Textures.FilterMode.LINEAR)
         const source = texture.getSourceImage()
         const width = source.width / sheet.columns
         const height = source.height / sheet.rows
@@ -53,8 +62,8 @@ export function createPitchGame(parent: HTMLElement, initial: PitchState, callba
       this.keeper = this.add.sprite(0, 0, stock.idle.src, 0).setOrigin(0.5, 1)
       this.ball = this.add.sprite(0, 0, stock.ball.src, 0)
       this.label = this.add.text(0, 0, '', {
-        fontFamily: '"Press Start 2P", monospace', fontSize: '16px',
-        color: '#ffcf1a', stroke: '#0a0a0a', strokeThickness: 4, align: 'center',
+        fontFamily: '"Press Start 2P", monospace', fontSize: `${16 * pixelRatio}px`,
+        color: '#ffcf1a', stroke: '#0a0a0a', strokeThickness: 4 * pixelRatio, align: 'center',
       }).setOrigin(0.5)
       this.shade = this.add.rectangle(0, 0, 1, 1, 0x020a06, 0.72).setOrigin(0)
       this.ready = true
@@ -122,7 +131,7 @@ export function createPitchGame(parent: HTMLElement, initial: PitchState, callba
       this.actor(this.ball, spinning ? art.spin : art.ball, spinning ? stock.spin : stock.ball, ballFrame, layout.width * 0.049 * 0.45)
       this.ball.setPosition(...position(ball)).setFlipX(state.feedback === 'miss' || state.feedback === 'concede')
       this.label.setText(state.label ?? '').setPosition(width / 2, layout.y + layout.height * 0.61)
-        .setFontSize(Math.max(10, Math.min(24, width / Math.max(26, (state.label?.length ?? 0) + 4))))
+        .setFontSize(Math.max(10 * pixelRatio, Math.min(24 * pixelRatio, width / Math.max(26, (state.label?.length ?? 0) + 4))))
         .setVisible(!!state.feedback && visualTime >= impactTime(state.feedback))
       this.shade.setDisplaySize(width, height).setVisible(state.dimmed)
       // Question UI stays accessible above the canvas; actors keep idling behind it.
@@ -134,14 +143,19 @@ export function createPitchGame(parent: HTMLElement, initial: PitchState, callba
     type: Phaser.AUTO, parent, backgroundColor: '#163e25',
     pixelArt: true, roundPixels: true, antialias: false,
     audio: { noAudio: true }, input: { mouse: false, touch: false, keyboard: false },
-    scale: { mode: Phaser.Scale.RESIZE, width: parent.clientWidth || 844, height: parent.clientHeight || 390 },
+    scale: { mode: Phaser.Scale.NONE, width: deviceSize()[0], height: deviceSize()[1], zoom: 1 / pixelRatio },
     scene: [scene], banner: false,
   })
+  const resizer = typeof ResizeObserver === 'undefined' ? null : new ResizeObserver(() => {
+    if (!disposed) game.scale.resize(...deviceSize())
+  })
+  resizer?.observe(parent)
   return {
     update: (next) => scene.receive(next),
     destroy: () => {
       if (disposed) return
       disposed = true
+      resizer?.disconnect()
       game.destroy(true)
     },
   }
