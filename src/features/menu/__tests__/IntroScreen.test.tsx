@@ -114,6 +114,16 @@ describe('IntroScreen', () => {
     fireEvent.click(shopButton)
     expect(onShop).toHaveBeenCalled()
   })
+
+  it('offers the dev test mode only when the app wires it up', () => {
+    const onTestMode = vi.fn()
+    const { unmount } = render(<IntroScreen />)
+    expect(screen.queryByRole('button', { name: /test mode/i })).toBeNull()
+    unmount()
+    render(<IntroScreen onTestMode={onTestMode} />)
+    fireEvent.click(screen.getByRole('button', { name: /test mode/i }))
+    expect(onTestMode).toHaveBeenCalled()
+  })
 })
 
 describe('IntroScreen with a Play Games account', () => {

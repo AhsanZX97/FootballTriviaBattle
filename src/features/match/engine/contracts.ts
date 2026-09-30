@@ -1,10 +1,12 @@
 import type { PitchSkins } from './pitchArt'
-import type { SceneFeedback, ShotEvent } from './shotTimeline'
+import type { KeeperReaction, SceneFeedback, ShotEvent } from './shotTimeline'
 
 export interface PitchState extends PitchSkins {
   feedback: SceneFeedback | null
   label: string | null
   dimmed: boolean
+  /** Forces the keeper's reaction for the next shot; rolled at random when omitted. */
+  reaction?: KeeperReaction
 }
 
 export interface PitchCallbacks {

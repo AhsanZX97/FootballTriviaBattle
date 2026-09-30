@@ -6,7 +6,7 @@
   "scripts": {
     "dev": "vite",
     "build": "tsc -b && vite build",
-    "build:release": "tsc -b && vite build --mode release",
+    "build:release": "tsc -b && vite build --mode release && node scripts/assertNoTestMode.mjs",
     "cap:sync:release": "npm run build:release && npx cap sync android",
     "typecheck": "tsc -b --noEmit",
     "test": "vitest run",

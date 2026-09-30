@@ -132,6 +132,20 @@ describe('Phaser match renderer', () => {
     expect(onEvent).toHaveBeenLastCalledWith('complete', 'goal')
   })
 
+  it('dives the keeper the way a forced reaction says instead of rolling one', () => {
+    const keeperAfterDive = (reaction: 'wrong-way' | 'late') => {
+      harness.objects.length = 0
+      const game = createPitchGame(document.createElement('div'), state, { onEvent: vi.fn(), onReady: vi.fn(), onError: vi.fn() })
+      game.update({ ...state, feedback: 'goal', label: 'GOAL!', reaction })
+      harness.getScene().update(0, 2000)
+      return harness.objects.find((o) => String(o.key).includes('gk-dive-strip'))
+    }
+    vi.spyOn(Math, 'random').mockReturnValue(0.5)
+    expect(keeperAfterDive('wrong-way')?.x).toBeGreaterThan(422)
+    expect(keeperAfterDive('late')?.x).toBeLessThan(422)
+    vi.restoreAllMocks()
+  })
+
   it('cancels callbacks and removes the canvas on destroy', () => {
     const onEvent = vi.fn()
     const game = createPitchGame(document.createElement('div'), { ...state, feedback: 'goal' }, { onEvent, onReady: vi.fn(), onError: vi.fn() })

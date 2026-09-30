@@ -15,9 +15,11 @@ type Props = {
   onSignIn?: () => void
   /** Opens the shop popup (skins, balls, goal sounds). */
   onShop?: () => void
+  /** Dev-only animation sandbox; the button is compiled out of release builds. */
+  onTestMode?: () => void
 }
 
-export function IntroScreen({ onPlayNow, onSignIn, onShop }: Props) {
+export function IntroScreen({ onPlayNow, onSignIn, onShop, onTestMode }: Props) {
   const t = useT()
   useBottomBanner(true) // ad banner sits under the menu for as long as it's open
   const auth = useSyncExternalStore(authStore.subscribe, authStore.getState)
@@ -42,6 +44,12 @@ export function IntroScreen({ onPlayNow, onSignIn, onShop }: Props) {
         <button type="button" className="intro__play intro__play--secondary" onClick={onShop}>
           <span className="intro__play-label">{t('intro.shop')}</span>
         </button>
+
+        {__TEST_MODE__ && onTestMode && (
+          <button type="button" className="intro__play intro__play--secondary intro__testmode" onClick={onTestMode}>
+            <span className="intro__play-label">TEST MODE</span>
+          </button>
+        )}
 
 {/* A Play Games account is deliberately given no way out: it has no
             password and an unroutable email, so signing out would strand the

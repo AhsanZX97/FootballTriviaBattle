@@ -75,7 +75,7 @@ export function createPitchGame(parent: HTMLElement, initial: PitchState, callba
     startShot() {
       this.shot = state.feedback ? new ShotTimeline(state.feedback) : null
       const reactions: KeeperReaction[] = ['wrong-way', 'frozen', 'late']
-      this.reaction = reactions[Math.floor(Math.random() * reactions.length)]
+      this.reaction = state.reaction ?? reactions[Math.floor(Math.random() * reactions.length)]
     }
 
     receive(next: PitchState) {

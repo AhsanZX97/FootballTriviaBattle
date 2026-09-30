@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState, useSyncExternalStore } from 'react'
+import { Suspense, lazy, useEffect, useRef, useState, useSyncExternalStore } from 'react'
 import { IntroScreen } from './features/menu/IntroScreen'
 import { TopBar } from './features/menu/components/TopBar'
 import { TwitterLink } from './features/menu/components/TwitterLink'
@@ -23,10 +23,17 @@ import type { MatchReadySession } from './features/lobby/store'
 import { playTheme, stopTheme } from './services/sound'
 import { isNative } from './services/platform'
 
-type Screen = 'intro' | 'lobby' | 'match' | 'auth'
+type Screen = 'intro' | 'lobby' | 'match' | 'auth' | 'test'
+
+// `null` in release builds, so the import and its chunk are dropped entirely.
+const TestModeScreen = __TEST_MODE__
+  ? lazy(() => import('./features/testMode/TestModeScreen').then((m) => ({ default: m.TestModeScreen })))
+  : null
 
 function App() {
   const [screen, setScreen] = useState<Screen>('intro')
+  // The test-mode sandbox is a pitch on screen too: same music, top bar and wake lock as a match.
+  const onPitch = screen === 'match' || screen === 'test'
   // Where the current match exits to. Captured at launch so it can't be
   // disturbed by the store reset the exit buttons trigger before onExit runs.
   const [matchExit, setMatchExit] = useState<'intro' | 'lobby'>('intro')
@@ -66,9 +73,9 @@ function App() {
 
   // theme plays over the menus, stops for the match, resumes on the way back
   useEffect(() => {
-    if (screen === 'match') stopTheme()
+    if (onPitch) stopTheme()
     else playTheme()
-  }, [screen])
+  }, [onPitch])
 
   // A friend challenge (from either side) resolves to a live match: hold the
   // session so the 3-2-1 overlay can play (same pre-match beat as quick match),
@@ -149,7 +156,7 @@ function App() {
         if (s !== 'match' && getCoinsOpenRef.current) setGetCoinsOpen(false)
         else if (s === 'intro' && shopOpenRef.current) setShopOpen(false)
         else if (s === 'intro') void CapApp.exitApp()
-        else if (s === 'lobby' || s === 'auth') setScreen('intro')
+        else if (s === 'lobby' || s === 'auth' || s === 'test') setScreen('intro')
         // in a match the on-screen buttons own every exit
       }).then((h) => {
         if (cancelled) h.remove()
@@ -167,10 +174,10 @@ function App() {
   useEffect(() => {
     if (!isNative) return
     void import('@capacitor-community/keep-awake').then(({ KeepAwake }) => {
-      if (screen === 'match') void KeepAwake.keepAwake()
+      if (onPitch) void KeepAwake.keepAwake()
       else void KeepAwake.allowSleep()
     })
-  }, [screen])
+  }, [onPitch])
 
   let content
   if (screen === 'match') {
@@ -192,6 +199,12 @@ function App() {
         }}
       />
     )
+  } else if (screen === 'test' && TestModeScreen) {
+    content = (
+      <Suspense fallback={null}>
+        <TestModeScreen onExit={() => setScreen('intro')} />
+      </Suspense>
+    )
   } else if (screen === 'auth') {
     content = <AuthScreen onBack={() => setScreen('intro')} onAuthenticated={() => setScreen('intro')} />
   } else {
@@ -204,17 +217,18 @@ function App() {
         }}
         onSignIn={() => setScreen('auth')}
         onShop={() => setShopOpen(true)}
+        onTestMode={TestModeScreen ? () => setScreen('test') : undefined}
       />
     )
   }
 
   return (
     <>
-      <TopBar screen={screen} onGetCoins={() => setGetCoinsOpen(true)} />
+      <TopBar screen={onPitch ? 'match' : screen} onGetCoins={() => setGetCoinsOpen(true)} />
       {/* the dev's X handle, corner-parked on the menus; a match keeps its
           corners for the scoreboard and the kick */}
-      {screen !== 'match' && <TwitterLink />}
-      {screen !== 'match' && <ChallengeOverlay />}
+      {!onPitch && <TwitterLink />}
+      {!onPitch && <ChallengeOverlay />}
       {content}
       {friendsPickerOpen && screen === 'lobby' && (
         <FriendsPopup

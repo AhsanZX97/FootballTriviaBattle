@@ -41,3 +41,13 @@ describe('PitchScene keeper skin', () => {
     expect(await keeperSource()).toContain('gk-idle-strip.png')
   })
 })
+
+describe('PitchScene keeper reaction', () => {
+  it('hands a forced keeper reaction to the engine', async () => {
+    render(<PitchScene stage="shoot" feedback="goal" reaction="late" />)
+    await waitFor(() => expect(engine.create).toHaveBeenCalled())
+    const state = (engine.create.mock.calls.at(-1) as unknown as [HTMLElement, PitchState])[1]
+    engine.create.mockClear()
+    expect(state.reaction).toBe('late')
+  })
+})
