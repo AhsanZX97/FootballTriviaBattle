@@ -19,6 +19,7 @@ vi.mock('../../../services/trivia/sampler', () => ({ sampleQuestions: () => [que
 import { TestModeScreen } from '../TestModeScreen'
 import { QUESTION_TIME_SECONDS } from '../../match/store'
 import { play } from '../../../services/sound'
+import { pictures } from '../../../services/trivia/bank/pictures'
 
 let pitch: PitchState
 let callbacks: PitchCallbacks
@@ -102,20 +103,30 @@ describe('TestModeScreen', () => {
     expect(screen.queryByText('Who won 2014?')).toBeNull()
   })
 
-  it('shows the Ronaldo picture question; the right name scores', async () => {
+  it('shows the first picture question; the right name scores', async () => {
     await mount()
     fireEvent.click(button(/picture/i))
     expect(screen.getByRole('img', { name: /who is this player/i })).toBeDefined()
     expect(pitch.dimmed).toBe(true)
-    fireEvent.click(button(/^cristiano ronaldo$/i))
+    fireEvent.click(button(new RegExp(`^${pictures[0].correctAnswer}$`, 'i')))
     expect(pitch).toMatchObject({ feedback: 'goal', dimmed: false })
   })
 
   it('turns a wrong picture answer into a miss', async () => {
     await mount()
     fireEvent.click(button(/picture/i))
-    fireEvent.click(button(/^lionel messi$/i))
+    fireEvent.click(button(new RegExp(`^${pictures[0].wrongAnswers[0]}$`, 'i')))
     expect(pitch.feedback).toBe('miss')
+  })
+
+  it('steps to the next picture question each time the button is pressed', async () => {
+    await mount()
+    fireEvent.click(button(/picture/i))
+    expect(screen.getByText(pictures[0].correctAnswer)).toBeDefined()
+    fireEvent.click(button(new RegExp(`^${pictures[0].correctAnswer}$`, 'i')))
+    complete()
+    fireEvent.click(button(/picture/i))
+    expect(screen.getByText(pictures[1].correctAnswer)).toBeDefined()
   })
 
   it('turns a wrong trivia answer into a miss', async () => {

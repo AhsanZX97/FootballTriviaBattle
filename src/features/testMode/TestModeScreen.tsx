@@ -13,18 +13,11 @@ import '../match/MatchScreen.css'
 import './TestModeScreen.css'
 
 import { playerPortrait } from '../match/playerPortrait'
+import { pictures } from '../../services/trivia/bank/pictures'
 
 type Props = { onExit: () => void }
 
-const PICTURE_QUESTION: Question = {
-  id: 'picture-ronaldo',
-  prompt: 'Who is this player?',
-  correctAnswer: 'Cristiano Ronaldo',
-  answers: ['Lionel Messi', 'Cristiano Ronaldo', 'Kylian Mbappé', 'Neymar'],
-  difficulty: 'easy',
-  category: 'Picture',
-  image: 'cristiano-ronaldo',
-}
+const PICTURE_ENTRIES = pictures
 
 type Shot = { label: string; stage: Stage; feedback: SceneFeedback; reaction?: KeeperReaction }
 
@@ -52,6 +45,7 @@ export function TestModeScreen({ onExit }: Props) {
   const [question, setQuestion] = useState<Question | null>(null)
   const [timeLeft, setTimeLeft] = useState(QUESTION_TIME_SECONDS)
   const [panelOpen, setPanelOpen] = useState(true)
+  const [pictureIndex, setPictureIndex] = useState(0)
   const busy = feedback !== null
 
   function shoot(nextStage: Stage, outcome: SceneFeedback, nextReaction?: KeeperReaction) {
@@ -67,7 +61,20 @@ export function TestModeScreen({ onExit }: Props) {
   }
 
   function openPicture() {
-    setQuestion(PICTURE_QUESTION)
+    const at = pictureIndex % PICTURE_ENTRIES.length
+    const entry = PICTURE_ENTRIES[at]
+    const answers = [entry.correctAnswer, ...entry.wrongAnswers]
+    const shift = at % answers.length
+    setPictureIndex((i) => i + 1)
+    setQuestion({
+      id: `picture-${entry.image}`,
+      prompt: entry.prompt,
+      correctAnswer: entry.correctAnswer,
+      answers: [...answers.slice(shift), ...answers.slice(0, shift)],
+      difficulty: entry.difficulty,
+      category: 'Picture',
+      image: entry.image,
+    })
     setTimeLeft(QUESTION_TIME_SECONDS)
   }
 
@@ -164,7 +171,7 @@ export function TestModeScreen({ onExit }: Props) {
               Trivia
             </button>
             <button type="button" className="testmode__btn" disabled={busy} onClick={openPicture}>
-              Picture
+              Picture {(pictureIndex % PICTURE_ENTRIES.length) + 1}/{PICTURE_ENTRIES.length}
             </button>
             <button
               type="button"

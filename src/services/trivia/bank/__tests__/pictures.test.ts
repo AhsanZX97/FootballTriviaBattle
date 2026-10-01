@@ -7,7 +7,7 @@ const pictures = footballBank.filter((entry) => entry.image)
 
 describe('picture questions', () => {
   it('are part of the shared bank with a portrait key and the player as the answer', () => {
-    expect(pictures.length).toBeGreaterThanOrEqual(10)
+    expect(pictures.length).toBeGreaterThanOrEqual(100)
     const ronaldo = pictures.find((entry) => entry.correctAnswer === 'Cristiano Ronaldo')
     expect(ronaldo?.image).toBe('cristiano-ronaldo')
     expect(ronaldo?.id).toMatch(/^pp-/)
@@ -17,6 +17,18 @@ describe('picture questions', () => {
     for (const entry of pictures) {
       expect(new Set([entry.correctAnswer, ...entry.wrongAnswers]).size).toBe(4)
     }
+  })
+
+  it('have a portrait file for every entry and spread difficulty by fame', () => {
+    const files = Object.keys(import.meta.glob('../../../../assets/players/*.webp'))
+    for (const entry of pictures) {
+      expect(files.some((f) => f.endsWith(`/${entry.image}.webp`))).toBe(true)
+    }
+    const count = (d: string) => pictures.filter((e) => e.difficulty === d).length
+    expect(count('easy')).toBeGreaterThan(0)
+    expect(count('medium')).toBeGreaterThan(0)
+    expect(count('hard')).toBeGreaterThan(0)
+    expect(pictures.find((e) => e.correctAnswer === 'Lionel Messi')?.difficulty).toBe('easy')
   })
 
   it('carry the portrait key into sampled and wire-rebuilt questions', () => {

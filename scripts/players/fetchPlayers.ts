@@ -1,4 +1,4 @@
-/**
+﻿/**
  * Builds the "guess the player" portrait pack from Wikidata + Wikimedia Commons.
  *
  *   npx tsx scripts/players/fetchPlayers.ts --limit 10 --dry-run
@@ -8,9 +8,12 @@
  * skipped and the next-ranked player takes its place.
  */
 
-import { mkdir, writeFile } from 'node:fs/promises'
+import { existsSync } from 'node:fs'
+import { mkdir, readFile, writeFile } from 'node:fs/promises'
 import { dirname, join } from 'node:path'
 import { fileURLToPath } from 'node:url'
+
+import { faceCrop, type Crop } from './faceCrop.ts'
 
 const HERE = dirname(fileURLToPath(import.meta.url))
 const RAW_DIR = join(HERE, '.cache', 'raw')
@@ -22,6 +25,9 @@ const slug = (name: string) =>
     .toLowerCase()
     .replace(/[^a-z0-9]+/g, '-')
     .replace(/^-|-$/g, '')
+
+// Wikidata labels that would be ambiguous as a quiz answer next to Cristiano.
+const DISPLAY_NAMES: Record<string, string> = { Ronaldo: 'Ronaldo Nazário' }
 
 const USER_AGENT =
   'FootballTriviaBattle-asset-pipeline/0.1 (https://play.google.com/store/apps/details?id=com.footballtriviabattle; dev tooling)'
@@ -51,8 +57,17 @@ const option = (name: string, fallback: string) => {
   return i >= 0 && args[i + 1] ? args[i + 1] : fallback
 }
 
+/** Number of NEW players to add on top of those already in players.json. */
 const LIMIT = Number(option('limit', '10'))
 const DRY_RUN = flag('dry-run')
+const MIN_LINKS = Number(option('min-links', '40'))
+const SKIP = new Set(
+  option('skip', '')
+    .split(',')
+    .map((s) => slug(s.trim()))
+    .filter(Boolean),
+)
+const MANIFEST = join(HERE, '..', '..', 'src', 'assets', 'players', 'players.json')
 
 const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms))
 
@@ -79,7 +94,7 @@ async function fetchCandidates(pool: number): Promise<Candidate[]> {
         SELECT ?item ?links WHERE {
           ?item wdt:P106 wd:Q937857 ;
                 wikibase:sitelinks ?links .
-          FILTER(?links > 100)
+          FILTER(?links > ${MIN_LINKS})
         }
         ORDER BY DESC(?links)
         LIMIT ${pool * 4}
@@ -99,7 +114,7 @@ async function fetchCandidates(pool: number): Promise<Candidate[]> {
     const qid = row.item!.value.split('/').pop()!
     const existing = byId.get(qid) ?? {
       qid,
-      name: row.itemLabel!.value,
+      name: DISPLAY_NAMES[row.itemLabel!.value] ?? row.itemLabel!.value,
       sitelinks: Number(row.links!.value),
       images: [],
     }
@@ -149,81 +164,126 @@ async function fetchLicence(file: string): Promise<Licensed | null> {
   }
 }
 
+interface Meta {
+  sitelinks: number
+  born: number | null
+}
+
 async function main() {
-  const candidates = await fetchCandidates(LIMIT * 3)
-  const picked: { candidate: Candidate; photo: Licensed }[] = []
+  const existing: { wikidata: string }[] = existsSync(MANIFEST)
+    ? JSON.parse(await readFile(MANIFEST, 'utf8'))
+    : []
+  const have = new Set(existing.map((p) => p.wikidata))
+
+  const ranked = await fetchCandidates((existing.length + LIMIT) * 3)
+  const candidates = ranked.filter((c) => !have.has(c.qid) && !SKIP.has(slug(c.name)))
+  const picked: { candidate: Candidate; photo: Licensed; crop: Crop | null }[] = []
   const skipped: { name: string; reason: string }[] = []
+
+  if (!DRY_RUN) await mkdir(RAW_DIR, { recursive: true })
 
   for (const candidate of candidates) {
     if (picked.length >= LIMIT) break
     let photo: Licensed | null = null
     let reason = 'no photo on Wikidata'
+    let crop: Crop | null = null
     for (const file of candidate.images) {
       const info = await fetchLicence(file)
       await sleep(250)
-      if (info && ALLOWED_LICENCE.test(info.licence)) {
+      if (!info || !ALLOWED_LICENCE.test(info.licence)) {
+        reason = `licence not allowed: ${info?.licence ?? 'unknown'}`
+        continue
+      }
+      if (DRY_RUN) {
         photo = info
         break
       }
-      reason = `licence not allowed: ${info?.licence ?? 'unknown'}`
+      const res = await fetch(info.thumbUrl, { headers: { 'User-Agent': USER_AGENT } })
+      await sleep(250)
+      if (!res.ok) {
+        reason = `download failed: ${res.status}`
+        continue
+      }
+      const rawPath = join(RAW_DIR, `${slug(candidate.name)}.jpg`)
+      await writeFile(rawPath, Buffer.from(await res.arrayBuffer()))
+      crop = await faceCrop(rawPath)
+      if (!crop) {
+        reason = 'no face detected'
+        continue
+      }
+      photo = info
+      break
     }
-    if (photo) picked.push({ candidate, photo })
-    else skipped.push({ name: candidate.name, reason })
+    if (photo) {
+      picked.push({ candidate, photo, crop })
+      console.log(`+ ${picked.length}/${LIMIT} ${candidate.name} (${photo.licence})`)
+    } else {
+      skipped.push({ name: candidate.name, reason })
+    }
   }
 
-  console.log(`\nPicked ${picked.length}/${LIMIT}:`)
-  picked.forEach(({ candidate, photo }, i) =>
-    console.log(
-      `${String(i + 1).padStart(2)}. ${candidate.name} (${candidate.qid}, ${candidate.sitelinks} sitelinks)\n` +
-        `    ${photo.licence} — ${photo.artist}\n    ${photo.pageUrl}`,
-    ),
-  )
+  console.log(`\nPicked ${picked.length}/${LIMIT} new players`)
   if (skipped.length) {
     console.log('\nSkipped:')
     skipped.forEach((s) => console.log(`  - ${s.name}: ${s.reason}`))
   }
-
   if (DRY_RUN) return
 
-  await mkdir(RAW_DIR, { recursive: true })
-  for (const { candidate, photo } of picked) {
-    const res = await fetch(photo.thumbUrl, { headers: { 'User-Agent': USER_AGENT } })
-    if (!res.ok) throw new Error(`${res.status} downloading ${photo.file}`)
-    await writeFile(join(RAW_DIR, `${slug(candidate.name)}.jpg`), Buffer.from(await res.arrayBuffer()))
-    await sleep(250)
-  }
-  console.log(`\nDownloaded ${picked.length} raw photos to ${RAW_DIR}`)
-
-  const details = await fetchDetails(picked.map((p) => p.candidate.qid))
-  const records = picked.map(({ candidate, photo }) => ({
+  const details = await fetchDetails([
+    ...existing.map((p) => p.wikidata),
+    ...picked.map((p) => p.candidate.qid),
+  ])
+  const records = picked.map(({ candidate, photo, crop }) => ({
     id: slug(candidate.name),
     qid: candidate.qid,
     name: candidate.name,
     sitelinks: candidate.sitelinks,
     country: details.get(candidate.qid)?.country ?? null,
     positions: details.get(candidate.qid)?.positions ?? [],
+    born: details.get(candidate.qid)?.born ?? null,
+    crop,
     photo,
   }))
   await writeFile(join(HERE, '.cache', 'candidates.json'), JSON.stringify(records, null, 2))
-  console.log(`Wrote ${records.length} records to .cache/candidates.json`)
+
+  // Fame/era for players already shipped, so the bank can rank and group them.
+  const links = new Map(ranked.map((c) => [c.qid, c.sitelinks]))
+  const meta: Record<string, Meta> = {}
+  for (const { wikidata } of existing) {
+    meta[wikidata] = {
+      sitelinks: links.get(wikidata) ?? 0,
+      born: details.get(wikidata)?.born ?? null,
+    }
+  }
+  await writeFile(join(HERE, '.cache', 'meta.json'), JSON.stringify(meta, null, 2))
+  console.log(`\nWrote ${records.length} records to .cache/candidates.json`)
 }
 
 async function fetchDetails(qids: string[]) {
-  const rows = await sparql<Binding>(`
-    SELECT ?item ?countryLabel ?positionLabel WHERE {
-      VALUES ?item { ${qids.map((q) => `wd:${q}`).join(' ')} }
-      OPTIONAL { ?item wdt:P1532 ?country }
-      OPTIONAL { ?item wdt:P413 ?position }
-      SERVICE wikibase:label { bd:serviceParam wikibase:language "en,mul". }
+  const out = new Map<string, { country: string | null; positions: string[]; born: number | null }>()
+  for (let i = 0; i < qids.length; i += 60) {
+    const rows = await sparql<Binding>(`
+      SELECT ?item ?countryLabel ?positionLabel ?born WHERE {
+        VALUES ?item { ${qids.slice(i, i + 60).map((q) => `wd:${q}`).join(' ')} }
+        OPTIONAL { ?item wdt:P1532 ?country }
+        OPTIONAL { ?item wdt:P413 ?position }
+        OPTIONAL { ?item wdt:P569 ?born }
+        SERVICE wikibase:label { bd:serviceParam wikibase:language "en,mul". }
+      }
+    `)
+    for (const row of rows) {
+      const qid = row.item!.value.split('/').pop()!
+      const year = row.born ? Number.parseInt(row.born.value, 10) : null
+      const entry = out.get(qid) ?? {
+        country: row.countryLabel?.value ?? null,
+        positions: [],
+        born: year && Number.isFinite(year) ? year : null,
+      }
+      const position = row.positionLabel?.value
+      if (position && !entry.positions.includes(position)) entry.positions.push(position)
+      out.set(qid, entry)
     }
-  `)
-  const out = new Map<string, { country: string | null; positions: string[] }>()
-  for (const row of rows) {
-    const qid = row.item!.value.split('/').pop()!
-    const entry = out.get(qid) ?? { country: row.countryLabel?.value ?? null, positions: [] }
-    const position = row.positionLabel?.value
-    if (position && !entry.positions.includes(position)) entry.positions.push(position)
-    out.set(qid, entry)
+    await sleep(500)
   }
   return out
 }
@@ -232,3 +292,4 @@ main().catch((err) => {
   console.error(err)
   process.exit(1)
 })
+

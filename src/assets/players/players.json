@@ -15,7 +15,9 @@
       "licenceUrl": "https://creativecommons.org/licenses/by-sa/4.0",
       "source": "https://commons.wikimedia.org/wiki/File:Leo_Messi_Argentina_v_Egypt_7_July_2026-1.jpg",
       "changes": "Cropped and converted to pixel art"
-    }
+    },
+    "born": 1987,
+    "sitelinks": 225
   },
   {
     "id": "cristiano-ronaldo",
@@ -33,7 +35,9 @@
       "licenceUrl": "https://creativecommons.org/licenses/by-sa/4.0",
       "source": "https://commons.wikimedia.org/wiki/File:Cristiano_Ronaldo_Croatia_v_Portugal_2_July_2026-075_(cropped).jpg",
       "changes": "Cropped and converted to pixel art"
-    }
+    },
+    "born": 1985,
+    "sitelinks": 215
   },
   {
     "id": "pele",
@@ -51,7 +55,9 @@
       "licenceUrl": "",
       "source": "https://commons.wikimedia.org/wiki/File:Pele_con_brasil_(cropped).jpg",
       "changes": "Cropped and converted to pixel art"
-    }
+    },
+    "born": 1940,
+    "sitelinks": 183
   },
   {
     "id": "diego-maradona",
@@ -69,7 +75,9 @@
       "licenceUrl": "",
       "source": "https://commons.wikimedia.org/wiki/File:Argentina_celebrando_copa_(cropped).jpg",
       "changes": "Cropped and converted to pixel art"
-    }
+    },
+    "born": 1960,
+    "sitelinks": 175
   },
   {
     "id": "neymar",
@@ -86,7 +94,9 @@
       "licenceUrl": "https://creativecommons.org/licenses/by-sa/4.0",
       "source": "https://commons.wikimedia.org/wiki/File:Neymar_Junior_Brazil_V_Morocco_13_June_2026-40.jpg",
       "changes": "Cropped and converted to pixel art"
-    }
+    },
+    "born": 1992,
+    "sitelinks": 156
   },
   {
     "id": "zinedine-zidane",
@@ -104,7 +114,9 @@
       "licenceUrl": "https://creativecommons.org/licenses/by/4.0",
       "source": "https://commons.wikimedia.org/wiki/File:Zinedine_Zidane_by_Tasnim_03.jpg",
       "changes": "Cropped and converted to pixel art"
-    }
+    },
+    "born": 1972,
+    "sitelinks": 146
   },
   {
     "id": "david-beckham",
@@ -121,7 +133,9 @@
       "licenceUrl": "https://creativecommons.org/licenses/by/3.0",
       "source": "https://commons.wikimedia.org/wiki/File:David_Beckham_UNICEF_(cropped).jpg",
       "changes": "Cropped and converted to pixel art"
-    }
+    },
+    "born": 1975,
+    "sitelinks": 139
   },
   {
     "id": "kylian-mbappe",
@@ -138,7 +152,9 @@
       "licenceUrl": "https://creativecommons.org/licenses/by-sa/4.0",
       "source": "https://commons.wikimedia.org/wiki/File:Kylian_Mbappe_France_v_Senegal_16_June_2026-391_(cropped).jpg",
       "changes": "Cropped and converted to pixel art"
-    }
+    },
+    "born": 1998,
+    "sitelinks": 133
   },
   {
     "id": "johan-cruyff",
@@ -156,7 +172,9 @@
       "licenceUrl": "https://creativecommons.org/licenses/by-sa/3.0/nl/deed.en",
       "source": "https://commons.wikimedia.org/wiki/File:Johan_Cruyff_in_trainingspak_Nederlands_Elftal_,_kop.jpg",
       "changes": "Cropped and converted to pixel art"
-    }
+    },
+    "born": 1947,
+    "sitelinks": 128
   },
   {
     "id": "francesco-totti",
@@ -173,6 +191,1735 @@
       "licence": "CC BY-SA 3.0",
       "licenceUrl": "https://creativecommons.org/licenses/by-sa/3.0",
       "source": "https://commons.wikimedia.org/wiki/File:Francesco_Totti_Vicario_(crop).jpg",
+      "changes": "Cropped and converted to pixel art"
+    },
+    "born": 1976,
+    "sitelinks": 126
+  },
+  {
+    "id": "ronaldo-nazario",
+    "name": "Ronaldo Nazário",
+    "wikidata": "Q529207",
+    "country": "Brazil",
+    "positions": [
+      "forward"
+    ],
+    "born": 1976,
+    "sitelinks": 124,
+    "image": "ronaldo-nazario.webp",
+    "credit": {
+      "author": "Web Summit",
+      "licence": "CC BY 2.0",
+      "licenceUrl": "https://creativecommons.org/licenses/by/2.0",
+      "source": "https://commons.wikimedia.org/wiki/File:051119SMcC0014.jpg",
+      "changes": "Cropped and converted to pixel art"
+    }
+  },
+  {
+    "id": "zlatan-ibrahimovic",
+    "name": "Zlatan Ibrahimović",
+    "wikidata": "Q46896",
+    "country": "Sweden",
+    "positions": [
+      "forward"
+    ],
+    "born": 1981,
+    "sitelinks": 119,
+    "image": "zlatan-ibrahimovic.webp",
+    "credit": {
+      "author": "Colleen Sturtevant",
+      "licence": "CC BY-SA 4.0",
+      "licenceUrl": "https://creativecommons.org/licenses/by-sa/4.0",
+      "source": "https://commons.wikimedia.org/wiki/File:Zlatan_Ibrahimovi%C4%87_nyc.jpg",
+      "changes": "Cropped and converted to pixel art"
+    }
+  },
+  {
+    "id": "franz-beckenbauer",
+    "name": "Franz Beckenbauer",
+    "wikidata": "Q4457",
+    "country": "West Germany",
+    "positions": [
+      "defender",
+      "sweeper"
+    ],
+    "born": 1945,
+    "sitelinks": 116,
+    "image": "franz-beckenbauer.webp",
+    "credit": {
+      "author": "Panini Group",
+      "licence": "Public domain",
+      "licenceUrl": "",
+      "source": "https://commons.wikimedia.org/wiki/File:Franz_Beckenbauer_(1975).jpg",
+      "changes": "Cropped and converted to pixel art"
+    }
+  },
+  {
+    "id": "luis-suarez",
+    "name": "Luis Suárez",
+    "wikidata": "Q26517",
+    "country": "Uruguay",
+    "positions": [
+      "forward"
+    ],
+    "born": 1987,
+    "sitelinks": 114,
+    "image": "luis-suarez.webp",
+    "credit": {
+      "author": "Bryan Berlin",
+      "licence": "CC BY-SA 4.0",
+      "licenceUrl": "https://creativecommons.org/licenses/by-sa/4.0",
+      "source": "https://commons.wikimedia.org/wiki/File:Luis_Su%C3%A1rez_NE_Revolution_Inter_Miami_7.9.25-053_(cropped).jpg",
+      "changes": "Cropped and converted to pixel art"
+    }
+  },
+  {
+    "id": "ronaldinho",
+    "name": "Ronaldinho",
+    "wikidata": "Q39444",
+    "country": "Brazil",
+    "positions": [
+      "winger"
+    ],
+    "born": 1980,
+    "sitelinks": 114,
+    "image": "ronaldinho.webp",
+    "credit": {
+      "author": "Nuță Lucian",
+      "licence": "CC BY-SA 2.0",
+      "licenceUrl": "https://creativecommons.org/licenses/by-sa/2.0",
+      "source": "https://commons.wikimedia.org/wiki/File:Sports_Festival_2025_-_4_(cropped).jpg",
+      "changes": "Cropped and converted to pixel art"
+    }
+  },
+  {
+    "id": "luka-modric",
+    "name": "Luka Modrić",
+    "wikidata": "Q483837",
+    "country": "Croatia",
+    "positions": [
+      "central midfielder",
+      "attacking midfielder"
+    ],
+    "born": 1985,
+    "sitelinks": 113,
+    "image": "luka-modric.webp",
+    "credit": {
+      "author": "Bryan Berlin",
+      "licence": "CC BY-SA 4.0",
+      "licenceUrl": "https://creativecommons.org/licenses/by-sa/4.0",
+      "source": "https://commons.wikimedia.org/wiki/File:Luka_Modric_Croatia_v_Portugal_2_July_2026-055.jpg",
+      "changes": "Cropped and converted to pixel art"
+    }
+  },
+  {
+    "id": "gianluigi-buffon",
+    "name": "Gianluigi Buffon",
+    "wikidata": "Q68060",
+    "country": "Italy",
+    "positions": [
+      "goalkeeper"
+    ],
+    "born": 1978,
+    "sitelinks": 112,
+    "image": "gianluigi-buffon.webp",
+    "credit": {
+      "author": "Original: Doha Stadium Plus Qatar from Doha, Qatar Derivative work: Alza08 Author",
+      "licence": "CC BY 2.0",
+      "licenceUrl": "https://creativecommons.org/licenses/by/2.0",
+      "source": "https://commons.wikimedia.org/wiki/File:Gianluigi_Buffon_(31784615942)_(cropped).jpg",
+      "changes": "Cropped and converted to pixel art"
+    }
+  },
+  {
+    "id": "karim-benzema",
+    "name": "Karim Benzema",
+    "wikidata": "Q1912",
+    "country": "France",
+    "positions": [
+      "forward"
+    ],
+    "born": 1987,
+    "sitelinks": 107,
+    "image": "karim-benzema.webp",
+    "credit": {
+      "author": "Zack",
+      "licence": "CC BY 4.0",
+      "licenceUrl": "https://creativecommons.org/licenses/by/4.0",
+      "source": "https://commons.wikimedia.org/wiki/File:Karim_Benzema_Pick.jpg",
+      "changes": "Cropped and converted to pixel art"
+    }
+  },
+  {
+    "id": "mesut-ozil",
+    "name": "Mesut Özil",
+    "wikidata": "Q83488",
+    "country": "Germany",
+    "positions": [
+      "midfielder",
+      "attacking midfielder"
+    ],
+    "born": 1988,
+    "sitelinks": 106,
+    "image": "mesut-ozil.webp",
+    "credit": {
+      "author": "Amir Hosseini",
+      "licence": "CC BY 4.0",
+      "licenceUrl": "https://creativecommons.org/licenses/by/4.0",
+      "source": "https://commons.wikimedia.org/wiki/File:Mesut_%C3%96zil_at_Baku_before_2019_UEFA_Europe_League_Final.jpg",
+      "changes": "Cropped and converted to pixel art"
+    }
+  },
+  {
+    "id": "robert-lewandowski",
+    "name": "Robert Lewandowski",
+    "wikidata": "Q151269",
+    "country": "Poland",
+    "positions": [
+      "forward"
+    ],
+    "born": 1988,
+    "sitelinks": 106,
+    "image": "robert-lewandowski.webp",
+    "credit": {
+      "author": "Светлана Бекетова",
+      "licence": "CC BY-SA 3.0",
+      "licenceUrl": "https://creativecommons.org/licenses/by-sa/3.0",
+      "source": "https://commons.wikimedia.org/wiki/File:Robert_Lewandowski_2018,_JAP-POL_(cropped).jpg",
+      "changes": "Cropped and converted to pixel art"
+    }
+  },
+  {
+    "id": "andres-iniesta",
+    "name": "Andrés Iniesta",
+    "wikidata": "Q43729",
+    "country": "Spain",
+    "positions": [
+      "midfielder"
+    ],
+    "born": 1984,
+    "sitelinks": 106,
+    "image": "andres-iniesta.webp",
+    "credit": {
+      "author": "Bryan Berlin",
+      "licence": "CC BY-SA 4.0",
+      "licenceUrl": "https://creativecommons.org/licenses/by-sa/4.0",
+      "source": "https://commons.wikimedia.org/wiki/File:Andr%C3%A9s_Iniesta_Argentina_v_Spain_19_July_2026-034_(cropped).jpg",
+      "changes": "Cropped and converted to pixel art"
+    }
+  },
+  {
+    "id": "frank-lampard",
+    "name": "Frank Lampard",
+    "wikidata": "Q41533",
+    "country": "England",
+    "positions": [
+      "midfielder"
+    ],
+    "born": 1978,
+    "sitelinks": 104,
+    "image": "frank-lampard.webp",
+    "credit": {
+      "author": "Mehdi Bolourian",
+      "licence": "CC BY 4.0",
+      "licenceUrl": "https://creativecommons.org/licenses/by/4.0",
+      "source": "https://commons.wikimedia.org/wiki/File:Frank_Lampard_2019.jpg",
+      "changes": "Cropped and converted to pixel art"
+    }
+  },
+  {
+    "id": "mohamed-salah",
+    "name": "Mohamed Salah",
+    "wikidata": "Q1354960",
+    "country": "Egypt",
+    "positions": [
+      "forward",
+      "wing half",
+      "winger"
+    ],
+    "born": 1992,
+    "sitelinks": 104,
+    "image": "mohamed-salah.webp",
+    "credit": {
+      "author": "Bryan Berlin",
+      "licence": "CC BY-SA 4.0",
+      "licenceUrl": "https://creativecommons.org/licenses/by-sa/4.0",
+      "source": "https://commons.wikimedia.org/wiki/File:Mohamed_Salah_Argentina_v_Egypt_7_July_2026-163_(cropped).jpg",
+      "changes": "Cropped and converted to pixel art"
+    }
+  },
+  {
+    "id": "thierry-henry",
+    "name": "Thierry Henry",
+    "wikidata": "Q45901",
+    "country": "France",
+    "positions": [
+      "forward"
+    ],
+    "born": 1977,
+    "sitelinks": 103,
+    "image": "thierry-henry.webp",
+    "credit": {
+      "author": "Web Summit",
+      "licence": "CC BY 2.0",
+      "licenceUrl": "https://creativecommons.org/licenses/by/2.0",
+      "source": "https://commons.wikimedia.org/wiki/File:Thierry_Henry_(51649035951)_(cropped).jpg",
+      "changes": "Cropped and converted to pixel art"
+    }
+  },
+  {
+    "id": "miroslav-klose",
+    "name": "Miroslav Klose",
+    "wikidata": "Q80471",
+    "country": "Germany",
+    "positions": [
+      "forward"
+    ],
+    "born": 1978,
+    "sitelinks": 101,
+    "image": "miroslav-klose.webp",
+    "credit": {
+      "author": "Sven Mandel",
+      "licence": "CC BY-SA 4.0",
+      "licenceUrl": "https://creativecommons.org/licenses/by-sa/4.0",
+      "source": "https://commons.wikimedia.org/wiki/File:2016209185719_2016-07-27_Champions_for_Charity_-_Sven_-_1D_X_-_0149_-_DV3P4742_mod.jpg",
+      "changes": "Cropped and converted to pixel art"
+    }
+  },
+  {
+    "id": "wayne-rooney",
+    "name": "Wayne Rooney",
+    "wikidata": "Q266613",
+    "country": "England",
+    "positions": [
+      "forward",
+      "central midfielder"
+    ],
+    "born": 1985,
+    "sitelinks": 101,
+    "image": "wayne-rooney.webp",
+    "credit": {
+      "author": "Дмитрий Голубович",
+      "licence": "CC BY-SA 3.0",
+      "licenceUrl": "https://creativecommons.org/licenses/by-sa/3.0",
+      "source": "https://commons.wikimedia.org/wiki/File:Wayne-Rooney-2015-10-21.jpg",
+      "changes": "Cropped and converted to pixel art"
+    }
+  },
+  {
+    "id": "antoine-griezmann",
+    "name": "Antoine Griezmann",
+    "wikidata": "Q455462",
+    "country": "France",
+    "positions": [
+      "forward"
+    ],
+    "born": 1991,
+    "sitelinks": 100,
+    "image": "antoine-griezmann.webp",
+    "credit": {
+      "author": "Biser Todorov (User:Biso) from Sofia, Bulgaria",
+      "licence": "CC BY-SA 2.0",
+      "licenceUrl": "https://creativecommons.org/licenses/by-sa/2.0",
+      "source": "https://commons.wikimedia.org/wiki/File:Antoine_Griezmann_(51100409504)_(cropped).jpg",
+      "changes": "Cropped and converted to pixel art"
+    }
+  },
+  {
+    "id": "kaka",
+    "name": "Kaká",
+    "wikidata": "Q531814",
+    "country": "Brazil",
+    "positions": [
+      "midfielder"
+    ],
+    "born": 1982,
+    "sitelinks": 100,
+    "image": "kaka.webp",
+    "credit": {
+      "author": "José Cruz/ABr (cropped by tales.ebner)",
+      "licence": "CC BY 3.0 br",
+      "licenceUrl": "https://creativecommons.org/licenses/by/3.0/br/deed.en",
+      "source": "https://commons.wikimedia.org/wiki/File:Ricardo_Izecson_dos_Santos_Leite_(Kak%C3%A1)_01.jpg",
+      "changes": "Cropped and converted to pixel art"
+    }
+  },
+  {
+    "id": "iker-casillas",
+    "name": "Iker Casillas",
+    "wikidata": "Q11584",
+    "country": "Spain",
+    "positions": [
+      "goalkeeper"
+    ],
+    "born": 1981,
+    "sitelinks": 100,
+    "image": "iker-casillas.webp",
+    "credit": {
+      "author": "Зайцев Антон",
+      "licence": "CC BY-SA 3.0",
+      "licenceUrl": "https://creativecommons.org/licenses/by-sa/3.0",
+      "source": "https://commons.wikimedia.org/wiki/File:Iker_Casillas_2.jpg",
+      "changes": "Cropped and converted to pixel art"
+    }
+  },
+  {
+    "id": "manuel-neuer",
+    "name": "Manuel Neuer",
+    "wikidata": "Q107365",
+    "country": "Germany",
+    "positions": [
+      "goalkeeper"
+    ],
+    "born": 1986,
+    "sitelinks": 99,
+    "image": "manuel-neuer.webp",
+    "credit": {
+      "author": "Bryan Berlin",
+      "licence": "CC BY-SA 4.0",
+      "licenceUrl": "https://creativecommons.org/licenses/by-sa/4.0",
+      "source": "https://commons.wikimedia.org/wiki/File:Manuel_Neuer_Ecuador_v_Germany_25_June_2026-148.jpg",
+      "changes": "Cropped and converted to pixel art"
+    }
+  },
+  {
+    "id": "erling-haaland",
+    "name": "Erling Haaland",
+    "wikidata": "Q28967995",
+    "country": "Norway",
+    "positions": [
+      "forward"
+    ],
+    "born": 2000,
+    "sitelinks": 98,
+    "image": "erling-haaland.webp",
+    "credit": {
+      "author": "Bryan Berlin",
+      "licence": "CC BY-SA 4.0",
+      "licenceUrl": "https://creativecommons.org/licenses/by-sa/4.0",
+      "source": "https://commons.wikimedia.org/wiki/File:Erling_Haaland_France_v_Norway_26_June_26-008.jpg",
+      "changes": "Cropped and converted to pixel art"
+    }
+  },
+  {
+    "id": "harry-kane",
+    "name": "Harry Kane",
+    "wikidata": "Q969725",
+    "country": "England",
+    "positions": [
+      "forward"
+    ],
+    "born": 1993,
+    "sitelinks": 97,
+    "image": "harry-kane.webp",
+    "credit": {
+      "author": "Bryan Berlin",
+      "licence": "CC BY-SA 4.0",
+      "licenceUrl": "https://creativecommons.org/licenses/by-sa/4.0",
+      "source": "https://commons.wikimedia.org/wiki/File:Harry_Kane_England_v_Ghana_23_June_2026-219_(cropped).jpg",
+      "changes": "Cropped and converted to pixel art"
+    }
+  },
+  {
+    "id": "robin-van-persie",
+    "name": "Robin van Persie",
+    "wikidata": "Q2339",
+    "country": "Netherlands",
+    "positions": [
+      "forward"
+    ],
+    "born": 1983,
+    "sitelinks": 97,
+    "image": "robin-van-persie.webp",
+    "credit": {
+      "author": "Елена Рыбакова",
+      "licence": "CC BY-SA 3.0",
+      "licenceUrl": "https://creativecommons.org/licenses/by-sa/3.0",
+      "source": "https://commons.wikimedia.org/wiki/File:Loco-Fener_(10).jpg",
+      "changes": "Cropped and converted to pixel art"
+    }
+  },
+  {
+    "id": "steven-gerrard",
+    "name": "Steven Gerrard",
+    "wikidata": "Q459830",
+    "country": "England",
+    "positions": [
+      "midfielder"
+    ],
+    "born": 1980,
+    "sitelinks": 96,
+    "image": "steven-gerrard.webp",
+    "credit": {
+      "author": "Эдгар Брещанов",
+      "licence": "CC BY-SA 3.0",
+      "licenceUrl": "https://creativecommons.org/licenses/by-sa/3.0",
+      "source": "https://commons.wikimedia.org/wiki/File:Steven_Gerrard_2018.jpg",
+      "changes": "Cropped and converted to pixel art"
+    }
+  },
+  {
+    "id": "xavi-hernandez",
+    "name": "Xavi Hernández",
+    "wikidata": "Q17500",
+    "country": "Spain",
+    "positions": [
+      "midfielder"
+    ],
+    "born": 1980,
+    "sitelinks": 96,
+    "image": "xavi-hernandez.webp",
+    "credit": {
+      "author": "Mehdi Zare",
+      "licence": "CC BY 4.0",
+      "licenceUrl": "https://creativecommons.org/licenses/by/4.0",
+      "source": "https://commons.wikimedia.org/wiki/File:Xavi_13981129001173637176666027076571.jpg",
+      "changes": "Cropped and converted to pixel art"
+    }
+  },
+  {
+    "id": "lamine-yamal",
+    "name": "Lamine Yamal",
+    "wikidata": "Q113704154",
+    "country": "Spain",
+    "positions": [
+      "winger"
+    ],
+    "born": 2007,
+    "sitelinks": 96,
+    "image": "lamine-yamal.webp",
+    "credit": {
+      "author": "Bryan Berlin",
+      "licence": "CC BY-SA 4.0",
+      "licenceUrl": "https://creativecommons.org/licenses/by-sa/4.0",
+      "source": "https://commons.wikimedia.org/wiki/File:Lamine_Yamal_Argentina_v_Spain_19_July_2026-214_(cropped).jpg",
+      "changes": "Cropped and converted to pixel art"
+    }
+  },
+  {
+    "id": "eusebio",
+    "name": "Eusébio",
+    "wikidata": "Q162043",
+    "country": "Portugal",
+    "positions": [
+      "forward"
+    ],
+    "born": 1942,
+    "sitelinks": 95,
+    "image": "eusebio.webp",
+    "credit": {
+      "author": "Panini",
+      "licence": "Public domain",
+      "licenceUrl": "",
+      "source": "https://commons.wikimedia.org/wiki/File:Eusebio_en_1973.jpg",
+      "changes": "Cropped and converted to pixel art"
+    }
+  },
+  {
+    "id": "ferenc-puskas",
+    "name": "Ferenc Puskás",
+    "wikidata": "Q482931",
+    "country": "Hungary",
+    "positions": [
+      "forward"
+    ],
+    "born": 1927,
+    "sitelinks": 94,
+    "image": "ferenc-puskas.webp",
+    "credit": {
+      "author": "UnknownUnknown",
+      "licence": "Public domain",
+      "licenceUrl": "",
+      "source": "https://commons.wikimedia.org/wiki/File:Puskas_(1971).tif",
+      "changes": "Cropped and converted to pixel art"
+    }
+  },
+  {
+    "id": "thomas-muller",
+    "name": "Thomas Müller",
+    "wikidata": "Q43666",
+    "country": "Germany",
+    "positions": [
+      "forward",
+      "attacking midfielder"
+    ],
+    "born": 1989,
+    "sitelinks": 94,
+    "image": "thomas-muller.webp",
+    "credit": {
+      "author": "Werner100359",
+      "licence": "CC BY-SA 4.0",
+      "licenceUrl": "https://creativecommons.org/licenses/by-sa/4.0",
+      "source": "https://commons.wikimedia.org/wiki/File:Thomas_M%C3%BCller_2022_(cropped).jpg",
+      "changes": "Cropped and converted to pixel art"
+    }
+  },
+  {
+    "id": "george-weah",
+    "name": "George Weah",
+    "wikidata": "Q173139",
+    "country": "Liberia",
+    "positions": [
+      "forward"
+    ],
+    "born": 1966,
+    "sitelinks": 94,
+    "image": "george-weah.webp",
+    "credit": {
+      "author": "File:George Weah in 2019 (cropped).jpg: U.S. Embassy in Monrovia, Liberia derivative work: Boros.i",
+      "licence": "Public domain",
+      "licenceUrl": "",
+      "source": "https://commons.wikimedia.org/wiki/File:George_Weah_in_2019_(cropped)_mod-2.jpg",
+      "changes": "Cropped and converted to pixel art"
+    }
+  },
+  {
+    "id": "gareth-bale",
+    "name": "Gareth Bale",
+    "wikidata": "Q184586",
+    "country": "Wales",
+    "positions": [
+      "wing half"
+    ],
+    "born": 1989,
+    "sitelinks": 94,
+    "image": "gareth-bale.webp",
+    "credit": {
+      "author": "حسین ظهروند",
+      "licence": "CC BY 4.0",
+      "licenceUrl": "https://creativecommons.org/licenses/by/4.0",
+      "source": "https://commons.wikimedia.org/wiki/File:2022_FIFA_World_Cup_United_States_1%E2%80%931_Wales_-_(32)_(cropped).jpg",
+      "changes": "Cropped and converted to pixel art"
+    }
+  },
+  {
+    "id": "paul-pogba",
+    "name": "Paul Pogba",
+    "wikidata": "Q129027",
+    "country": "France",
+    "positions": [
+      "midfielder"
+    ],
+    "born": 1993,
+    "sitelinks": 93,
+    "image": "paul-pogba.webp",
+    "credit": {
+      "author": "Gabriel Hutchinson",
+      "licence": "CC BY-SA 4.0",
+      "licenceUrl": "https://creativecommons.org/licenses/by-sa/4.0",
+      "source": "https://commons.wikimedia.org/wiki/File:Paul_Pogba_at_the_2025_Cannes_Film_Festival_02.jpg",
+      "changes": "Cropped and converted to pixel art"
+    }
+  },
+  {
+    "id": "arjen-robben",
+    "name": "Arjen Robben",
+    "wikidata": "Q43913",
+    "country": "Netherlands",
+    "positions": [
+      "attacking midfielder",
+      "right winger"
+    ],
+    "born": 1984,
+    "sitelinks": 93,
+    "image": "arjen-robben.webp",
+    "credit": {
+      "author": "Дмитрий Садовников",
+      "licence": "CC BY-SA 3.0",
+      "licenceUrl": "https://creativecommons.org/licenses/by-sa/3.0",
+      "source": "https://commons.wikimedia.org/wiki/File:Arjen_Robben_2013.jpg",
+      "changes": "Cropped and converted to pixel art"
+    }
+  },
+  {
+    "id": "eden-hazard",
+    "name": "Eden Hazard",
+    "wikidata": "Q214204",
+    "country": "Belgium",
+    "positions": [
+      "winger"
+    ],
+    "born": 1991,
+    "sitelinks": 93,
+    "image": "eden-hazard.webp",
+    "credit": {
+      "author": "Amir Hosseini",
+      "licence": "CC BY 4.0",
+      "licenceUrl": "https://creativecommons.org/licenses/by/4.0",
+      "source": "https://commons.wikimedia.org/wiki/File:Eden_Hazard_at_Baku_before_2019_UEFA_Europe_League_Final.jpg",
+      "changes": "Cropped and converted to pixel art"
+    }
+  },
+  {
+    "id": "kevin-de-bruyne",
+    "name": "Kevin De Bruyne",
+    "wikidata": "Q357984",
+    "country": "Belgium",
+    "positions": [
+      "midfielder"
+    ],
+    "born": 1991,
+    "sitelinks": 92,
+    "image": "kevin-de-bruyne.webp",
+    "credit": {
+      "author": "Bryan Berlin",
+      "licence": "CC BY-SA 4.0",
+      "licenceUrl": "https://creativecommons.org/licenses/by-sa/4.0",
+      "source": "https://commons.wikimedia.org/wiki/File:Kevin_De_Bruyne_USMNT_v_Belgium_Mar_28_2026-64_(cropped).jpg",
+      "changes": "Cropped and converted to pixel art"
+    }
+  },
+  {
+    "id": "gerard-pique",
+    "name": "Gerard Piqué",
+    "wikidata": "Q17507",
+    "country": "Spain",
+    "positions": [
+      "defender"
+    ],
+    "born": 1987,
+    "sitelinks": 92,
+    "image": "gerard-pique.webp",
+    "credit": {
+      "author": "Vinod Divakaran",
+      "licence": "CC BY 2.0",
+      "licenceUrl": "https://creativecommons.org/licenses/by/2.0",
+      "source": "https://commons.wikimedia.org/wiki/File:GerardPique.jpg",
+      "changes": "Cropped and converted to pixel art"
+    }
+  },
+  {
+    "id": "sergio-ramos",
+    "name": "Sergio Ramos",
+    "wikidata": "Q483309",
+    "country": "Spain",
+    "positions": [
+      "centre-back"
+    ],
+    "born": 1986,
+    "sitelinks": 91,
+    "image": "sergio-ramos.webp",
+    "credit": {
+      "author": "Real Madrid",
+      "licence": "CC BY 3.0",
+      "licenceUrl": "https://creativecommons.org/licenses/by/3.0",
+      "source": "https://commons.wikimedia.org/wiki/File:Sergio_Ramos_Interview_2021_(cropped).jpg",
+      "changes": "Cropped and converted to pixel art"
+    }
+  },
+  {
+    "id": "roberto-baggio",
+    "name": "Roberto Baggio",
+    "wikidata": "Q67964",
+    "country": "Italy",
+    "positions": [
+      "forward"
+    ],
+    "born": 1967,
+    "sitelinks": 91,
+    "image": "roberto-baggio.webp",
+    "credit": {
+      "author": "AbolfaZl0990",
+      "licence": "CC BY-SA 4.0",
+      "licenceUrl": "https://creativecommons.org/licenses/by-sa/4.0",
+      "source": "https://commons.wikimedia.org/wiki/File:%D8%B1%D9%88%D8%A8%D8%B1%D8%AA%D9%88_%D8%A8%D8%A7%D8%AC%D9%88_(cropped).jpg",
+      "changes": "Cropped and converted to pixel art"
+    }
+  },
+  {
+    "id": "fernando-torres",
+    "name": "Fernando Torres",
+    "wikidata": "Q42731",
+    "country": "Spain",
+    "positions": [
+      "forward"
+    ],
+    "born": 1984,
+    "sitelinks": 91,
+    "image": "fernando-torres.webp",
+    "credit": {
+      "author": "cristina cifuentes",
+      "licence": "CC BY 2.0",
+      "licenceUrl": "https://creativecommons.org/licenses/by/2.0",
+      "source": "https://commons.wikimedia.org/wiki/File:Fernando_Torres_2017.jpg",
+      "changes": "Cropped and converted to pixel art"
+    }
+  },
+  {
+    "id": "gerd-muller",
+    "name": "Gerd Müller",
+    "wikidata": "Q43744",
+    "country": "Germany",
+    "positions": [
+      "forward"
+    ],
+    "born": 1945,
+    "sitelinks": 91,
+    "image": "gerd-muller.webp",
+    "credit": {
+      "author": "Unknown authorUnknown author",
+      "licence": "Public domain",
+      "licenceUrl": "",
+      "source": "https://commons.wikimedia.org/wiki/File:Gerd_M%C3%BCller_c1973_(cropped).jpg",
+      "changes": "Cropped and converted to pixel art"
+    }
+  },
+  {
+    "id": "didier-drogba",
+    "name": "Didier Drogba",
+    "wikidata": "Q48892",
+    "country": "Ivory Coast",
+    "positions": [
+      "forward"
+    ],
+    "born": 1978,
+    "sitelinks": 91,
+    "image": "didier-drogba.webp",
+    "credit": {
+      "author": "Y.Leclercq©",
+      "licence": "CC BY-SA 4.0",
+      "licenceUrl": "https://creativecommons.org/licenses/by-sa/4.0",
+      "source": "https://commons.wikimedia.org/wiki/File:Didier_Drogba_(2019)_(cropped).jpg",
+      "changes": "Cropped and converted to pixel art"
+    }
+  },
+  {
+    "id": "sadio-mane",
+    "name": "Sadio Mané",
+    "wikidata": "Q209942",
+    "country": "Senegal",
+    "positions": [
+      "winger"
+    ],
+    "born": 1992,
+    "sitelinks": 91,
+    "image": "sadio-mane.webp",
+    "credit": {
+      "author": "Bryan Berlin",
+      "licence": "CC BY-SA 4.0",
+      "licenceUrl": "https://creativecommons.org/licenses/by-sa/4.0",
+      "source": "https://commons.wikimedia.org/wiki/File:Sadio_Mane_France_v_Senegal_16_June_2026-450.jpg",
+      "changes": "Cropped and converted to pixel art"
+    }
+  },
+  {
+    "id": "samuel-eto-o",
+    "name": "Samuel Eto'o",
+    "wikidata": "Q1255625",
+    "country": "Cameroon",
+    "positions": [
+      "forward"
+    ],
+    "born": 1981,
+    "sitelinks": 91,
+    "image": "samuel-eto-o.webp",
+    "credit": {
+      "author": "BACHELOR45",
+      "licence": "CC BY-SA 4.0",
+      "licenceUrl": "https://creativecommons.org/licenses/by-sa/4.0",
+      "source": "https://commons.wikimedia.org/wiki/File:Sammuel_Eto%27o_Fils_02.jpg",
+      "changes": "Cropped and converted to pixel art"
+    }
+  },
+  {
+    "id": "james-rodriguez",
+    "name": "James Rodríguez",
+    "wikidata": "Q368441",
+    "country": "Colombia",
+    "positions": [
+      "forward",
+      "wing half"
+    ],
+    "born": 1991,
+    "sitelinks": 90,
+    "image": "james-rodriguez.webp",
+    "credit": {
+      "author": "Canal 10 Gold",
+      "licence": "CC BY 3.0",
+      "licenceUrl": "https://creativecommons.org/licenses/by/3.0",
+      "source": "https://commons.wikimedia.org/wiki/File:James_al_natural_-_Series,_02.jpg",
+      "changes": "Cropped and converted to pixel art"
+    }
+  },
+  {
+    "id": "sergio-aguero",
+    "name": "Sergio Agüero",
+    "wikidata": "Q119562",
+    "country": "Argentina",
+    "positions": [
+      "centre-forward"
+    ],
+    "born": 1988,
+    "sitelinks": 90,
+    "image": "sergio-aguero.webp",
+    "credit": {
+      "author": "Кирилл Венедиктов",
+      "licence": "CC BY-SA 3.0",
+      "licenceUrl": "https://creativecommons.org/licenses/by-sa/3.0",
+      "source": "https://commons.wikimedia.org/wiki/File:Ag%C3%BCero_in_2018.jpg",
+      "changes": "Cropped and converted to pixel art"
+    }
+  },
+  {
+    "id": "lukas-podolski",
+    "name": "Lukas Podolski",
+    "wikidata": "Q134976",
+    "country": "Germany",
+    "positions": [
+      "midfielder",
+      "wing half"
+    ],
+    "born": 1985,
+    "sitelinks": 90,
+    "image": "lukas-podolski.webp",
+    "credit": {
+      "author": "Jacek Stanislawek",
+      "licence": "CC BY-SA 4.0",
+      "licenceUrl": "https://creativecommons.org/licenses/by-sa/4.0",
+      "source": "https://commons.wikimedia.org/wiki/File:Lukas_Podolski_2023_(cropped).jpg",
+      "changes": "Cropped and converted to pixel art"
+    }
+  },
+  {
+    "id": "alfredo-di-stefano",
+    "name": "Alfredo Di Stéfano",
+    "wikidata": "Q164546",
+    "country": "Spain",
+    "positions": [
+      "forward"
+    ],
+    "born": 1926,
+    "sitelinks": 90,
+    "image": "alfredo-di-stefano.webp",
+    "credit": {
+      "author": "Unknown authorUnknown author",
+      "licence": "Public domain",
+      "licenceUrl": "",
+      "source": "https://commons.wikimedia.org/wiki/File:Di_stefano_argentina_(cropped).jpg",
+      "changes": "Cropped and converted to pixel art"
+    }
+  },
+  {
+    "id": "marco-van-basten",
+    "name": "Marco van Basten",
+    "wikidata": "Q483629",
+    "country": "Netherlands",
+    "positions": [
+      "forward"
+    ],
+    "born": 1964,
+    "sitelinks": 89,
+    "image": "marco-van-basten.webp",
+    "credit": {
+      "author": "Paul Blank - Postproduktie.nl",
+      "licence": "CC BY 2.5",
+      "licenceUrl": "https://creativecommons.org/licenses/by/2.5",
+      "source": "https://commons.wikimedia.org/wiki/File:Marco_van_Basten_(ca_2006).jpg",
+      "changes": "Cropped and converted to pixel art"
+    }
+  },
+  {
+    "id": "mario-balotelli",
+    "name": "Mario Balotelli",
+    "wikidata": "Q129700",
+    "country": "Italy",
+    "positions": [
+      "forward"
+    ],
+    "born": 1990,
+    "sitelinks": 89,
+    "image": "mario-balotelli.webp",
+    "credit": {
+      "author": "Kamran Hussain",
+      "licence": "CC BY-SA 2.0",
+      "licenceUrl": "https://creativecommons.org/licenses/by-sa/2.0",
+      "source": "https://commons.wikimedia.org/wiki/File:Mario_Balotelli_(15440231808)_(cropped)_(cropped).jpg",
+      "changes": "Cropped and converted to pixel art"
+    }
+  },
+  {
+    "id": "romelu-lukaku",
+    "name": "Romelu Lukaku",
+    "wikidata": "Q313316",
+    "country": "Belgium",
+    "positions": [
+      "forward"
+    ],
+    "born": 1993,
+    "sitelinks": 89,
+    "image": "romelu-lukaku.webp",
+    "credit": {
+      "author": "Vyacheslav Evdokimov",
+      "licence": "CC BY-SA 3.0",
+      "licenceUrl": "https://creativecommons.org/licenses/by-sa/3.0",
+      "source": "https://commons.wikimedia.org/wiki/File:Romelu_Lukaku_2021.jpg",
+      "changes": "Cropped and converted to pixel art"
+    }
+  },
+  {
+    "id": "gary-lineker",
+    "name": "Gary Lineker",
+    "wikidata": "Q47778",
+    "country": "England",
+    "positions": [
+      "forward"
+    ],
+    "born": 1960,
+    "sitelinks": 89,
+    "image": "gary-lineker.webp",
+    "credit": {
+      "author": "Liton Ali",
+      "licence": "CC BY 2.0",
+      "licenceUrl": "https://creativecommons.org/licenses/by/2.0",
+      "source": "https://commons.wikimedia.org/wiki/File:Gary_Lineker_(cropped).jpg",
+      "changes": "Cropped and converted to pixel art"
+    }
+  },
+  {
+    "id": "olivier-giroud",
+    "name": "Olivier Giroud",
+    "wikidata": "Q1911",
+    "country": "France",
+    "positions": [
+      "forward"
+    ],
+    "born": 1986,
+    "sitelinks": 89,
+    "image": "olivier-giroud.webp",
+    "credit": {
+      "author": "Антон Зайцев",
+      "licence": "CC BY-SA 3.0",
+      "licenceUrl": "https://creativecommons.org/licenses/by-sa/3.0",
+      "source": "https://commons.wikimedia.org/wiki/File:Olivier_Giroud_2018.jpg",
+      "changes": "Cropped and converted to pixel art"
+    }
+  },
+  {
+    "id": "franck-ribery",
+    "name": "Franck Ribéry",
+    "wikidata": "Q1918",
+    "country": "France",
+    "positions": [
+      "wing half"
+    ],
+    "born": 1983,
+    "sitelinks": 89,
+    "image": "franck-ribery.webp",
+    "credit": {
+      "author": "Sven Mandel",
+      "licence": "CC BY-SA 4.0",
+      "licenceUrl": "https://creativecommons.org/licenses/by-sa/4.0",
+      "source": "https://commons.wikimedia.org/wiki/File:Franck_Ribery_2019_(cropped).jpg",
+      "changes": "Cropped and converted to pixel art"
+    }
+  },
+  {
+    "id": "thibaut-courtois",
+    "name": "Thibaut Courtois",
+    "wikidata": "Q73360",
+    "country": "Belgium",
+    "positions": [
+      "goalkeeper"
+    ],
+    "born": 1992,
+    "sitelinks": 88,
+    "image": "thibaut-courtois.webp",
+    "credit": {
+      "author": "Кирилл Венедиктов",
+      "licence": "CC BY-SA 3.0",
+      "licenceUrl": "https://creativecommons.org/licenses/by-sa/3.0",
+      "source": "https://commons.wikimedia.org/wiki/File:Thibaut_Courtois_at_the_2018_World_Cup_(cropped).jpg",
+      "changes": "Cropped and converted to pixel art"
+    }
+  },
+  {
+    "id": "george-best",
+    "name": "George Best",
+    "wikidata": "Q164521",
+    "country": "Northern Ireland",
+    "positions": [
+      "wing half"
+    ],
+    "born": 1946,
+    "sitelinks": 88,
+    "image": "george-best.webp",
+    "credit": {
+      "author": "Hans Peters for Anefo",
+      "licence": "CC0",
+      "licenceUrl": "http://creativecommons.org/publicdomain/zero/1.0/deed.en",
+      "source": "https://commons.wikimedia.org/wiki/File:George_Best_(1976).jpg",
+      "changes": "Cropped and converted to pixel art"
+    }
+  },
+  {
+    "id": "lev-yashin",
+    "name": "Lev Yashin",
+    "wikidata": "Q167828",
+    "country": "Soviet Union",
+    "positions": [
+      "goalkeeper"
+    ],
+    "born": 1929,
+    "sitelinks": 88,
+    "image": "lev-yashin.webp",
+    "credit": {
+      "author": "Unknown authorUnknown author",
+      "licence": "Public domain",
+      "licenceUrl": "",
+      "source": "https://commons.wikimedia.org/wiki/File:Lev_Yashin_1966.jpg",
+      "changes": "Cropped and converted to pixel art"
+    }
+  },
+  {
+    "id": "andriy-shevchenko",
+    "name": "Andriy Shevchenko",
+    "wikidata": "Q41244",
+    "country": "Ukraine",
+    "positions": [
+      "forward"
+    ],
+    "born": 1976,
+    "sitelinks": 87,
+    "image": "andriy-shevchenko.webp",
+    "credit": {
+      "author": "Міністерство молоді та спорту України",
+      "licence": "CC BY 4.0",
+      "licenceUrl": "https://creativecommons.org/licenses/by/4.0",
+      "source": "https://commons.wikimedia.org/wiki/File:%D0%90%D0%BD%D0%B4%D1%80%D1%96%D0%B9_%D0%A8%D0%B5%D0%B2%D1%87%D0%B5%D0%BD%D0%BA%D0%BE_2024_(cropped).png",
+      "changes": "Cropped and converted to pixel art"
+    }
+  },
+  {
+    "id": "ousmane-dembele",
+    "name": "Ousmane Dembélé",
+    "wikidata": "Q20851003",
+    "country": "France",
+    "positions": [
+      "forward"
+    ],
+    "born": 1997,
+    "sitelinks": 87,
+    "image": "ousmane-dembele.webp",
+    "credit": {
+      "author": "Bryan Berlin",
+      "licence": "CC BY-SA 4.0",
+      "licenceUrl": "https://creativecommons.org/licenses/by-sa/4.0",
+      "source": "https://commons.wikimedia.org/wiki/File:Ousmane_Dembele_France_v_Senegal_16_June_2026-341_(cropped).jpg",
+      "changes": "Cropped and converted to pixel art"
+    }
+  },
+  {
+    "id": "diego-forlan",
+    "name": "Diego Forlán",
+    "wikidata": "Q261534",
+    "country": "Uruguay",
+    "positions": [
+      "forward"
+    ],
+    "born": 1979,
+    "sitelinks": 87,
+    "image": "diego-forlan.webp",
+    "credit": {
+      "author": "Ailura",
+      "licence": "CC BY-SA 3.0 at",
+      "licenceUrl": "https://creativecommons.org/licenses/by-sa/3.0/at/deed.en",
+      "source": "https://commons.wikimedia.org/wiki/File:U10_Diego_Forl%C3%A1n_7524.jpg",
+      "changes": "Cropped and converted to pixel art"
+    }
+  },
+  {
+    "id": "philipp-lahm",
+    "name": "Philipp Lahm",
+    "wikidata": "Q43682",
+    "country": "Germany",
+    "positions": [
+      "full-back"
+    ],
+    "born": 1983,
+    "sitelinks": 86,
+    "image": "philipp-lahm.webp",
+    "credit": {
+      "author": "Elena Ternovaja",
+      "licence": "CC BY-SA 3.0",
+      "licenceUrl": "https://creativecommons.org/licenses/by-sa/3.0",
+      "source": "https://commons.wikimedia.org/wiki/File:Philipp_Lahm_auf_der_Berlinale_2024,_Ausschnitt.jpg",
+      "changes": "Cropped and converted to pixel art"
+    }
+  },
+  {
+    "id": "marcus-rashford",
+    "name": "Marcus Rashford",
+    "wikidata": "Q22951255",
+    "country": "England",
+    "positions": [
+      "forward"
+    ],
+    "born": 1997,
+    "sitelinks": 86,
+    "image": "marcus-rashford.webp",
+    "credit": {
+      "author": "Bryan Berlin",
+      "licence": "CC BY-SA 4.0",
+      "licenceUrl": "https://creativecommons.org/licenses/by-sa/4.0",
+      "source": "https://commons.wikimedia.org/wiki/File:Marcus_Rashford_England_v_Panama_27_June_26-047.jpg",
+      "changes": "Cropped and converted to pixel art"
+    }
+  },
+  {
+    "id": "alessandro-del-piero",
+    "name": "Alessandro Del Piero",
+    "wikidata": "Q624",
+    "country": "Italy",
+    "positions": [
+      "forward"
+    ],
+    "born": 1974,
+    "sitelinks": 86,
+    "image": "alessandro-del-piero.webp",
+    "credit": {
+      "author": "Retouched by Blackcat",
+      "licence": "CC BY-SA 2.0",
+      "licenceUrl": "https://creativecommons.org/licenses/by-sa/2.0",
+      "source": "https://commons.wikimedia.org/wiki/File:Alessandro_Del_Piero,_New_York_NY_2015.jpg",
+      "changes": "Cropped and converted to pixel art"
+    }
+  },
+  {
+    "id": "ryan-giggs",
+    "name": "Ryan Giggs",
+    "wikidata": "Q10524",
+    "country": "Wales",
+    "positions": [
+      "midfielder",
+      "wing half"
+    ],
+    "born": 1973,
+    "sitelinks": 86,
+    "image": "ryan-giggs.webp",
+    "credit": {
+      "author": "James Adams",
+      "licence": "CC BY 2.0",
+      "licenceUrl": "https://creativecommons.org/licenses/by/2.0",
+      "source": "https://commons.wikimedia.org/wiki/File:Ryan_Giggs_in_2008.jpg",
+      "changes": "Cropped and converted to pixel art"
+    }
+  },
+  {
+    "id": "david-villa",
+    "name": "David Villa",
+    "wikidata": "Q83006",
+    "country": "Spain",
+    "positions": [
+      "forward"
+    ],
+    "born": 1981,
+    "sitelinks": 85,
+    "image": "david-villa.webp",
+    "credit": {
+      "author": "Tânia Rêgo/ABr",
+      "licence": "CC BY 3.0 br",
+      "licenceUrl": "https://creativecommons.org/licenses/by/3.0/br/deed.en",
+      "source": "https://commons.wikimedia.org/wiki/File:Spain-Tahiti,_Confederations_Cup_2013_(02)_(Villa_crop).jpg",
+      "changes": "Cropped and converted to pixel art"
+    }
+  },
+  {
+    "id": "toni-kroos",
+    "name": "Toni Kroos",
+    "wikidata": "Q131234",
+    "country": "Germany",
+    "positions": [
+      "midfielder"
+    ],
+    "born": 1990,
+    "sitelinks": 85,
+    "image": "toni-kroos.webp",
+    "credit": {
+      "author": "https://www.youtube.com/@realmadrid",
+      "licence": "CC BY 3.0",
+      "licenceUrl": "https://creativecommons.org/licenses/by/3.0",
+      "source": "https://commons.wikimedia.org/wiki/File:Toni_Kroos_Real_Madrid_2021.jpg",
+      "changes": "Cropped and converted to pixel art"
+    }
+  },
+  {
+    "id": "andrea-pirlo",
+    "name": "Andrea Pirlo",
+    "wikidata": "Q43926",
+    "country": "Italy",
+    "positions": [
+      "midfielder"
+    ],
+    "born": 1979,
+    "sitelinks": 85,
+    "image": "andrea-pirlo.webp",
+    "credit": {
+      "author": "Clément Bucco-Lechat",
+      "licence": "CC BY-SA 3.0",
+      "licenceUrl": "https://creativecommons.org/licenses/by-sa/3.0",
+      "source": "https://commons.wikimedia.org/wiki/File:20150616_-_Portugal_-_Italie_-_Gen%C3%A8ve_-_Andrea_Pirlo_(cropped).jpg",
+      "changes": "Cropped and converted to pixel art"
+    }
+  },
+  {
+    "id": "xabi-alonso",
+    "name": "Xabi Alonso",
+    "wikidata": "Q208104",
+    "country": "Spain",
+    "positions": [
+      "midfielder"
+    ],
+    "born": 1981,
+    "sitelinks": 85,
+    "image": "xabi-alonso.webp",
+    "credit": {
+      "author": "DONOSTIA KULTURA",
+      "licence": "CC BY-SA 2.0",
+      "licenceUrl": "https://creativecommons.org/licenses/by-sa/2.0",
+      "source": "https://commons.wikimedia.org/wiki/File:Los_Caminos_del_f%C3%BAtbol._Xabi_Alonso_(39666778464)_(cropped).jpg",
+      "changes": "Cropped and converted to pixel art"
+    }
+  },
+  {
+    "id": "angel-di-maria",
+    "name": "Ángel Di María",
+    "wikidata": "Q251683",
+    "country": "Argentina",
+    "positions": [
+      "wing half"
+    ],
+    "born": 1988,
+    "sitelinks": 85,
+    "image": "angel-di-maria.webp",
+    "credit": {
+      "author": "Кирилл Венедиктов",
+      "licence": "CC BY-SA 3.0",
+      "licenceUrl": "https://creativecommons.org/licenses/by-sa/3.0",
+      "source": "https://commons.wikimedia.org/wiki/File:NIG-ARG_(5).jpg",
+      "changes": "Cropped and converted to pixel art"
+    }
+  },
+  {
+    "id": "edinson-cavani",
+    "name": "Edinson Cavani",
+    "wikidata": "Q167790",
+    "country": "Uruguay",
+    "positions": [
+      "forward"
+    ],
+    "born": 1987,
+    "sitelinks": 85,
+    "image": "edinson-cavani.webp",
+    "credit": {
+      "author": "soccerdigital",
+      "licence": "Public domain",
+      "licenceUrl": "",
+      "source": "https://commons.wikimedia.org/wiki/File:PALMEIRAS_X_BOCA_JUNIORS_-_COPA_LIBERTADORES_2023_-_53286889335_(cropped_2).jpg",
+      "changes": "Cropped and converted to pixel art"
+    }
+  },
+  {
+    "id": "hugo-lloris",
+    "name": "Hugo Lloris",
+    "wikidata": "Q1907",
+    "country": "France",
+    "positions": [
+      "goalkeeper"
+    ],
+    "born": 1986,
+    "sitelinks": 85,
+    "image": "hugo-lloris.webp",
+    "credit": {
+      "author": "Кирилл Венедиктов",
+      "licence": "CC BY-SA 3.0",
+      "licenceUrl": "https://creativecommons.org/licenses/by-sa/3.0",
+      "source": "https://commons.wikimedia.org/wiki/File:Lloris_2018_(cropped).jpg",
+      "changes": "Cropped and converted to pixel art"
+    }
+  },
+  {
+    "id": "cesc-fabregas",
+    "name": "Cesc Fàbregas",
+    "wikidata": "Q17499",
+    "country": "Spain",
+    "positions": [
+      "midfielder"
+    ],
+    "born": 1987,
+    "sitelinks": 85,
+    "image": "cesc-fabregas.webp",
+    "credit": {
+      "author": "Web Summit",
+      "licence": "CC BY 2.0",
+      "licenceUrl": "https://creativecommons.org/licenses/by/2.0",
+      "source": "https://commons.wikimedia.org/wiki/File:2023_-_Cesc_Fabregas_(cropped).jpg",
+      "changes": "Cropped and converted to pixel art"
+    }
+  },
+  {
+    "id": "roberto-carlos",
+    "name": "Roberto Carlos",
+    "wikidata": "Q429039",
+    "country": "Brazil",
+    "positions": [
+      "full-back"
+    ],
+    "born": 1973,
+    "sitelinks": 84,
+    "image": "roberto-carlos.webp",
+    "credit": {
+      "author": "Web Summit",
+      "licence": "CC BY 2.0",
+      "licenceUrl": "https://creativecommons.org/licenses/by/2.0",
+      "source": "https://commons.wikimedia.org/wiki/File:LS3_1288_(53332367864)_(cropped).jpg",
+      "changes": "Cropped and converted to pixel art"
+    }
+  },
+  {
+    "id": "daniel-alves",
+    "name": "Daniel Alves",
+    "wikidata": "Q172720",
+    "country": "Brazil",
+    "positions": [
+      "defender",
+      "full-back"
+    ],
+    "born": 1983,
+    "sitelinks": 84,
+    "image": "daniel-alves.webp",
+    "credit": {
+      "author": "Palácio do Planalto from Brasilia, Brasil",
+      "licence": "CC BY 2.0",
+      "licenceUrl": "https://creativecommons.org/licenses/by/2.0",
+      "source": "https://commons.wikimedia.org/wiki/File:07_07_2019_Final_da_Copa_Am%C3%A9rica_2019_(48226649586)_(cropped).jpg",
+      "changes": "Cropped and converted to pixel art"
+    }
+  },
+  {
+    "id": "fabio-cannavaro",
+    "name": "Fabio Cannavaro",
+    "wikidata": "Q102027",
+    "country": "Italy",
+    "positions": [
+      "centre-back",
+      "defender"
+    ],
+    "born": 1973,
+    "sitelinks": 83,
+    "image": "fabio-cannavaro.webp",
+    "credit": {
+      "author": "Original: Mech867 / Derivative work: Danyele",
+      "licence": "CC BY 4.0",
+      "licenceUrl": "https://creativecommons.org/licenses/by/4.0",
+      "source": "https://commons.wikimedia.org/wiki/File:Fabio_Cannavaro_-_2024_(cropped).jpg",
+      "changes": "Cropped and converted to pixel art"
+    }
+  },
+  {
+    "id": "bobby-charlton",
+    "name": "Bobby Charlton",
+    "wikidata": "Q171583",
+    "country": "England",
+    "positions": [
+      "midfielder",
+      "forward"
+    ],
+    "born": 1937,
+    "sitelinks": 83,
+    "image": "bobby-charlton.webp",
+    "credit": {
+      "author": "Panini",
+      "licence": "Public domain",
+      "licenceUrl": "",
+      "source": "https://commons.wikimedia.org/wiki/File:Bobby_Charlton_en_1966_160.jpg",
+      "changes": "Cropped and converted to pixel art"
+    }
+  },
+  {
+    "id": "raul",
+    "name": "Raúl",
+    "wikidata": "Q11576",
+    "country": "Spain",
+    "positions": [
+      "forward"
+    ],
+    "born": 1977,
+    "sitelinks": 83,
+    "image": "raul.webp",
+    "credit": {
+      "author": "Doha Stadium Plus Qatar",
+      "licence": "CC BY 2.0",
+      "licenceUrl": "https://creativecommons.org/licenses/by/2.0",
+      "source": "https://commons.wikimedia.org/wiki/File:Raul_Gonzalez_2012_2.jpg",
+      "changes": "Cropped and converted to pixel art"
+    }
+  },
+  {
+    "id": "oliver-kahn",
+    "name": "Oliver Kahn",
+    "wikidata": "Q131261",
+    "country": "Germany",
+    "positions": [
+      "goalkeeper"
+    ],
+    "born": 1969,
+    "sitelinks": 82,
+    "image": "oliver-kahn.webp",
+    "credit": {
+      "author": "Steffen Prößdorf",
+      "licence": "CC BY-SA 4.0",
+      "licenceUrl": "https://creativecommons.org/licenses/by-sa/4.0",
+      "source": "https://commons.wikimedia.org/wiki/File:2022-07-30_Fu%C3%9Fball,_M%C3%A4nner,_DFL-Supercup,_RB_Leipzig_-_FC_Bayern_M%C3%BCnchen_1DX_3179_by_Stepro.jpg",
+      "changes": "Cropped and converted to pixel art"
+    }
+  },
+  {
+    "id": "sergio-busquets",
+    "name": "Sergio Busquets",
+    "wikidata": "Q49704",
+    "country": "Spain",
+    "positions": [
+      "defensive midfielder"
+    ],
+    "born": 1988,
+    "sitelinks": 82,
+    "image": "sergio-busquets.webp",
+    "credit": {
+      "author": "Bryan Berlin",
+      "licence": "CC BY-SA 4.0",
+      "licenceUrl": "https://creativecommons.org/licenses/by-sa/4.0",
+      "source": "https://commons.wikimedia.org/wiki/File:Sergio_Busquets_NYCFC_Miami_24_Sep_2025-020_(cropped).jpg",
+      "changes": "Cropped and converted to pixel art"
+    }
+  },
+  {
+    "id": "vinicius-junior",
+    "name": "Vinícius Júnior",
+    "wikidata": "Q28973866",
+    "country": "Brazil",
+    "positions": [
+      "forward",
+      "wing half"
+    ],
+    "born": 2000,
+    "sitelinks": 82,
+    "image": "vinicius-junior.webp",
+    "credit": {
+      "author": "Bryan Berlin",
+      "licence": "CC BY-SA 4.0",
+      "licenceUrl": "https://creativecommons.org/licenses/by-sa/4.0",
+      "source": "https://commons.wikimedia.org/wiki/File:Vin%C3%ADcius_J%C3%BAnior_Brazil_V_Morocco_13_June_2026-207_(cropped).jpg",
+      "changes": "Cropped and converted to pixel art"
+    }
+  },
+  {
+    "id": "paolo-maldini",
+    "name": "Paolo Maldini",
+    "wikidata": "Q483027",
+    "country": "Italy",
+    "positions": [
+      "centre-back"
+    ],
+    "born": 1968,
+    "sitelinks": 81,
+    "image": "paolo-maldini.webp",
+    "credit": {
+      "author": "Foad Ashtari",
+      "licence": "CC BY 4.0",
+      "licenceUrl": "https://creativecommons.org/licenses/by/4.0",
+      "source": "https://commons.wikimedia.org/wiki/File:Paolo_Maldini_press_conference_in_Tehran_(cropped).jpg",
+      "changes": "Cropped and converted to pixel art"
+    }
+  },
+  {
+    "id": "ivan-rakitic",
+    "name": "Ivan Rakitić",
+    "wikidata": "Q115453",
+    "country": "Switzerland",
+    "positions": [
+      "midfielder"
+    ],
+    "born": 1988,
+    "sitelinks": 81,
+    "image": "ivan-rakitic.webp",
+    "credit": {
+      "author": "Дмитрий Пукалик",
+      "licence": "CC BY-SA 3.0",
+      "licenceUrl": "https://creativecommons.org/licenses/by-sa/3.0",
+      "source": "https://commons.wikimedia.org/wiki/File:Ivan_Rakiti%C4%87_2020_(cropped).jpg",
+      "changes": "Cropped and converted to pixel art"
+    }
+  },
+  {
+    "id": "david-de-gea",
+    "name": "David de Gea",
+    "wikidata": "Q150268",
+    "country": "Spain",
+    "positions": [
+      "goalkeeper"
+    ],
+    "born": 1990,
+    "sitelinks": 81,
+    "image": "david-de-gea.webp",
+    "credit": {
+      "author": "Кирилл Венедиктов",
+      "licence": "CC BY-SA 3.0",
+      "licenceUrl": "https://creativecommons.org/licenses/by-sa/3.0",
+      "source": "https://commons.wikimedia.org/wiki/File:David_de_Gea_2017.jpg",
+      "changes": "Cropped and converted to pixel art"
+    }
+  },
+  {
+    "id": "michael-ballack",
+    "name": "Michael Ballack",
+    "wikidata": "Q11948",
+    "country": "Germany",
+    "positions": [
+      "midfielder"
+    ],
+    "born": 1976,
+    "sitelinks": 81,
+    "image": "michael-ballack.webp",
+    "credit": {
+      "author": "Die Bildermacherei Cuxhaven, Kerstin Tietje",
+      "licence": "CC BY-SA 4.0",
+      "licenceUrl": "https://creativecommons.org/licenses/by-sa/4.0",
+      "source": "https://commons.wikimedia.org/wiki/File:10._Tag_der_Legenden_2014_69.jpg",
+      "changes": "Cropped and converted to pixel art"
+    }
+  },
+  {
+    "id": "luis-figo",
+    "name": "Luís Figo",
+    "wikidata": "Q483145",
+    "country": "Portugal",
+    "positions": [
+      "wing half"
+    ],
+    "born": 1972,
+    "sitelinks": 80,
+    "image": "luis-figo.webp",
+    "credit": {
+      "author": "Biser Todorov",
+      "licence": "CC BY 4.0",
+      "licenceUrl": "https://creativecommons.org/licenses/by/4.0",
+      "source": "https://commons.wikimedia.org/wiki/File:L._Figo_2017_(cropped).jpg",
+      "changes": "Cropped and converted to pixel art"
+    }
+  },
+  {
+    "id": "jordi-alba",
+    "name": "Jordi Alba",
+    "wikidata": "Q187159",
+    "country": "Spain",
+    "positions": [
+      "full-back"
+    ],
+    "born": 1989,
+    "sitelinks": 80,
+    "image": "jordi-alba.webp",
+    "credit": {
+      "author": "Кирилл Венедиктов",
+      "licence": "CC BY-SA 3.0",
+      "licenceUrl": "https://creativecommons.org/licenses/by-sa/3.0",
+      "source": "https://commons.wikimedia.org/wiki/File:Russia-Spain_2017_(11).jpg",
+      "changes": "Cropped and converted to pixel art"
+    }
+  },
+  {
+    "id": "marcelo-vieira",
+    "name": "Marcelo Vieira",
+    "wikidata": "Q38136",
+    "country": "Spain",
+    "positions": [
+      "full-back"
+    ],
+    "born": 1988,
+    "sitelinks": 80,
+    "image": "marcelo-vieira.webp",
+    "credit": {
+      "author": "Granada",
+      "licence": "CC BY-SA 4.0",
+      "licenceUrl": "https://creativecommons.org/licenses/by-sa/4.0",
+      "source": "https://commons.wikimedia.org/wiki/File:20180610_FIFA_Friendly_Match_Austria_vs._Brazil_Marcelo_850_1622.jpg",
+      "changes": "Cropped and converted to pixel art"
+    }
+  },
+  {
+    "id": "eric-cantona",
+    "name": "Eric Cantona",
+    "wikidata": "Q170328",
+    "country": "France",
+    "positions": [
+      "forward"
+    ],
+    "born": 1966,
+    "sitelinks": 80,
+    "image": "eric-cantona.webp",
+    "credit": {
+      "author": "Georges Biard",
+      "licence": "CC BY-SA 3.0",
+      "licenceUrl": "https://creativecommons.org/licenses/by-sa/3.0",
+      "source": "https://commons.wikimedia.org/wiki/File:Eric_Cantona_Cannes_2009.jpg",
+      "changes": "Cropped and converted to pixel art"
+    }
+  },
+  {
+    "id": "romario",
+    "name": "Romário",
+    "wikidata": "Q178649",
+    "country": "Brazil",
+    "positions": [
+      "forward",
+      "centre-forward"
+    ],
+    "born": 1966,
+    "sitelinks": 80,
+    "image": "romario.webp",
+    "credit": {
+      "author": "Agência Senado from Brasilia, Brazil",
+      "licence": "CC BY 2.0",
+      "licenceUrl": "https://creativecommons.org/licenses/by/2.0",
+      "source": "https://commons.wikimedia.org/wiki/File:Senadores_da_57%C2%AA_Legislatura_(52689451805).jpg",
+      "changes": "Cropped and converted to pixel art"
+    }
+  },
+  {
+    "id": "rivaldo",
+    "name": "Rivaldo",
+    "wikidata": "Q483577",
+    "country": "Brazil",
+    "positions": [
+      "midfielder",
+      "forward"
+    ],
+    "born": 1972,
+    "sitelinks": 79,
+    "image": "rivaldo.webp",
+    "credit": {
+      "author": "w:User:Nursultan12",
+      "licence": "CC BY-SA 4.0",
+      "licenceUrl": "https://creativecommons.org/licenses/by-sa/4.0",
+      "source": "https://commons.wikimedia.org/wiki/File:Rivaldo_bunyodkor_2010.jpg",
+      "changes": "Cropped and converted to pixel art"
+    }
+  },
+  {
+    "id": "john-terry",
+    "name": "John Terry",
+    "wikidata": "Q83456",
+    "country": "England",
+    "positions": [
+      "centre-back"
+    ],
+    "born": 1980,
+    "sitelinks": 79,
+    "image": "john-terry.webp",
+    "credit": {
+      "author": "ChristopherJClarke",
+      "licence": "CC BY-SA 4.0",
+      "licenceUrl": "https://creativecommons.org/licenses/by-sa/4.0",
+      "source": "https://commons.wikimedia.org/wiki/File:John_Terry_at_pro-am_Wentworth_golf_course_September_2023_(cropped).jpg",
       "changes": "Cropped and converted to pixel art"
     }
   }
