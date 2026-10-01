@@ -1,0 +1,179 @@
+[
+  {
+    "id": "lionel-messi",
+    "name": "Lionel Messi",
+    "wikidata": "Q615",
+    "country": "Argentina",
+    "positions": [
+      "midfielder",
+      "forward"
+    ],
+    "image": "lionel-messi.webp",
+    "credit": {
+      "author": "Bryan Berlin",
+      "licence": "CC BY-SA 4.0",
+      "licenceUrl": "https://creativecommons.org/licenses/by-sa/4.0",
+      "source": "https://commons.wikimedia.org/wiki/File:Leo_Messi_Argentina_v_Egypt_7_July_2026-1.jpg",
+      "changes": "Cropped and converted to pixel art"
+    }
+  },
+  {
+    "id": "cristiano-ronaldo",
+    "name": "Cristiano Ronaldo",
+    "wikidata": "Q11571",
+    "country": "Portugal",
+    "positions": [
+      "forward",
+      "wing half"
+    ],
+    "image": "cristiano-ronaldo.webp",
+    "credit": {
+      "author": "Bryan Berlin",
+      "licence": "CC BY-SA 4.0",
+      "licenceUrl": "https://creativecommons.org/licenses/by-sa/4.0",
+      "source": "https://commons.wikimedia.org/wiki/File:Cristiano_Ronaldo_Croatia_v_Portugal_2_July_2026-075_(cropped).jpg",
+      "changes": "Cropped and converted to pixel art"
+    }
+  },
+  {
+    "id": "pele",
+    "name": "Pelé",
+    "wikidata": "Q12897",
+    "country": "Brazil",
+    "positions": [
+      "midfielder",
+      "forward"
+    ],
+    "image": "pele.webp",
+    "credit": {
+      "author": "Unknown authorUnknown author",
+      "licence": "Public domain",
+      "licenceUrl": "",
+      "source": "https://commons.wikimedia.org/wiki/File:Pele_con_brasil_(cropped).jpg",
+      "changes": "Cropped and converted to pixel art"
+    }
+  },
+  {
+    "id": "diego-maradona",
+    "name": "Diego Maradona",
+    "wikidata": "Q17515",
+    "country": "Argentina",
+    "positions": [
+      "midfielder",
+      "forward"
+    ],
+    "image": "diego-maradona.webp",
+    "credit": {
+      "author": "Unknown authorUnknown author",
+      "licence": "Public domain",
+      "licenceUrl": "",
+      "source": "https://commons.wikimedia.org/wiki/File:Argentina_celebrando_copa_(cropped).jpg",
+      "changes": "Cropped and converted to pixel art"
+    }
+  },
+  {
+    "id": "neymar",
+    "name": "Neymar",
+    "wikidata": "Q142794",
+    "country": "Brazil",
+    "positions": [
+      "wing half"
+    ],
+    "image": "neymar.webp",
+    "credit": {
+      "author": "Bryan Berlin",
+      "licence": "CC BY-SA 4.0",
+      "licenceUrl": "https://creativecommons.org/licenses/by-sa/4.0",
+      "source": "https://commons.wikimedia.org/wiki/File:Neymar_Junior_Brazil_V_Morocco_13_June_2026-40.jpg",
+      "changes": "Cropped and converted to pixel art"
+    }
+  },
+  {
+    "id": "zinedine-zidane",
+    "name": "Zinedine Zidane",
+    "wikidata": "Q1835",
+    "country": "France",
+    "positions": [
+      "midfielder",
+      "attacking midfielder"
+    ],
+    "image": "zinedine-zidane.webp",
+    "credit": {
+      "author": "Hadi Abyar",
+      "licence": "CC BY 4.0",
+      "licenceUrl": "https://creativecommons.org/licenses/by/4.0",
+      "source": "https://commons.wikimedia.org/wiki/File:Zinedine_Zidane_by_Tasnim_03.jpg",
+      "changes": "Cropped and converted to pixel art"
+    }
+  },
+  {
+    "id": "david-beckham",
+    "name": "David Beckham",
+    "wikidata": "Q10520",
+    "country": "England",
+    "positions": [
+      "midfielder"
+    ],
+    "image": "david-beckham.webp",
+    "credit": {
+      "author": "Soccer Aid for Unicef",
+      "licence": "CC BY 3.0",
+      "licenceUrl": "https://creativecommons.org/licenses/by/3.0",
+      "source": "https://commons.wikimedia.org/wiki/File:David_Beckham_UNICEF_(cropped).jpg",
+      "changes": "Cropped and converted to pixel art"
+    }
+  },
+  {
+    "id": "kylian-mbappe",
+    "name": "Kylian Mbappé",
+    "wikidata": "Q21621995",
+    "country": "France",
+    "positions": [
+      "forward"
+    ],
+    "image": "kylian-mbappe.webp",
+    "credit": {
+      "author": "Bryan Berlin",
+      "licence": "CC BY-SA 4.0",
+      "licenceUrl": "https://creativecommons.org/licenses/by-sa/4.0",
+      "source": "https://commons.wikimedia.org/wiki/File:Kylian_Mbappe_France_v_Senegal_16_June_2026-391_(cropped).jpg",
+      "changes": "Cropped and converted to pixel art"
+    }
+  },
+  {
+    "id": "johan-cruyff",
+    "name": "Johan Cruyff",
+    "wikidata": "Q17163",
+    "country": "Netherlands",
+    "positions": [
+      "midfielder",
+      "forward"
+    ],
+    "image": "johan-cruyff.webp",
+    "credit": {
+      "author": "Nationaal Archief",
+      "licence": "CC BY-SA 3.0 nl",
+      "licenceUrl": "https://creativecommons.org/licenses/by-sa/3.0/nl/deed.en",
+      "source": "https://commons.wikimedia.org/wiki/File:Johan_Cruyff_in_trainingspak_Nederlands_Elftal_,_kop.jpg",
+      "changes": "Cropped and converted to pixel art"
+    }
+  },
+  {
+    "id": "francesco-totti",
+    "name": "Francesco Totti",
+    "wikidata": "Q20110",
+    "country": "Italy",
+    "positions": [
+      "midfielder",
+      "forward"
+    ],
+    "image": "francesco-totti.webp",
+    "credit": {
+      "author": "Photojournalist Roberto Vicario derivative work: Clarus The Dogcow (talk)",
+      "licence": "CC BY-SA 3.0",
+      "licenceUrl": "https://creativecommons.org/licenses/by-sa/3.0",
+      "source": "https://commons.wikimedia.org/wiki/File:Francesco_Totti_Vicario_(crop).jpg",
+      "changes": "Cropped and converted to pixel art"
+    }
+  }
+]

@@ -50,8 +50,10 @@ describe('translation coverage', () => {
   // wrong text to a question id.
   it.each(LOCALES.filter((l) => l !== 'en'))('%s covers every topic entry for entry', (locale) => {
     const translations = TRANSLATIONS[locale]
+    // Picture questions are a generic prompt plus proper nouns, so they fall
+    // back to the English text until a locale needs its own prompt.
     const mismatches = TOPICS.filter(
-      ([prefix, , entries]) => translations?.[prefix]?.length !== entries.length,
+      ([prefix, , entries]) => prefix !== 'pp' && translations?.[prefix]?.length !== entries.length,
     ).map(([prefix, , entries]) => ({
       topic: prefix,
       expected: entries.length,

@@ -3,6 +3,7 @@ import type { Kick, Stage } from '../../types/match'
 import { getResult, KICKS_PER_SIDE } from '../../game/shootout'
 import { matchStore, QUESTION_TIME_SECONDS } from './store'
 import { PitchScene, type SceneFeedback } from './components/PitchScene'
+import { playerPortrait } from './playerPortrait'
 import type { ShotEvent } from './engine/shotTimeline'
 import { CoinReward } from './components/CoinReward'
 import { PreMatchCountdown } from '../lobby/components/PreMatchCountdown'
@@ -294,6 +295,13 @@ export function MatchScreen({ onExit, onMainMenu }: Props) {
 
           <section className="match__card" aria-label={t('match.questionAria')}>
             <p className="match__prompt">{question.prompt}</p>
+            {playerPortrait(question.image) && (
+              <img
+                className="match__picture"
+                src={playerPortrait(question.image)}
+                alt={question.prompt}
+              />
+            )}
             <div className="match__answers">
               {question.answers.map((answer) => (
                 <button

@@ -12,7 +12,19 @@ import { sampleQuestions } from '../../services/trivia/sampler'
 import '../match/MatchScreen.css'
 import './TestModeScreen.css'
 
+import { playerPortrait } from '../match/playerPortrait'
+
 type Props = { onExit: () => void }
+
+const PICTURE_QUESTION: Question = {
+  id: 'picture-ronaldo',
+  prompt: 'Who is this player?',
+  correctAnswer: 'Cristiano Ronaldo',
+  answers: ['Lionel Messi', 'Cristiano Ronaldo', 'Kylian Mbappé', 'Neymar'],
+  difficulty: 'easy',
+  category: 'Picture',
+  image: 'cristiano-ronaldo',
+}
 
 type Shot = { label: string; stage: Stage; feedback: SceneFeedback; reaction?: KeeperReaction }
 
@@ -51,6 +63,11 @@ export function TestModeScreen({ onExit }: Props) {
 
   function openTrivia() {
     setQuestion(sampleQuestions(localisedBank(i18nStore.getLocale()), 1)[0] ?? null)
+    setTimeLeft(QUESTION_TIME_SECONDS)
+  }
+
+  function openPicture() {
+    setQuestion(PICTURE_QUESTION)
     setTimeLeft(QUESTION_TIME_SECONDS)
   }
 
@@ -103,6 +120,13 @@ export function TestModeScreen({ onExit }: Props) {
           </div>
           <section className="match__card" aria-label="Test question">
             <p className="match__prompt">{question.prompt}</p>
+            {playerPortrait(question.image) && (
+              <img
+                className="match__picture"
+                src={playerPortrait(question.image)}
+                alt={question.prompt}
+              />
+            )}
             <div className="match__answers">
               {question.answers.map((answer) => (
                 <button
@@ -138,6 +162,9 @@ export function TestModeScreen({ onExit }: Props) {
             ))}
             <button type="button" className="testmode__btn" disabled={busy} onClick={openTrivia}>
               Trivia
+            </button>
+            <button type="button" className="testmode__btn" disabled={busy} onClick={openPicture}>
+              Picture
             </button>
             <button
               type="button"

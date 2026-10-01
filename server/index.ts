@@ -10,7 +10,7 @@ import type { PlayerSlot, Room } from './room'
 import { MAX_NAME_LENGTH } from '../src/types/multiplayer'
 import type { ClientMessage, ServerMessage } from '../src/types/multiplayer'
 import { isMatchOver } from '../src/game/shootout'
-import { footballBank } from '../src/services/trivia/bank'
+import { bankForMatch, footballBank } from '../src/services/trivia/bank'
 import { sampleQuestions } from '../src/services/trivia/sampler'
 import { refsForQuestions } from '../src/services/trivia/bank/localised'
 import { createJwtVerifier } from './auth'
@@ -88,6 +88,8 @@ interface Connection {
    * ahead of the profile fetch and fall back to a blank/spoofable name.
    */
   profileReady: Promise<void>
+  /** Client declared `?pictures=1` at handshake: its build can render picture questions. */
+  supportsPictures: boolean
   /** userIds this connection watches for online/offline pushes (their friends).
    * Null until the client sends 'watchPresence'. */
   presenceWatch: Set<string> | null
@@ -315,8 +317,13 @@ const QUESTIONS_PER_MATCH = 30
 // the correct answer in the same slot. `questions` is the English text, kept
 // because clients built before localisation only understand that field —
 // dropping it would break every already-installed app.
-function questionsForRoom() {
-  const questions = sampleQuestions(footballBank, QUESTIONS_PER_MATCH)
+//
+// Picture questions are only drawn when both players' builds declared support
+// (`?pictures=1`): a build whose bank lacks a `pp-` id drops it, so the two
+// players would be asked different numbers of questions.
+function questionsForRoom(a: Connection, b: Connection) {
+  const bank = bankForMatch(footballBank, a.supportsPictures && b.supportsPictures)
+  const questions = sampleQuestions(bank, QUESTIONS_PER_MATCH)
   return { questions, refs: refsForQuestions(questions) }
 }
 
@@ -372,7 +379,7 @@ function startMatch(x: Connection, y: Connection, xGoesFirst: boolean) {
   roomConnections.a.roomId = roomId
   roomConnections.b.roomId = roomId
 
-  const { questions, refs } = questionsForRoom()
+  const { questions, refs } = questionsForRoom(roomConnections.a, roomConnections.b)
   send(roomConnections.a.ws, {
     type: 'matched',
     opponentName: roomConnections.b.name,
@@ -449,7 +456,7 @@ function handleRematchVote(connection: Connection) {
   }
   // Fresh shootout state means a fresh match to award — let it settle again.
   entry.settled = false
-  const { questions, refs } = questionsForRoom()
+  const { questions, refs } = questionsForRoom(entry.connections.a, entry.connections.b)
   send(entry.connections.a.ws, {
     type: 'rematchStart',
     youGoFirst: true,
@@ -524,6 +531,8 @@ function spawnBot(): Connection {
     username: null,
     gkSkin: profile.gkSkin,
     profileReady: Promise.resolve(),
+    // The bot just kicks; it never renders a question, so it never blocks them.
+    supportsPictures: true,
     presenceWatch: null,
     isAlive: true,
   }
@@ -889,6 +898,7 @@ wss.on('connection', (ws, req) => {
     username: null,
     gkSkin: null,
     profileReady: Promise.resolve(),
+    supportsPictures: new URL(req.url ?? '', 'http://localhost').searchParams.get('pictures') === '1',
     presenceWatch: null,
     isAlive: true,
   }

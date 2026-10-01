@@ -42,5 +42,8 @@ docs/
 
 src/assets/screenshots
 
+# Raw Commons downloads for the player portrait pipeline
+scripts/players/.cache/
+
 # Playwright MCP session artifacts (snapshots, console logs, screenshots)
 .playwright-mcp/

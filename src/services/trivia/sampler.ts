@@ -25,6 +25,7 @@ function toQuestion(entry: BankQuestion, rng: () => number): Question {
     answers: shuffle([entry.correctAnswer, ...entry.wrongAnswers], rng),
     difficulty: entry.difficulty,
     category: entry.category,
+    ...(entry.image ? { image: entry.image } : {}),
   }
 }
 

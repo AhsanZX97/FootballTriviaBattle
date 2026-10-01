@@ -84,6 +84,7 @@ export function questionFromRef(ref: QuestionRef, locale: Locale): Question | nu
     answers: ref.answerOrder.map((i) => canonical[i]),
     difficulty: entry.difficulty,
     category: entry.category,
+    ...(entry.image ? { image: entry.image } : {}),
   }
 }
 

@@ -227,6 +227,15 @@
   line-height: 1.7;
 }
 
+.match__picture {
+  width: min(100%, 38vh);
+  aspect-ratio: 1;
+  align-self: center;
+  object-fit: cover;
+  image-rendering: pixelated;
+  box-shadow: 0 0 0 4px #0a0a0a;
+}
+
 .match__answers {
   display: grid;
   gap: 12px;

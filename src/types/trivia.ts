@@ -10,6 +10,8 @@ export interface BankEntry {
   correctAnswer: string
   wrongAnswers: [string, string, string]
   difficulty: Difficulty
+  /** Picture questions: portrait key (file stem in `src/assets/players/`). */
+  image?: string
 }
 
 /**
@@ -35,4 +37,6 @@ export interface Question {
   answers: string[]
   difficulty: Difficulty
   category: string
+  /** Picture questions: portrait key, resolved to a URL by the client. */
+  image?: string
 }

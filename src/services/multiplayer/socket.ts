@@ -24,7 +24,10 @@ export function connect(
   url: string = import.meta.env.VITE_WS_URL ?? DEFAULT_WS_URL,
   token?: string | null,
 ): MultiplayerSocket {
-  const wsUrl = token ? `${url}${url.includes('?') ? '&' : '?'}token=${encodeURIComponent(token)}` : url
+  // `pictures=1` tells the server this build can render picture questions;
+  // builds without it are never sent one (see questionsForRoom).
+  const params = ['pictures=1', ...(token ? [`token=${encodeURIComponent(token)}`] : [])]
+  const wsUrl = `${url}${url.includes('?') ? '&' : '?'}${params.join('&')}`
   const ws = new WebSocket(wsUrl)
   const messageHandlers = new Set<(message: ServerMessage) => void>()
   const closeHandlers = new Set<() => void>()

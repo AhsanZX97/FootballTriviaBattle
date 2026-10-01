@@ -7,6 +7,7 @@ import { clubs } from './clubs'
 import { nationalTeams } from './nationalTeams'
 import { rules } from './rules'
 import { records } from './records'
+import { pictures } from './pictures'
 
 export interface BankQuestion extends BankEntry {
   /** Stable across sessions — used to avoid repeating recently seen questions. */
@@ -16,7 +17,7 @@ export interface BankQuestion extends BankEntry {
 }
 
 /** Topic id — also the prefix of every question id drawn from that topic. */
-export type TopicPrefix = 'wc' | 'ec' | 'lg' | 'pl' | 'cl' | 'nt' | 'ru' | 're'
+export type TopicPrefix = 'wc' | 'ec' | 'lg' | 'pl' | 'cl' | 'nt' | 'ru' | 're' | 'pp'
 
 /**
  * The source (English) bank, by topic. `category` is internal bookkeeping, not
@@ -34,7 +35,17 @@ export const TOPICS: Array<[prefix: TopicPrefix, category: string, entries: Bank
   ['nt', 'National Teams', nationalTeams],
   ['ru', 'Rules & Tactics', rules],
   ['re', 'Records & History', records],
+  ['pp', 'Picture Players', pictures],
 ]
+
+/**
+ * What a shared match may draw from. Picture questions need every player's
+ * build to know the `pp-` ids and own the portraits, so they are only offered
+ * when all of them said so.
+ */
+export function bankForMatch(bank: BankQuestion[], everyoneSupportsPictures: boolean): BankQuestion[] {
+  return everyoneSupportsPictures ? bank : bank.filter((entry) => !entry.image)
+}
 
 /** The full football-only question bank, ids stable as long as entries keep their order. */
 export const footballBank: BankQuestion[] = TOPICS.flatMap(([prefix, category, entries]) =>

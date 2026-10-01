@@ -1,0 +1,12 @@
+{
+  "lionel-messi": { "x": 0.146, "y": 0.029, "size": 0.703 },
+  "cristiano-ronaldo": { "x": 0.146, "y": 0.02, "size": 0.703 },
+  "pele": { "x": 0.026, "y": 0.019, "size": 0.773 },
+  "diego-maradona": { "x": 0.027, "y": 0.052, "size": 0.589 },
+  "neymar": { "x": 0.102, "y": 0.02, "size": 0.761 },
+  "zinedine-zidane": { "x": 0, "y": 0, "size": 1 },
+  "david-beckham": { "x": 0.219, "y": 0, "size": 0.542 },
+  "kylian-mbappe": { "x": 0.165, "y": 0, "size": 0.696 },
+  "johan-cruyff": { "x": 0.245, "y": 0.01, "size": 0.568 },
+  "francesco-totti": { "x": 0.247, "y": 0.015, "size": 0.418 }
+}

@@ -102,6 +102,22 @@ describe('TestModeScreen', () => {
     expect(screen.queryByText('Who won 2014?')).toBeNull()
   })
 
+  it('shows the Ronaldo picture question; the right name scores', async () => {
+    await mount()
+    fireEvent.click(button(/picture/i))
+    expect(screen.getByRole('img', { name: /who is this player/i })).toBeDefined()
+    expect(pitch.dimmed).toBe(true)
+    fireEvent.click(button(/^cristiano ronaldo$/i))
+    expect(pitch).toMatchObject({ feedback: 'goal', dimmed: false })
+  })
+
+  it('turns a wrong picture answer into a miss', async () => {
+    await mount()
+    fireEvent.click(button(/picture/i))
+    fireEvent.click(button(/^lionel messi$/i))
+    expect(pitch.feedback).toBe('miss')
+  })
+
   it('turns a wrong trivia answer into a miss', async () => {
     await mount()
     fireEvent.click(button(/trivia/i))
