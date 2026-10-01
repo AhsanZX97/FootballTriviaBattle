@@ -14,10 +14,13 @@ import './TestModeScreen.css'
 
 import { playerPortrait } from '../match/playerPortrait'
 import { pictures } from '../../services/trivia/bank/pictures'
+import { teamPictures } from '../../services/trivia/bank/teams'
+import type { BankEntry } from '../../types/trivia'
 
 type Props = { onExit: () => void }
 
 const PICTURE_ENTRIES = pictures
+const CREST_ENTRIES = teamPictures
 
 type Shot = { label: string; stage: Stage; feedback: SceneFeedback; reaction?: KeeperReaction }
 
@@ -46,6 +49,7 @@ export function TestModeScreen({ onExit }: Props) {
   const [timeLeft, setTimeLeft] = useState(QUESTION_TIME_SECONDS)
   const [panelOpen, setPanelOpen] = useState(true)
   const [pictureIndex, setPictureIndex] = useState(0)
+  const [crestIndex, setCrestIndex] = useState(0)
   const busy = feedback !== null
 
   function shoot(nextStage: Stage, outcome: SceneFeedback, nextReaction?: KeeperReaction) {
@@ -60,22 +64,30 @@ export function TestModeScreen({ onExit }: Props) {
     setTimeLeft(QUESTION_TIME_SECONDS)
   }
 
-  function openPicture() {
-    const at = pictureIndex % PICTURE_ENTRIES.length
-    const entry = PICTURE_ENTRIES[at]
+  function openEntry(entries: BankEntry[], at: number, category: string) {
+    const entry = entries[at % entries.length]
     const answers = [entry.correctAnswer, ...entry.wrongAnswers]
     const shift = at % answers.length
-    setPictureIndex((i) => i + 1)
     setQuestion({
-      id: `picture-${entry.image}`,
+      id: `${category.toLowerCase()}-${entry.image}`,
       prompt: entry.prompt,
       correctAnswer: entry.correctAnswer,
       answers: [...answers.slice(shift), ...answers.slice(0, shift)],
       difficulty: entry.difficulty,
-      category: 'Picture',
+      category,
       image: entry.image,
     })
     setTimeLeft(QUESTION_TIME_SECONDS)
+  }
+
+  function openPicture() {
+    openEntry(PICTURE_ENTRIES, pictureIndex, 'Picture')
+    setPictureIndex((i) => i + 1)
+  }
+
+  function openCrest() {
+    openEntry(CREST_ENTRIES, crestIndex, 'Crest')
+    setCrestIndex((i) => i + 1)
   }
 
   useEffect(() => {
@@ -172,6 +184,9 @@ export function TestModeScreen({ onExit }: Props) {
             </button>
             <button type="button" className="testmode__btn" disabled={busy} onClick={openPicture}>
               Picture {(pictureIndex % PICTURE_ENTRIES.length) + 1}/{PICTURE_ENTRIES.length}
+            </button>
+            <button type="button" className="testmode__btn" disabled={busy} onClick={openCrest}>
+              Crest {(crestIndex % CREST_ENTRIES.length) + 1}/{CREST_ENTRIES.length}
             </button>
             <button
               type="button"

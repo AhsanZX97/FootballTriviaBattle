@@ -90,6 +90,8 @@ interface Connection {
   profileReady: Promise<void>
   /** Client declared `?pictures=1` at handshake: its build can render picture questions. */
   supportsPictures: boolean
+  /** Client declared `?crests=1`: its bank has the `pt-` club-crest questions. */
+  supportsCrests: boolean
   /** userIds this connection watches for online/offline pushes (their friends).
    * Null until the client sends 'watchPresence'. */
   presenceWatch: Set<string> | null
@@ -322,7 +324,11 @@ const QUESTIONS_PER_MATCH = 30
 // (`?pictures=1`): a build whose bank lacks a `pp-` id drops it, so the two
 // players would be asked different numbers of questions.
 function questionsForRoom(a: Connection, b: Connection) {
-  const bank = bankForMatch(footballBank, a.supportsPictures && b.supportsPictures)
+  const bank = bankForMatch(
+    footballBank,
+    a.supportsPictures && b.supportsPictures,
+    a.supportsCrests && b.supportsCrests,
+  )
   const questions = sampleQuestions(bank, QUESTIONS_PER_MATCH)
   return { questions, refs: refsForQuestions(questions) }
 }
@@ -533,6 +539,7 @@ function spawnBot(): Connection {
     profileReady: Promise.resolve(),
     // The bot just kicks; it never renders a question, so it never blocks them.
     supportsPictures: true,
+    supportsCrests: true,
     presenceWatch: null,
     isAlive: true,
   }
@@ -899,6 +906,7 @@ wss.on('connection', (ws, req) => {
     gkSkin: null,
     profileReady: Promise.resolve(),
     supportsPictures: new URL(req.url ?? '', 'http://localhost').searchParams.get('pictures') === '1',
+    supportsCrests: new URL(req.url ?? '', 'http://localhost').searchParams.get('crests') === '1',
     presenceWatch: null,
     isAlive: true,
   }

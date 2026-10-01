@@ -3,7 +3,9 @@ import { bankForMatch, footballBank } from '../index'
 import { localisedBank, questionFromRef } from '../localised'
 import { sampleQuestions } from '../../sampler'
 
-const pictures = footballBank.filter((entry) => entry.image)
+const allPictures = footballBank.filter((entry) => entry.image)
+const pictures = allPictures.filter((entry) => entry.id.startsWith('pp-'))
+const crests = allPictures.filter((entry) => entry.id.startsWith('pt-'))
 
 describe('picture questions', () => {
   it('are part of the shared bank with a portrait key and the player as the answer', () => {
@@ -43,10 +45,34 @@ describe('picture questions', () => {
     expect(bankForMatch(footballBank, true)).toEqual(footballBank)
     const textOnly = bankForMatch(footballBank, false)
     expect(textOnly.some((entry) => entry.image)).toBe(false)
-    expect(textOnly).toHaveLength(footballBank.length - pictures.length)
+    expect(textOnly).toHaveLength(footballBank.length - allPictures.length)
   })
 
   it('stay in every locale, falling back to English text', () => {
-    expect(localisedBank('es').filter((entry) => entry.image)).toHaveLength(pictures.length)
+    expect(localisedBank('es').filter((entry) => entry.image)).toHaveLength(allPictures.length)
+  })
+})
+
+describe('club crest questions', () => {
+  it('are in the shared bank with a teams/ key and the club as the answer', () => {
+    expect(crests.length).toBeGreaterThanOrEqual(100)
+    for (const entry of crests) {
+      expect(entry.image).toMatch(/^teams\//)
+      expect(new Set([entry.correctAnswer, ...entry.wrongAnswers]).size).toBe(4)
+    }
+  })
+
+  it('are withheld from a match unless every player declared crest support', () => {
+    const noCrests = bankForMatch(footballBank, true, false)
+    expect(noCrests.some((entry) => entry.image?.startsWith('teams/'))).toBe(false)
+    expect(noCrests.filter((entry) => entry.id.startsWith('pp-'))).toHaveLength(pictures.length)
+  })
+
+  it('have a crest file for every entry', () => {
+    const files = Object.keys(import.meta.glob('../../../../assets/teams/*.webp'))
+    for (const entry of crests) {
+      const stem = entry.image!.slice('teams/'.length)
+      expect(files.some((f) => f.endsWith(`/${stem}.webp`))).toBe(true)
+    }
   })
 })

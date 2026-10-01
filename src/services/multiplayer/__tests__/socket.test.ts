@@ -129,17 +129,17 @@ describe('connect', () => {
 
   it('appends the token as a query param when one is given', () => {
     connect('ws://test', 'jwt-abc')
-    expect(lastSocket.url).toBe('ws://test?pictures=1&token=jwt-abc')
+    expect(lastSocket.url).toBe('ws://test?pictures=1&crests=1&token=jwt-abc')
   })
 
   it('declares picture-question support so the server may send them', () => {
     connect('ws://test')
-    expect(lastSocket.url).toBe('ws://test?pictures=1')
+    expect(lastSocket.url).toBe('ws://test?pictures=1&crests=1')
   })
 
   it('adds to a url that already has a query string', () => {
     connect('ws://test?x=1')
-    expect(lastSocket.url).toBe('ws://test?x=1&pictures=1')
+    expect(lastSocket.url).toBe('ws://test?x=1&pictures=1&crests=1')
   })
 })
 
@@ -152,7 +152,7 @@ describe('connectWithAuth', () => {
 
     await connectWithAuth('ws://test')
 
-    expect(lastSocket.url).toBe('ws://test?pictures=1&token=jwt-abc')
+    expect(lastSocket.url).toBe('ws://test?pictures=1&crests=1&token=jwt-abc')
   })
 
   it('connects anonymously when there is no session', async () => {
@@ -163,7 +163,7 @@ describe('connectWithAuth', () => {
 
     await connectWithAuth('ws://test')
 
-    expect(lastSocket.url).toBe('ws://test?pictures=1')
+    expect(lastSocket.url).toBe('ws://test?pictures=1&crests=1')
   })
 
   it('falls back to an anonymous connection if the session lookup throws', async () => {
@@ -171,6 +171,7 @@ describe('connectWithAuth', () => {
 
     await connectWithAuth('ws://test')
 
-    expect(lastSocket.url).toBe('ws://test?pictures=1')
+    expect(lastSocket.url).toBe('ws://test?pictures=1&crests=1')
   })
 })
+

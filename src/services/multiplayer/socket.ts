@@ -25,8 +25,9 @@ export function connect(
   token?: string | null,
 ): MultiplayerSocket {
   // `pictures=1` tells the server this build can render picture questions;
-  // builds without it are never sent one (see questionsForRoom).
-  const params = ['pictures=1', ...(token ? [`token=${encodeURIComponent(token)}`] : [])]
+  // builds without it are never sent one (see questionsForRoom). `crests=1`
+  // is the same for club-crest questions, which older picture builds lack.
+  const params = ['pictures=1', 'crests=1', ...(token ? [`token=${encodeURIComponent(token)}`] : [])]
   const wsUrl = `${url}${url.includes('?') ? '&' : '?'}${params.join('&')}`
   const ws = new WebSocket(wsUrl)
   const messageHandlers = new Set<(message: ServerMessage) => void>()

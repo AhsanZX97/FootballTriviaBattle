@@ -1,0 +1,1562 @@
+[
+  {
+    "id": "liverpool-f-c",
+    "name": "Liverpool F.C.",
+    "wikidata": "Q1130849",
+    "country": "United Kingdom",
+    "sitelinks": 133,
+    "image": "liverpool-f-c.webp",
+    "credit": {
+      "licence": "Public domain",
+      "source": "https://commons.wikimedia.org/wiki/File:Logo_Liverpool_FC_(2024).png",
+      "changes": "Converted to pixel art"
+    }
+  },
+  {
+    "id": "juventus-fc",
+    "name": "Juventus FC",
+    "wikidata": "Q1422",
+    "country": "Italy",
+    "sitelinks": 132,
+    "image": "juventus-fc.webp",
+    "credit": {
+      "licence": "Public domain",
+      "source": "https://commons.wikimedia.org/wiki/File:Juventus_FC_-_pictogram_white_(Italy,_2017).svg",
+      "changes": "Converted to pixel art"
+    }
+  },
+  {
+    "id": "ac-milan",
+    "name": "AC Milan",
+    "wikidata": "Q1543",
+    "country": "Italy",
+    "sitelinks": 126,
+    "image": "ac-milan.webp",
+    "credit": {
+      "licence": "Public domain",
+      "source": "https://commons.wikimedia.org/wiki/File:Logo_of_AC_Milan.svg",
+      "changes": "Converted to pixel art"
+    }
+  },
+  {
+    "id": "coritiba-f-c",
+    "name": "Coritiba F.C.",
+    "wikidata": "Q478317",
+    "country": "Brazil",
+    "sitelinks": 126,
+    "image": "coritiba-f-c.webp",
+    "credit": {
+      "licence": "CC BY-SA 4.0",
+      "source": "https://commons.wikimedia.org/wiki/File:ECFC1.png",
+      "changes": "Converted to pixel art"
+    }
+  },
+  {
+    "id": "fc-bayern-munich",
+    "name": "FC Bayern Munich",
+    "wikidata": "Q15789",
+    "country": "Germany",
+    "sitelinks": 124,
+    "image": "fc-bayern-munich.webp",
+    "credit": {
+      "licence": "Public domain",
+      "source": "https://commons.wikimedia.org/wiki/File:FC_Bayern_M%C3%BCnchen_logo_(2024).svg",
+      "changes": "Converted to pixel art"
+    }
+  },
+  {
+    "id": "inter-milan",
+    "name": "Inter Milan",
+    "wikidata": "Q631",
+    "country": "Italy",
+    "sitelinks": 123,
+    "image": "inter-milan.webp",
+    "credit": {
+      "licence": "Public domain",
+      "source": "https://commons.wikimedia.org/wiki/File:FC_Internazionale_Milano_2021.svg",
+      "changes": "Converted to pixel art"
+    }
+  },
+  {
+    "id": "ssc-napoli",
+    "name": "SSC Napoli",
+    "wikidata": "Q2641",
+    "country": "Italy",
+    "sitelinks": 117,
+    "image": "ssc-napoli.webp",
+    "credit": {
+      "licence": "Public domain",
+      "source": "https://commons.wikimedia.org/wiki/File:SSC_Napoli_2024_(deep_blue_navy).svg",
+      "changes": "Converted to pixel art"
+    }
+  },
+  {
+    "id": "as-roma",
+    "name": "AS Roma",
+    "wikidata": "Q2739",
+    "country": "Italy",
+    "sitelinks": 104,
+    "image": "as-roma.webp",
+    "credit": {
+      "licence": "Public domain",
+      "source": "https://commons.wikimedia.org/wiki/File:AS_ROMA_Text_Logo_2020_-_2021_.svg",
+      "changes": "Converted to pixel art"
+    }
+  },
+  {
+    "id": "s-c-corinthians-paulista",
+    "name": "S.C. Corinthians Paulista",
+    "wikidata": "Q35933",
+    "country": "Brazil",
+    "sitelinks": 104,
+    "image": "s-c-corinthians-paulista.webp",
+    "credit": {
+      "licence": "CC BY 3.0 br",
+      "source": "https://commons.wikimedia.org/wiki/File:Corinthians23022007_(cropped).jpg",
+      "changes": "Converted to pixel art"
+    }
+  },
+  {
+    "id": "ss-lazio",
+    "name": "SS Lazio",
+    "wikidata": "Q2609",
+    "country": "Italy",
+    "sitelinks": 100,
+    "image": "ss-lazio.webp",
+    "credit": {
+      "licence": "Public domain",
+      "source": "https://commons.wikimedia.org/wiki/File:S.S._Lazio_logo.svg",
+      "changes": "Converted to pixel art"
+    }
+  },
+  {
+    "id": "borussia-dortmund",
+    "name": "Borussia Dortmund",
+    "wikidata": "Q41420",
+    "country": "Germany",
+    "sitelinks": 99,
+    "image": "borussia-dortmund.webp",
+    "credit": {
+      "licence": "Public domain",
+      "source": "https://commons.wikimedia.org/wiki/File:Borussia_Dortmund_logo.svg",
+      "changes": "Converted to pixel art"
+    }
+  },
+  {
+    "id": "acf-fiorentina",
+    "name": "ACF Fiorentina",
+    "wikidata": "Q2052",
+    "country": "Italy",
+    "sitelinks": 96,
+    "image": "acf-fiorentina.webp",
+    "credit": {
+      "licence": "Public domain",
+      "source": "https://commons.wikimedia.org/wiki/File:ACF_Fiorentina_-_logo_(Italy,_2022).svg",
+      "changes": "Converted to pixel art"
+    }
+  },
+  {
+    "id": "sao-paulo-fc",
+    "name": "São Paulo FC",
+    "wikidata": "Q38568",
+    "country": "Brazil",
+    "sitelinks": 95,
+    "image": "sao-paulo-fc.webp",
+    "credit": {
+      "licence": "Public domain",
+      "source": "https://commons.wikimedia.org/wiki/File:S%C3%A3o_Paulo_Futebol_Clube_logo_(2022).svg",
+      "changes": "Converted to pixel art"
+    }
+  },
+  {
+    "id": "fc-porto",
+    "name": "FC Porto",
+    "wikidata": "Q128446",
+    "country": "Portugal",
+    "sitelinks": 94,
+    "image": "fc-porto.webp",
+    "credit": {
+      "licence": "CC BY-SA 3.0",
+      "source": "https://commons.wikimedia.org/wiki/File:Emblema_F_C_Porto_(derived).jpg",
+      "changes": "Converted to pixel art"
+    }
+  },
+  {
+    "id": "schalke-04",
+    "name": "Schalke 04",
+    "wikidata": "Q32494",
+    "country": "Germany",
+    "sitelinks": 88,
+    "image": "schalke-04.webp",
+    "credit": {
+      "licence": "Public domain",
+      "source": "https://commons.wikimedia.org/wiki/File:FC_Schalke_04_Logo.svg",
+      "changes": "Converted to pixel art"
+    }
+  },
+  {
+    "id": "atalanta-bc",
+    "name": "Atalanta BC",
+    "wikidata": "Q1886",
+    "country": "Italy",
+    "sitelinks": 88,
+    "image": "atalanta-bc.webp",
+    "credit": {
+      "licence": "Public domain",
+      "source": "https://commons.wikimedia.org/wiki/File:Atalanta_BC.png",
+      "changes": "Converted to pixel art"
+    }
+  },
+  {
+    "id": "bologna-f-c-1909",
+    "name": "Bologna F.C. 1909",
+    "wikidata": "Q1893",
+    "country": "Italy",
+    "sitelinks": 87,
+    "image": "bologna-f-c-1909.webp",
+    "credit": {
+      "licence": "Public domain",
+      "source": "https://commons.wikimedia.org/wiki/File:Bologna_F.C._1909_logo.svg",
+      "changes": "Converted to pixel art"
+    }
+  },
+  {
+    "id": "besiktas-j-k",
+    "name": "Beşiktaş J.K.",
+    "wikidata": "Q172567",
+    "country": "Turkey",
+    "sitelinks": 86,
+    "image": "besiktas-j-k.webp",
+    "credit": {
+      "licence": "Public domain",
+      "source": "https://commons.wikimedia.org/wiki/File:BesiktasJK-Logo.svg",
+      "changes": "Converted to pixel art"
+    }
+  },
+  {
+    "id": "vfb-stuttgart",
+    "name": "VfB Stuttgart",
+    "wikidata": "Q4512",
+    "country": "Germany",
+    "sitelinks": 86,
+    "image": "vfb-stuttgart.webp",
+    "credit": {
+      "licence": "Public domain",
+      "source": "https://commons.wikimedia.org/wiki/File:VfB_Stuttgart_1893_Logo.svg",
+      "changes": "Converted to pixel art"
+    }
+  },
+  {
+    "id": "fc-dynamo-kyiv",
+    "name": "FC Dynamo Kyiv",
+    "wikidata": "Q179075",
+    "country": "Ukraine",
+    "sitelinks": 85,
+    "image": "fc-dynamo-kyiv.webp",
+    "credit": {
+      "licence": "Public domain",
+      "source": "https://commons.wikimedia.org/wiki/File:Futbolny_Klub_Dynamo_Kyiv_logo.svg",
+      "changes": "Converted to pixel art"
+    }
+  },
+  {
+    "id": "borussia-monchengladbach",
+    "name": "Borussia Mönchengladbach",
+    "wikidata": "Q101959",
+    "country": "Germany",
+    "sitelinks": 85,
+    "image": "borussia-monchengladbach.webp",
+    "credit": {
+      "licence": "Public domain",
+      "source": "https://commons.wikimedia.org/wiki/File:Borussia_M%C3%B6nchengladbach_logo.svg",
+      "changes": "Converted to pixel art"
+    }
+  },
+  {
+    "id": "olympique-de-marseille",
+    "name": "Olympique de Marseille",
+    "wikidata": "Q132885",
+    "country": "France",
+    "sitelinks": 85,
+    "image": "olympique-de-marseille.webp",
+    "credit": {
+      "licence": "Public domain",
+      "source": "https://commons.wikimedia.org/wiki/File:Olympique_de_Marseille_2026_logo.svg",
+      "changes": "Converted to pixel art"
+    }
+  },
+  {
+    "id": "u-c-sampdoria",
+    "name": "U.C. Sampdoria",
+    "wikidata": "Q1457",
+    "country": "Italy",
+    "sitelinks": 84,
+    "image": "u-c-sampdoria.webp",
+    "credit": {
+      "licence": "Public domain",
+      "source": "https://commons.wikimedia.org/wiki/File:Flag_of_Sampdoria.svg",
+      "changes": "Converted to pixel art"
+    }
+  },
+  {
+    "id": "sv-werder-bremen",
+    "name": "SV Werder Bremen",
+    "wikidata": "Q51976",
+    "country": "Germany",
+    "sitelinks": 83,
+    "image": "sv-werder-bremen.webp",
+    "credit": {
+      "licence": "Public domain",
+      "source": "https://commons.wikimedia.org/wiki/File:SV-Werder-Bremen-Logo.svg",
+      "changes": "Converted to pixel art"
+    }
+  },
+  {
+    "id": "fc-zenit-saint-petersburg",
+    "name": "FC Zenit Saint Petersburg",
+    "wikidata": "Q29108",
+    "country": "Russia",
+    "sitelinks": 83,
+    "image": "fc-zenit-saint-petersburg.webp",
+    "credit": {
+      "licence": "Public domain",
+      "source": "https://commons.wikimedia.org/wiki/File:FC_Zenit_1_star_2015_logo.svg",
+      "changes": "Converted to pixel art"
+    }
+  },
+  {
+    "id": "sporting-cp",
+    "name": "Sporting CP",
+    "wikidata": "Q75729",
+    "country": "Portugal",
+    "sitelinks": 82,
+    "image": "sporting-cp.webp",
+    "credit": {
+      "licence": "Public domain",
+      "source": "https://commons.wikimedia.org/wiki/File:Primeiro-s%C3%ADmbolo-SCP.png",
+      "changes": "Converted to pixel art"
+    }
+  },
+  {
+    "id": "fk-zalgiris",
+    "name": "FK Žalgiris",
+    "wikidata": "Q500988",
+    "country": "Lithuania",
+    "sitelinks": 82,
+    "image": "fk-zalgiris.webp",
+    "credit": {
+      "licence": "Public domain",
+      "source": "https://commons.wikimedia.org/wiki/File:Vmfdzalgiris2.jpg",
+      "changes": "Converted to pixel art"
+    }
+  },
+  {
+    "id": "vfl-wolfsburg",
+    "name": "VfL Wolfsburg",
+    "wikidata": "Q101859",
+    "country": "Germany",
+    "sitelinks": 81,
+    "image": "vfl-wolfsburg.webp",
+    "credit": {
+      "licence": "Public domain",
+      "source": "https://commons.wikimedia.org/wiki/File:VfL_Wolfsburg_logo_2026.svg",
+      "changes": "Converted to pixel art"
+    }
+  },
+  {
+    "id": "fk-kauno-zalgiris",
+    "name": "FK Kauno Žalgiris",
+    "wikidata": "Q12654411",
+    "country": "Lithuania",
+    "sitelinks": 80,
+    "image": "fk-kauno-zalgiris.webp",
+    "credit": {
+      "licence": "CC BY-SA 4.0",
+      "source": "https://commons.wikimedia.org/wiki/File:BC_%C5%BDalgiris_2023.png",
+      "changes": "Converted to pixel art"
+    }
+  },
+  {
+    "id": "udinese-calcio",
+    "name": "Udinese Calcio",
+    "wikidata": "Q2798",
+    "country": "Italy",
+    "sitelinks": 79,
+    "image": "udinese-calcio.webp",
+    "credit": {
+      "licence": "Public domain",
+      "source": "https://commons.wikimedia.org/wiki/File:Udinese_Calcio_2010.svg",
+      "changes": "Converted to pixel art"
+    }
+  },
+  {
+    "id": "hamburger-sv",
+    "name": "Hamburger SV",
+    "wikidata": "Q51974",
+    "country": "Germany",
+    "sitelinks": 77,
+    "image": "hamburger-sv.webp",
+    "credit": {
+      "licence": "Public domain",
+      "source": "https://commons.wikimedia.org/wiki/File:Hamburger_SV_logo.svg",
+      "changes": "Converted to pixel art"
+    }
+  },
+  {
+    "id": "club-atletico-river-plate",
+    "name": "Club Atlético River Plate",
+    "wikidata": "Q15799",
+    "country": "Argentina",
+    "sitelinks": 77,
+    "image": "club-atletico-river-plate.webp",
+    "credit": {
+      "licence": "Public domain",
+      "source": "https://commons.wikimedia.org/wiki/File:Club_Atl%C3%A9tico_River_Plate_logo.svg",
+      "changes": "Converted to pixel art"
+    }
+  },
+  {
+    "id": "1-fc-koln",
+    "name": "1. FC Köln",
+    "wikidata": "Q104770",
+    "country": "Germany",
+    "sitelinks": 76,
+    "image": "1-fc-koln.webp",
+    "credit": {
+      "licence": "CC BY-SA 4.0",
+      "source": "https://commons.wikimedia.org/wiki/File:1._FC_Koeln_Logo_2014%E2%80%93.svg",
+      "changes": "Converted to pixel art"
+    }
+  },
+  {
+    "id": "sociedade-esportiva-palmeiras",
+    "name": "Sociedade Esportiva Palmeiras",
+    "wikidata": "Q80964",
+    "country": "Brazil",
+    "sitelinks": 76,
+    "image": "sociedade-esportiva-palmeiras.webp",
+    "credit": {
+      "licence": "Public domain",
+      "source": "https://commons.wikimedia.org/wiki/File:Palmeiras_logo.svg",
+      "changes": "Converted to pixel art"
+    }
+  },
+  {
+    "id": "club-nacional-de-football",
+    "name": "Club Nacional de Football",
+    "wikidata": "Q499616",
+    "country": "Uruguay",
+    "sitelinks": 75,
+    "image": "club-nacional-de-football.webp",
+    "credit": {
+      "licence": "Public domain",
+      "source": "https://commons.wikimedia.org/wiki/File:Club_Nacional_de_Football.png",
+      "changes": "Converted to pixel art"
+    }
+  },
+  {
+    "id": "santos-f-c",
+    "name": "Santos F.C.",
+    "wikidata": "Q80955",
+    "country": "Brazil",
+    "sitelinks": 75,
+    "image": "santos-f-c.webp",
+    "credit": {
+      "licence": "Public domain",
+      "source": "https://commons.wikimedia.org/wiki/File:Santos_Futebol_Clube_logo_(with_stars_and_crown).png",
+      "changes": "Converted to pixel art"
+    }
+  },
+  {
+    "id": "fk-crvena-zvezda",
+    "name": "FK Crvena zvezda",
+    "wikidata": "Q173009",
+    "country": "Serbia",
+    "sitelinks": 73,
+    "image": "fk-crvena-zvezda.webp",
+    "credit": {
+      "licence": "Public domain",
+      "source": "https://commons.wikimedia.org/wiki/File:Red_Star_Belgrade_crest.svg",
+      "changes": "Converted to pixel art"
+    }
+  },
+  {
+    "id": "hertha-bsc",
+    "name": "Hertha BSC",
+    "wikidata": "Q102720",
+    "country": "Germany",
+    "sitelinks": 73,
+    "image": "hertha-bsc.webp",
+    "credit": {
+      "licence": "Public domain",
+      "source": "https://commons.wikimedia.org/wiki/File:Hertha_BSC_Logo_2012.svg",
+      "changes": "Converted to pixel art"
+    }
+  },
+  {
+    "id": "rb-leipzig",
+    "name": "RB Leipzig",
+    "wikidata": "Q702455",
+    "country": "Germany",
+    "sitelinks": 73,
+    "image": "rb-leipzig.webp",
+    "credit": {
+      "licence": "CC BY-SA 4.0",
+      "source": "https://commons.wikimedia.org/wiki/File:2019-07-12_Fu%C3%9Fball;_Freundschaftsspiel_RB_Leipzig_-_FC_Z%C3%BCrich_1DX_0881_by_Stepro_2.png",
+      "changes": "Converted to pixel art"
+    }
+  },
+  {
+    "id": "fc-girondins-de-bordeaux",
+    "name": "FC Girondins de Bordeaux",
+    "wikidata": "Q172476",
+    "country": "France",
+    "sitelinks": 72,
+    "image": "fc-girondins-de-bordeaux.webp",
+    "credit": {
+      "licence": "Public domain",
+      "source": "https://commons.wikimedia.org/wiki/File:Current_logo_of_Girondins_de_Bordeaux.png",
+      "changes": "Converted to pixel art"
+    }
+  },
+  {
+    "id": "rc-celta-de-vigo",
+    "name": "RC Celta de Vigo",
+    "wikidata": "Q8749",
+    "country": "Spain",
+    "sitelinks": 72,
+    "image": "rc-celta-de-vigo.webp",
+    "credit": {
+      "licence": "CC BY-SA 3.0",
+      "source": "https://commons.wikimedia.org/wiki/File:Escudo_RC_Celta_de_Vigo.svg",
+      "changes": "Converted to pixel art"
+    }
+  },
+  {
+    "id": "fluminense-f-c",
+    "name": "Fluminense F.C.",
+    "wikidata": "Q80987",
+    "country": "Brazil",
+    "sitelinks": 71,
+    "image": "fluminense-f-c.webp",
+    "credit": {
+      "licence": "Public domain",
+      "source": "https://commons.wikimedia.org/wiki/File:Fluminense_logo.gif",
+      "changes": "Converted to pixel art"
+    }
+  },
+  {
+    "id": "al-nassr",
+    "name": "Al-Nassr",
+    "wikidata": "Q482764",
+    "country": "Saudi Arabia",
+    "sitelinks": 71,
+    "image": "al-nassr.webp",
+    "credit": {
+      "licence": "Public domain",
+      "source": "https://commons.wikimedia.org/wiki/File:Nassr_FC_Logo.svg",
+      "changes": "Converted to pixel art"
+    }
+  },
+  {
+    "id": "middlesbrough-f-c",
+    "name": "Middlesbrough F.C.",
+    "wikidata": "Q18661",
+    "country": "United Kingdom",
+    "sitelinks": 70,
+    "image": "middlesbrough-f-c.webp",
+    "credit": {
+      "licence": "CC BY 2.0",
+      "source": "https://commons.wikimedia.org/wiki/File:Middlesbrough_Walk_(27470064759).jpg",
+      "changes": "Converted to pixel art"
+    }
+  },
+  {
+    "id": "panathinaikos-f-c",
+    "name": "Panathinaikos F.C.",
+    "wikidata": "Q4122219",
+    "country": "Greece",
+    "sitelinks": 70,
+    "image": "panathinaikos-f-c.webp",
+    "credit": {
+      "licence": "Public domain",
+      "source": "https://commons.wikimedia.org/wiki/File:Panathinaikos.svg",
+      "changes": "Converted to pixel art"
+    }
+  },
+  {
+    "id": "hannover-96",
+    "name": "Hannover 96",
+    "wikidata": "Q33748",
+    "country": "Germany",
+    "sitelinks": 69,
+    "image": "hannover-96.webp",
+    "credit": {
+      "licence": "Public domain",
+      "source": "https://commons.wikimedia.org/wiki/File:Hannover_96_Logo.svg",
+      "changes": "Converted to pixel art"
+    }
+  },
+  {
+    "id": "gnk-dinamo-zagreb",
+    "name": "GNK Dinamo Zagreb",
+    "wikidata": "Q172803",
+    "country": "Croatia",
+    "sitelinks": 69,
+    "image": "gnk-dinamo-zagreb.webp",
+    "credit": {
+      "licence": "Public domain",
+      "source": "https://commons.wikimedia.org/wiki/File:Logo_GNK_Dinamo_Zagreb_(2019).svg",
+      "changes": "Converted to pixel art"
+    }
+  },
+  {
+    "id": "fc-basel",
+    "name": "FC Basel",
+    "wikidata": "Q189671",
+    "country": "Switzerland",
+    "sitelinks": 68,
+    "image": "fc-basel.webp",
+    "credit": {
+      "licence": "Public domain",
+      "source": "https://commons.wikimedia.org/wiki/File:FC_Basel.png",
+      "changes": "Converted to pixel art"
+    }
+  },
+  {
+    "id": "1-fsv-mainz-05",
+    "name": "1. FSV Mainz 05",
+    "wikidata": "Q105254",
+    "country": "Germany",
+    "sitelinks": 67,
+    "image": "1-fsv-mainz-05.webp",
+    "credit": {
+      "licence": "Public domain",
+      "source": "https://commons.wikimedia.org/wiki/File:Logo_Mainz_05.svg",
+      "changes": "Converted to pixel art"
+    }
+  },
+  {
+    "id": "ogc-nice",
+    "name": "OGC Nice",
+    "wikidata": "Q185163",
+    "country": "France",
+    "sitelinks": 67,
+    "image": "ogc-nice.webp",
+    "credit": {
+      "licence": "Public domain",
+      "source": "https://commons.wikimedia.org/wiki/File:OGC_Nice_(simplified_logo).svg",
+      "changes": "Converted to pixel art"
+    }
+  },
+  {
+    "id": "as-saint-etienne",
+    "name": "AS Saint-Étienne",
+    "wikidata": "Q19521",
+    "country": "France",
+    "sitelinks": 67,
+    "image": "as-saint-etienne.webp",
+    "credit": {
+      "licence": "Public domain",
+      "source": "https://commons.wikimedia.org/wiki/File:Logo_AS_Saint-%C3%89tienne.svg",
+      "changes": "Converted to pixel art"
+    }
+  },
+  {
+    "id": "malmo-ff",
+    "name": "Malmö FF",
+    "wikidata": "Q204881",
+    "country": "Sweden",
+    "sitelinks": 67,
+    "image": "malmo-ff.webp",
+    "credit": {
+      "licence": "Public domain",
+      "source": "https://commons.wikimedia.org/wiki/File:Malmo_FF_logo.svg",
+      "changes": "Converted to pixel art"
+    }
+  },
+  {
+    "id": "getafe-cf",
+    "name": "Getafe CF",
+    "wikidata": "Q8806",
+    "country": "Spain",
+    "sitelinks": 67,
+    "image": "getafe-cf.webp",
+    "credit": {
+      "licence": "CC BY-SA 4.0",
+      "source": "https://commons.wikimedia.org/wiki/File:Getafe_CF_Logo.png",
+      "changes": "Converted to pixel art"
+    }
+  },
+  {
+    "id": "az-alkmaar",
+    "name": "AZ Alkmaar",
+    "wikidata": "Q191264",
+    "country": "Netherlands",
+    "sitelinks": 66,
+    "image": "az-alkmaar.webp",
+    "credit": {
+      "licence": "Public domain",
+      "source": "https://commons.wikimedia.org/wiki/File:AZ_Alkmaar.svg",
+      "changes": "Converted to pixel art"
+    }
+  },
+  {
+    "id": "al-hilal-sfc",
+    "name": "Al Hilal SFC",
+    "wikidata": "Q73965",
+    "country": "Saudi Arabia",
+    "sitelinks": 65,
+    "image": "al-hilal-sfc.webp",
+    "credit": {
+      "licence": "Public domain",
+      "source": "https://commons.wikimedia.org/wiki/File:Al_Hilal_SFC_Logo.svg",
+      "changes": "Converted to pixel art"
+    }
+  },
+  {
+    "id": "1-fc-nurnberg",
+    "name": "1. FC Nürnberg",
+    "wikidata": "Q15786",
+    "country": "Germany",
+    "sitelinks": 65,
+    "image": "1-fc-nurnberg.webp",
+    "credit": {
+      "licence": "Public domain",
+      "source": "https://commons.wikimedia.org/wiki/File:1._FC_N%C3%BCrnberg_logo.svg",
+      "changes": "Converted to pixel art"
+    }
+  },
+  {
+    "id": "fc-nantes",
+    "name": "FC Nantes",
+    "wikidata": "Q192071",
+    "country": "France",
+    "sitelinks": 64,
+    "image": "fc-nantes.webp",
+    "credit": {
+      "licence": "Public domain",
+      "source": "https://commons.wikimedia.org/wiki/File:Logo_FC_Nantes_(avec_fond)_-_2019.svg",
+      "changes": "Converted to pixel art"
+    }
+  },
+  {
+    "id": "inter-miami-cf",
+    "name": "Inter Miami CF",
+    "wikidata": "Q16844931",
+    "country": "United States",
+    "sitelinks": 64,
+    "image": "inter-miami-cf.webp",
+    "credit": {
+      "licence": "Public domain",
+      "source": "https://commons.wikimedia.org/wiki/File:Inter_Miami_CF_wordmark-full_pink.png",
+      "changes": "Converted to pixel art"
+    }
+  },
+  {
+    "id": "lech-poznan",
+    "name": "Lech Poznań",
+    "wikidata": "Q52942",
+    "country": "Poland",
+    "sitelinks": 64,
+    "image": "lech-poznan.webp",
+    "credit": {
+      "licence": "CC BY-SA 4.0",
+      "source": "https://commons.wikimedia.org/wiki/File:Logo_Lech_Pozna%C5%84_100_1922-2022.jpg",
+      "changes": "Converted to pixel art"
+    }
+  },
+  {
+    "id": "empoli-fc",
+    "name": "Empoli FC",
+    "wikidata": "Q6703",
+    "country": "Italy",
+    "sitelinks": 64,
+    "image": "empoli-fc.webp",
+    "credit": {
+      "licence": "Public domain",
+      "source": "https://commons.wikimedia.org/wiki/File:Empoli_FC_logo.svg",
+      "changes": "Converted to pixel art"
+    }
+  },
+  {
+    "id": "club-atletico-penarol",
+    "name": "Club Atlético Peñarol",
+    "wikidata": "Q16320",
+    "country": "Uruguay",
+    "sitelinks": 62,
+    "image": "club-atletico-penarol.webp",
+    "credit": {
+      "licence": "Public domain",
+      "source": "https://commons.wikimedia.org/wiki/File:Escudo_del_Club_Atl%C3%A9tico_Pe%C3%B1arol.svg",
+      "changes": "Converted to pixel art"
+    }
+  },
+  {
+    "id": "rosenborg-bk",
+    "name": "Rosenborg BK",
+    "wikidata": "Q186785",
+    "country": "Norway",
+    "sitelinks": 62,
+    "image": "rosenborg-bk.webp",
+    "credit": {
+      "licence": "Public domain",
+      "source": "https://commons.wikimedia.org/wiki/File:Rosenborg_Trondheim_logo.svg",
+      "changes": "Converted to pixel art"
+    }
+  },
+  {
+    "id": "botafogo-f-r",
+    "name": "Botafogo F.R.",
+    "wikidata": "Q80958",
+    "country": "Brazil",
+    "sitelinks": 62,
+    "image": "botafogo-f-r.webp",
+    "credit": {
+      "licence": "Public domain",
+      "source": "https://commons.wikimedia.org/wiki/File:Botafogo_de_Futebol_e_Regatas_logo.svg",
+      "changes": "Converted to pixel art"
+    }
+  },
+  {
+    "id": "sk-rapid-wien",
+    "name": "SK Rapid Wien",
+    "wikidata": "Q131215",
+    "country": "Austria",
+    "sitelinks": 61,
+    "image": "sk-rapid-wien.webp",
+    "credit": {
+      "licence": "Public domain",
+      "source": "https://commons.wikimedia.org/wiki/File:SK_Rapid_Wien_Logo.svg",
+      "changes": "Converted to pixel art"
+    }
+  },
+  {
+    "id": "stade-rennais-f-c",
+    "name": "Stade Rennais F.C.",
+    "wikidata": "Q19509",
+    "country": "France",
+    "sitelinks": 61,
+    "image": "stade-rennais-f-c.webp",
+    "credit": {
+      "licence": "Public domain",
+      "source": "https://commons.wikimedia.org/wiki/File:Stade_Rennais_(logo_1960).svg",
+      "changes": "Converted to pixel art"
+    }
+  },
+  {
+    "id": "la-galaxy",
+    "name": "LA Galaxy",
+    "wikidata": "Q204357",
+    "country": "United States",
+    "sitelinks": 61,
+    "image": "la-galaxy.webp",
+    "credit": {
+      "licence": "Public domain",
+      "source": "https://commons.wikimedia.org/wiki/File:Los_Angeles_Galaxy_logo.svg",
+      "changes": "Converted to pixel art"
+    }
+  },
+  {
+    "id": "s-c-internacional",
+    "name": "S.C. Internacional",
+    "wikidata": "Q80845",
+    "country": "Brazil",
+    "sitelinks": 61,
+    "image": "s-c-internacional.webp",
+    "credit": {
+      "licence": "Public domain",
+      "source": "https://commons.wikimedia.org/wiki/File:Escudo_do_Sport_Club_Internacional.svg",
+      "changes": "Converted to pixel art"
+    }
+  },
+  {
+    "id": "hnk-hajduk-split",
+    "name": "HNK Hajduk Split",
+    "wikidata": "Q181216",
+    "country": "Croatia",
+    "sitelinks": 61,
+    "image": "hnk-hajduk-split.webp",
+    "credit": {
+      "licence": "Public domain",
+      "source": "https://commons.wikimedia.org/wiki/File:HNK_Hajduk_Split_logo.svg",
+      "changes": "Converted to pixel art"
+    }
+  },
+  {
+    "id": "fortuna-dusseldorf",
+    "name": "Fortuna Düsseldorf",
+    "wikidata": "Q151747",
+    "country": "Germany",
+    "sitelinks": 60,
+    "image": "fortuna-dusseldorf.webp",
+    "credit": {
+      "licence": "Public domain",
+      "source": "https://commons.wikimedia.org/wiki/File:Fortuna_D%C3%BCsseldorf.svg",
+      "changes": "Converted to pixel art"
+    }
+  },
+  {
+    "id": "gremio-fbpa",
+    "name": "Grêmio FBPA",
+    "wikidata": "Q221695",
+    "country": "Brazil",
+    "sitelinks": 60,
+    "image": "gremio-fbpa.webp",
+    "credit": {
+      "licence": "Public domain",
+      "source": "https://commons.wikimedia.org/wiki/File:Gremio_logo.svg",
+      "changes": "Converted to pixel art"
+    }
+  },
+  {
+    "id": "ferencvarosi-tc",
+    "name": "Ferencvárosi TC",
+    "wikidata": "Q208396",
+    "country": "Hungary",
+    "sitelinks": 59,
+    "image": "ferencvarosi-tc.webp",
+    "credit": {
+      "licence": "Public domain",
+      "source": "https://commons.wikimedia.org/wiki/File:Ftclogo2020.png",
+      "changes": "Converted to pixel art"
+    }
+  },
+  {
+    "id": "vfl-bochum",
+    "name": "VfL Bochum",
+    "wikidata": "Q105861",
+    "country": "Germany",
+    "sitelinks": 59,
+    "image": "vfl-bochum.webp",
+    "credit": {
+      "licence": "Public domain",
+      "source": "https://commons.wikimedia.org/wiki/File:VfL_Bochum_logo.svg",
+      "changes": "Converted to pixel art"
+    }
+  },
+  {
+    "id": "rc-strasbourg-alsace",
+    "name": "RC Strasbourg Alsace",
+    "wikidata": "Q126334",
+    "country": "France",
+    "sitelinks": 59,
+    "image": "rc-strasbourg-alsace.webp",
+    "credit": {
+      "licence": "CC BY-SA 4.0",
+      "source": "https://commons.wikimedia.org/wiki/File:Racing_Club_de_Strasbourg_contre_Racing_Lens_d%C3%A9cembre_2016_.jpg",
+      "changes": "Converted to pixel art"
+    }
+  },
+  {
+    "id": "stade-de-reims",
+    "name": "Stade de Reims",
+    "wikidata": "Q208228",
+    "country": "France",
+    "sitelinks": 59,
+    "image": "stade-de-reims.webp",
+    "credit": {
+      "licence": "Public domain",
+      "source": "https://commons.wikimedia.org/wiki/File:Stade_Reims.svg",
+      "changes": "Converted to pixel art"
+    }
+  },
+  {
+    "id": "fc-metz",
+    "name": "FC Metz",
+    "wikidata": "Q221525",
+    "country": "France",
+    "sitelinks": 59,
+    "image": "fc-metz.webp",
+    "credit": {
+      "licence": "Public domain",
+      "source": "https://commons.wikimedia.org/wiki/File:FC_Metz_2021_Logo.svg",
+      "changes": "Converted to pixel art"
+    }
+  },
+  {
+    "id": "clube-atletico-mineiro",
+    "name": "Clube Atlético Mineiro",
+    "wikidata": "Q270995",
+    "country": "Brazil",
+    "sitelinks": 59,
+    "image": "clube-atletico-mineiro.webp",
+    "credit": {
+      "licence": "Public domain",
+      "source": "https://commons.wikimedia.org/wiki/File:Clube_Atl%C3%A9tico_Mineiro_logo.svg",
+      "changes": "Converted to pixel art"
+    }
+  },
+  {
+    "id": "jeonbuk-hyundai-motors-fc",
+    "name": "Jeonbuk Hyundai Motors FC",
+    "wikidata": "Q483152",
+    "country": "South Korea",
+    "sitelinks": 59,
+    "image": "jeonbuk-hyundai-motors-fc.webp",
+    "credit": {
+      "licence": "Public domain",
+      "source": "https://commons.wikimedia.org/wiki/File:Jeonbuk_Hyundai_Motors_FC_logotype.png",
+      "changes": "Converted to pixel art"
+    }
+  },
+  {
+    "id": "deportivo-cali",
+    "name": "Deportivo Cali",
+    "wikidata": "Q663400",
+    "country": "Colombia",
+    "sitelinks": 59,
+    "image": "deportivo-cali.webp",
+    "credit": {
+      "licence": "Public domain",
+      "source": "https://commons.wikimedia.org/wiki/File:Deportivo_Cali_Blazono.svg",
+      "changes": "Converted to pixel art"
+    }
+  },
+  {
+    "id": "fc-groningen",
+    "name": "FC Groningen",
+    "wikidata": "Q24711",
+    "country": "Netherlands",
+    "sitelinks": 58,
+    "image": "fc-groningen.webp",
+    "credit": {
+      "licence": "Public domain",
+      "source": "https://commons.wikimedia.org/wiki/File:FC_Groningen_logo.svg",
+      "changes": "Converted to pixel art"
+    }
+  },
+  {
+    "id": "k-r-c-genk",
+    "name": "K.R.C. Genk",
+    "wikidata": "Q216032",
+    "country": "Belgium",
+    "sitelinks": 58,
+    "image": "k-r-c-genk.webp",
+    "credit": {
+      "licence": "Public domain",
+      "source": "https://commons.wikimedia.org/wiki/File:KRC_Genk_Logo_2016.svg",
+      "changes": "Converted to pixel art"
+    }
+  },
+  {
+    "id": "tsv-1860-munchen",
+    "name": "TSV 1860 München",
+    "wikidata": "Q131603",
+    "country": "Germany",
+    "sitelinks": 58,
+    "image": "tsv-1860-munchen.webp",
+    "credit": {
+      "licence": "Public domain",
+      "source": "https://commons.wikimedia.org/wiki/File:TSV_1860_M%C3%BCnchen.svg",
+      "changes": "Converted to pixel art"
+    }
+  },
+  {
+    "id": "fk-austria-wien",
+    "name": "FK Austria Wien",
+    "wikidata": "Q131209",
+    "country": "Austria",
+    "sitelinks": 58,
+    "image": "fk-austria-wien.webp",
+    "credit": {
+      "licence": "Public domain",
+      "source": "https://commons.wikimedia.org/wiki/File:FK_Austria_Wien_logo.svg",
+      "changes": "Converted to pixel art"
+    }
+  },
+  {
+    "id": "bsc-young-boys",
+    "name": "BSC Young Boys",
+    "wikidata": "Q190526",
+    "country": "Switzerland",
+    "sitelinks": 58,
+    "image": "bsc-young-boys.webp",
+    "credit": {
+      "licence": "Public domain",
+      "source": "https://commons.wikimedia.org/wiki/File:BSC_Young_Boys.svg",
+      "changes": "Converted to pixel art"
+    }
+  },
+  {
+    "id": "fc-zurich",
+    "name": "FC Zürich",
+    "wikidata": "Q206692",
+    "country": "Switzerland",
+    "sitelinks": 58,
+    "image": "fc-zurich.webp",
+    "credit": {
+      "licence": "Public domain",
+      "source": "https://commons.wikimedia.org/wiki/File:FC_Zurich_Logo_2022.svg",
+      "changes": "Converted to pixel art"
+    }
+  },
+  {
+    "id": "karlsruher-sc",
+    "name": "Karlsruher SC",
+    "wikidata": "Q105853",
+    "country": "Germany",
+    "sitelinks": 57,
+    "image": "karlsruher-sc.webp",
+    "credit": {
+      "licence": "Public domain",
+      "source": "https://commons.wikimedia.org/wiki/File:Karlsruher_SC_Logo_2.svg",
+      "changes": "Converted to pixel art"
+    }
+  },
+  {
+    "id": "cruzeiro-e-c",
+    "name": "Cruzeiro E.C.",
+    "wikidata": "Q188277",
+    "country": "Brazil",
+    "sitelinks": 57,
+    "image": "cruzeiro-e-c.webp",
+    "credit": {
+      "licence": "Public domain",
+      "source": "https://commons.wikimedia.org/wiki/File:Cruzeiro_Esporte_Clube_(logo).svg",
+      "changes": "Converted to pixel art"
+    }
+  },
+  {
+    "id": "sk-slavia-prague",
+    "name": "SK Slavia Prague",
+    "wikidata": "Q194393",
+    "country": "Czech Republic",
+    "sitelinks": 57,
+    "image": "sk-slavia-prague.webp",
+    "credit": {
+      "licence": "CC BY-SA 4.0",
+      "source": "https://commons.wikimedia.org/wiki/File:Slavia-symbol-nowordmark-RGB.png",
+      "changes": "Converted to pixel art"
+    }
+  },
+  {
+    "id": "montpellier-herault-sport-club",
+    "name": "Montpellier Hérault Sport Club",
+    "wikidata": "Q19513",
+    "country": "France",
+    "sitelinks": 57,
+    "image": "montpellier-herault-sport-club.webp",
+    "credit": {
+      "licence": "Public domain",
+      "source": "https://commons.wikimedia.org/wiki/File:Montpellier_H%C3%A9rault_Sport_Club_(logo,_2000).svg",
+      "changes": "Converted to pixel art"
+    }
+  },
+  {
+    "id": "spezia-calcio",
+    "name": "Spezia Calcio",
+    "wikidata": "Q8615",
+    "country": "Italy",
+    "sitelinks": 57,
+    "image": "spezia-calcio.webp",
+    "credit": {
+      "licence": "Public domain",
+      "source": "https://commons.wikimedia.org/wiki/File:Logo_of_Spezia_Calcio_(2025-).svg",
+      "changes": "Converted to pixel art"
+    }
+  },
+  {
+    "id": "molde-fk",
+    "name": "Molde FK",
+    "wikidata": "Q208552",
+    "country": "Norway",
+    "sitelinks": 57,
+    "image": "molde-fk.webp",
+    "credit": {
+      "licence": "Public domain",
+      "source": "https://commons.wikimedia.org/wiki/File:Molde_Fotball_Logo.svg",
+      "changes": "Converted to pixel art"
+    }
+  },
+  {
+    "id": "fc-dinamo-tbilisi",
+    "name": "FC Dinamo Tbilisi",
+    "wikidata": "Q201006",
+    "country": "Georgia",
+    "sitelinks": 57,
+    "image": "fc-dinamo-tbilisi.webp",
+    "credit": {
+      "licence": "Public domain",
+      "source": "https://commons.wikimedia.org/wiki/File:FC_Dinamo_Tbilisi_logo.svg",
+      "changes": "Converted to pixel art"
+    }
+  },
+  {
+    "id": "como-1907",
+    "name": "Como 1907",
+    "wikidata": "Q1120838",
+    "country": "Italy",
+    "sitelinks": 56,
+    "image": "como-1907.webp",
+    "credit": {
+      "licence": "Public domain",
+      "source": "https://commons.wikimedia.org/wiki/File:Calcio_Como_-_logo_(Italy,_2019-).svg",
+      "changes": "Converted to pixel art"
+    }
+  },
+  {
+    "id": "sc-paderborn-07",
+    "name": "SC Paderborn 07",
+    "wikidata": "Q160532",
+    "country": "Germany",
+    "sitelinks": 56,
+    "image": "sc-paderborn-07.webp",
+    "credit": {
+      "licence": "Public domain",
+      "source": "https://commons.wikimedia.org/wiki/File:SC_Paderborn_07_Logo_new.svg",
+      "changes": "Converted to pixel art"
+    }
+  },
+  {
+    "id": "sk-slovan-bratislava",
+    "name": "ŠK Slovan Bratislava",
+    "wikidata": "Q192253",
+    "country": "Slovakia",
+    "sitelinks": 56,
+    "image": "sk-slovan-bratislava.webp",
+    "credit": {
+      "licence": "Public domain",
+      "source": "https://commons.wikimedia.org/wiki/File:SK_Slovan_Bratislava_logo.svg",
+      "changes": "Converted to pixel art"
+    }
+  },
+  {
+    "id": "ac-sparta-prague",
+    "name": "AC Sparta Prague",
+    "wikidata": "Q193481",
+    "country": "Czech Republic",
+    "sitelinks": 55,
+    "image": "ac-sparta-prague.webp",
+    "credit": {
+      "licence": "Public domain",
+      "source": "https://commons.wikimedia.org/wiki/File:AC-Sparta-LOGO2021.svg",
+      "changes": "Converted to pixel art"
+    }
+  },
+  {
+    "id": "catania-fc",
+    "name": "Catania FC",
+    "wikidata": "Q2018",
+    "country": "Italy",
+    "sitelinks": 55,
+    "image": "catania-fc.webp",
+    "credit": {
+      "licence": "Public domain",
+      "source": "https://commons.wikimedia.org/wiki/File:Logo_CATANIA_FC.svg",
+      "changes": "Converted to pixel art"
+    }
+  },
+  {
+    "id": "red-bull-new-york",
+    "name": "Red Bull New York",
+    "wikidata": "Q204220",
+    "country": "United States",
+    "sitelinks": 55,
+    "image": "red-bull-new-york.webp",
+    "credit": {
+      "licence": "Public domain",
+      "source": "https://commons.wikimedia.org/wiki/File:NYRB_wordmark_2line_color_dkbg.svg",
+      "changes": "Converted to pixel art"
+    }
+  },
+  {
+    "id": "stade-brestois-29",
+    "name": "Stade Brestois 29",
+    "wikidata": "Q218372",
+    "country": "France",
+    "sitelinks": 55,
+    "image": "stade-brestois-29.webp",
+    "credit": {
+      "licence": "CC BY-SA 4.0",
+      "source": "https://commons.wikimedia.org/wiki/File:Stade_Brestois_Logo_avant_1985.svg",
+      "changes": "Converted to pixel art"
+    }
+  },
+  {
+    "id": "racing-club",
+    "name": "Racing Club",
+    "wikidata": "Q276533",
+    "country": "Argentina",
+    "sitelinks": 55,
+    "image": "racing-club.webp",
+    "credit": {
+      "licence": "Public domain",
+      "source": "https://commons.wikimedia.org/wiki/File:Escudo_de_Racing_Club_(2014).svg",
+      "changes": "Converted to pixel art"
+    }
+  },
+  {
+    "id": "arminia-bielefeld",
+    "name": "Arminia Bielefeld",
+    "wikidata": "Q105844",
+    "country": "Germany",
+    "sitelinks": 55,
+    "image": "arminia-bielefeld.webp",
+    "credit": {
+      "licence": "Public domain",
+      "source": "https://commons.wikimedia.org/wiki/File:Arminia_Bielefeld_Logo_2021%E2%80%93.svg",
+      "changes": "Converted to pixel art"
+    }
+  },
+  {
+    "id": "1-fc-heidenheim-1846",
+    "name": "1. FC Heidenheim 1846",
+    "wikidata": "Q162251",
+    "country": "Germany",
+    "sitelinks": 54,
+    "image": "1-fc-heidenheim-1846.webp",
+    "credit": {
+      "licence": "Public domain",
+      "source": "https://commons.wikimedia.org/wiki/File:1._FC_Heidenheim_1846.svg",
+      "changes": "Converted to pixel art"
+    }
+  },
+  {
+    "id": "fc-dinamo-minsk",
+    "name": "FC Dinamo Minsk",
+    "wikidata": "Q211477",
+    "country": "Belarus",
+    "sitelinks": 54,
+    "image": "fc-dinamo-minsk.webp",
+    "credit": {
+      "licence": "CC BY 4.0",
+      "source": "https://commons.wikimedia.org/wiki/File:FK_Dinamo_Minsk_escudo_blr.jpg",
+      "changes": "Converted to pixel art"
+    }
+  },
+  {
+    "id": "fc-utrecht",
+    "name": "FC Utrecht",
+    "wikidata": "Q24680",
+    "country": "Netherlands",
+    "sitelinks": 54,
+    "image": "fc-utrecht.webp",
+    "credit": {
+      "licence": "Public domain",
+      "source": "https://commons.wikimedia.org/wiki/File:FC_Utrecht.svg",
+      "changes": "Converted to pixel art"
+    }
+  },
+  {
+    "id": "fortaleza-e-c",
+    "name": "Fortaleza E.C.",
+    "wikidata": "Q188841",
+    "country": "Brazil",
+    "sitelinks": 54,
+    "image": "fortaleza-e-c.webp",
+    "credit": {
+      "licence": "Public domain",
+      "source": "https://commons.wikimedia.org/wiki/File:Fortaleza_Esporte_Clube_logo.svg",
+      "changes": "Converted to pixel art"
+    }
+  },
+  {
+    "id": "spvgg-greuther-furth",
+    "name": "SpVgg Greuther Fürth",
+    "wikidata": "Q153539",
+    "country": "Germany",
+    "sitelinks": 53,
+    "image": "spvgg-greuther-furth.webp",
+    "credit": {
+      "licence": "Public domain",
+      "source": "https://commons.wikimedia.org/wiki/File:SpVgg_Greuther_F%C3%BCrth_2017.svg",
+      "changes": "Converted to pixel art"
+    }
+  },
+  {
+    "id": "newell-s-old-boys",
+    "name": "Newell's Old Boys",
+    "wikidata": "Q221882",
+    "country": "Argentina",
+    "sitelinks": 53,
+    "image": "newell-s-old-boys.webp",
+    "credit": {
+      "licence": "Public domain",
+      "source": "https://commons.wikimedia.org/wiki/File:Newell%27s_escudo_2016.png",
+      "changes": "Converted to pixel art"
+    }
+  },
+  {
+    "id": "d-c-united",
+    "name": "D.C. United",
+    "wikidata": "Q238593",
+    "country": "United States",
+    "sitelinks": 53,
+    "image": "d-c-united.webp",
+    "credit": {
+      "licence": "Public domain",
+      "source": "https://commons.wikimedia.org/wiki/File:D.C._United_2016_wordmark.svg",
+      "changes": "Converted to pixel art"
+    }
+  },
+  {
+    "id": "ac-monza",
+    "name": "AC Monza",
+    "wikidata": "Q289482",
+    "country": "Italy",
+    "sitelinks": 53,
+    "image": "ac-monza.webp",
+    "credit": {
+      "licence": "Public domain",
+      "source": "https://commons.wikimedia.org/wiki/File:Logo_of_AC_Monza.png",
+      "changes": "Converted to pixel art"
+    }
+  },
+  {
+    "id": "djurgardens-if-fotboll",
+    "name": "Djurgårdens IF Fotboll",
+    "wikidata": "Q622430",
+    "country": "Sweden",
+    "sitelinks": 52,
+    "image": "djurgardens-if-fotboll.webp",
+    "credit": {
+      "licence": "Public domain",
+      "source": "https://commons.wikimedia.org/wiki/File:Djurgardens_IF_logo.svg",
+      "changes": "Converted to pixel art"
+    }
+  },
+  {
+    "id": "ars-et-labor-ferrara-calcio",
+    "name": "Ars et Labor Ferrara Calcio",
+    "wikidata": "Q13385",
+    "country": "Italy",
+    "sitelinks": 52,
+    "image": "ars-et-labor-ferrara-calcio.webp",
+    "credit": {
+      "licence": "Public domain",
+      "source": "https://commons.wikimedia.org/wiki/File:SPAL_Ferrara.svg",
+      "changes": "Converted to pixel art"
+    }
+  },
+  {
+    "id": "sk-brann",
+    "name": "SK Brann",
+    "wikidata": "Q205685",
+    "country": "Norway",
+    "sitelinks": 52,
+    "image": "sk-brann.webp",
+    "credit": {
+      "licence": "Public domain",
+      "source": "https://commons.wikimedia.org/wiki/File:Brann_logo.svg",
+      "changes": "Converted to pixel art"
+    }
+  },
+  {
+    "id": "gamba-osaka",
+    "name": "Gamba Osaka",
+    "wikidata": "Q738423",
+    "country": "Japan",
+    "sitelinks": 52,
+    "image": "gamba-osaka.webp",
+    "credit": {
+      "licence": "Public domain",
+      "source": "https://commons.wikimedia.org/wiki/File:Gamba_Osaka_logo.svg",
+      "changes": "Converted to pixel art"
+    }
+  },
+  {
+    "id": "estudiantes-de-la-plata",
+    "name": "Estudiantes de La Plata",
+    "wikidata": "Q214940",
+    "country": "Argentina",
+    "sitelinks": 52,
+    "image": "estudiantes-de-la-plata.webp",
+    "credit": {
+      "licence": "Public domain",
+      "source": "https://commons.wikimedia.org/wiki/File:Estudiantes_de_la_Plata_crest_(2025).svg",
+      "changes": "Converted to pixel art"
+    }
+  },
+  {
+    "id": "fc-dinamo-bucharest",
+    "name": "FC Dinamo Bucharest",
+    "wikidata": "Q204237",
+    "country": "Romania",
+    "sitelinks": 51,
+    "image": "fc-dinamo-bucharest.webp",
+    "credit": {
+      "licence": "Public domain",
+      "source": "https://commons.wikimedia.org/wiki/File:FC_Dinamo_Bucure%C8%99ti_-_logo_2026.svg",
+      "changes": "Converted to pixel art"
+    }
+  },
+  {
+    "id": "eintracht-braunschweig",
+    "name": "Eintracht Braunschweig",
+    "wikidata": "Q154053",
+    "country": "Germany",
+    "sitelinks": 51,
+    "image": "eintracht-braunschweig.webp",
+    "credit": {
+      "licence": "CC BY-SA 3.0",
+      "source": "https://commons.wikimedia.org/wiki/File:600px_Giallo_e_Blu_con_stemma_Eintracht_Braunschweig.png",
+      "changes": "Converted to pixel art"
+    }
+  },
+  {
+    "id": "msv-duisburg",
+    "name": "MSV Duisburg",
+    "wikidata": "Q154293",
+    "country": "Germany",
+    "sitelinks": 51,
+    "image": "msv-duisburg.webp",
+    "credit": {
+      "licence": "Public domain",
+      "source": "https://commons.wikimedia.org/wiki/File:MSV_Duisburg_Anniversary_22-23_Logo.svg",
+      "changes": "Converted to pixel art"
+    }
+  },
+  {
+    "id": "club-atletico-velez-sarsfield",
+    "name": "Club Atlético Vélez Sarsfield",
+    "wikidata": "Q215163",
+    "country": "Argentina",
+    "sitelinks": 51,
+    "image": "club-atletico-velez-sarsfield.webp",
+    "credit": {
+      "licence": "Public domain",
+      "source": "https://commons.wikimedia.org/wiki/File:Escudo_del_Club_Atl%C3%A9tico_V%C3%A9lez_Sarsfield.svg",
+      "changes": "Converted to pixel art"
+    }
+  },
+  {
+    "id": "ado-den-haag",
+    "name": "ADO Den Haag",
+    "wikidata": "Q24904",
+    "country": "Netherlands",
+    "sitelinks": 51,
+    "image": "ado-den-haag.webp",
+    "credit": {
+      "licence": "CC BY 2.0",
+      "source": "https://commons.wikimedia.org/wiki/File:Logo_of_ADO_Den_Haag_on_a_poster_(17058468161).jpg",
+      "changes": "Converted to pixel art"
+    }
+  },
+  {
+    "id": "sv-darmstadt-98",
+    "name": "SV Darmstadt 98",
+    "wikidata": "Q479351",
+    "country": "Germany",
+    "sitelinks": 51,
+    "image": "sv-darmstadt-98.webp",
+    "credit": {
+      "licence": "Public domain",
+      "source": "https://commons.wikimedia.org/wiki/File:SV_Darmstadt_98_Logo.svg",
+      "changes": "Converted to pixel art"
+    }
+  },
+  {
+    "id": "fc-st-gallen",
+    "name": "FC St. Gallen",
+    "wikidata": "Q659212",
+    "country": "Switzerland",
+    "sitelinks": 51,
+    "image": "fc-st-gallen.webp",
+    "credit": {
+      "licence": "Public domain",
+      "source": "https://commons.wikimedia.org/wiki/File:FC_St._Gallen_logo.svg",
+      "changes": "Converted to pixel art"
+    }
+  }
+]
