@@ -86,7 +86,8 @@ The bank ships in the APK, so answer correctness is client-trusted, like daily
 challenges. The defence is the **bound**: every question pays at most once per
 account, and every prize at most once. The server enforces both.
 
-**Signed in (server-authoritative payouts)**, migration `0019_level_mode.sql`:
+**Signed in (server-authoritative payouts)**, split across migrations
+0019–0021 by phase (see §8):
 - `level_questions(question_id pk, level int)` and
   `level_prizes(level pk, item_id null, coins int)`, seeded from the manifest
   (the script generates the seed SQL alongside the TS).
@@ -171,34 +172,69 @@ nt→national-teams, ru→rules, re→records, pp→picture-players,
 pt→picture-teams`. Card frames, level rows and progress bars are CSS.
 Correct/wrong answer sounds are skipped; existing sounds stand in.
 
-**The only setup left on your side** is running migration
-`0019_level_mode.sql` on Supabase when step 9 lands.
+**The only setup left on your side** is running each phase's Supabase
+migration (see §8).
 
-## 8. Build order (atomic, test-first)
+## 8. Build phases
 
-Each step: write a failing test → stop for review → implement → `npm test` +
-`npm run typecheck` → stop.
+Three phases. Each one is test-first (Vitest beside the code), ends with
+`npm test` + `npm run typecheck` green, and finishes with you playing it on
+the phone.
 
-1. `coinsForTries` (3/2/1/1 floor) + tests.
-2. `unlockAt(n)` + tests.
-3. Manifest builder: pure function (bank → levels) + tests for determinism,
-   24-per-level, difficulty ramp, category mix, every id used once.
-4. Generate and check in `manifest.ts` + prize table.
-5. `progress.ts` helpers (`totalSolved`, `isUnlocked`, `isComplete`) + tests.
-6. Local `ftb.levels` persistence + tests.
-7. `createLevelStore`: answer right/wrong, tries tracking, local coin payout + tests.
-8. Store: prize claim (local path), owned-item → coins fallback + tests.
-9. Migration `0019_level_mode.sql` + seed generation.
-10. `services/levels.ts` API seam; store server path + tests with a fake API.
-11. Sign-in import of offline level progress + tests.
-12. `LevelQuestion` component + Testing Library tests.
-13. `LevelScreen` grid + tests.
-14. `LevelCompletePopup` + tests.
-15. `HomeScreen` (Play vs Human + level list), wired into `App.tsx`.
-16. Daily-challenge hook, analytics events.
-17. Polish pass: sprite sizing/placement on device-sized screens.
-18. **Your check:** play Level 1 through to its prize on the phone, signed
-    out, then sign in and confirm progress and coins carried over.
+### Phase 1: Level 1, first question (vertical slice)
+
+The whole loop, end to end, with one question.
+
+- `src/game/levels/`: `coinsForTries` (3/2/1/1) and a hand-written
+  manifest holding just **Level 1 with one question**.
+- `createLevelStore`: open a card, answer it, track wrong tries, mark it
+  solved, and pay coins. It persists to local `ftb.levels`.
+- Coins: signed out goes to `localProgressStore.addCoins`. Signed in calls
+  `claim_level_question`, from migration `0019_level_mode.sql` with
+  `level_questions` seeded with that one id, `level_solves`, and the RPC.
+- UI: `HomeScreen` with the **Play vs Human** card (→ existing lobby) and a
+  Level 1 row. `LevelScreen` shows a one-card grid. `LevelQuestion` handles
+  the wrong shake, retry, correct flash and "+3" coin pop.
+- **Your check:** tap Level 1 → the card → a wrong answer, then the right one.
+  Coins go up by 2. Reopening shows the card solved, and answering it again
+  pays nothing. Do it signed out and signed in.
+- **Your setup:** run `0019_level_mode.sql`.
+
+### Phase 2: Level 1 complete, with rewards
+
+Level 1 becomes a real 24-card level, and finishing it pays out.
+
+- Manifest builder: a pure function (bank → levels) that is deterministic,
+  24 per level, ramps difficulty and mixes categories. It generates the
+  checked-in `manifest.ts` and the seed SQL. Only Level 1 is exposed for now.
+- Level 1 prize (`goal_horn`) and the owned-item → coins fallback.
+- Migration `0020_level_prizes.sql`: the full Level 1 seed, `level_prizes`,
+  `level_prize_claims`, `claim_level_prize`, `list_level_progress`, and
+  `import_level_progress`.
+- Store: prize claim on both paths; hydrating from the server on sign-in;
+  importing offline progress on sign-in without paying twice.
+- UI: the 24-card grid with category icons, solved ticks and a progress bar
+  `n/24`. The level row shows its prize. `LevelCompletePopup` reveals the
+  prize with "equip now". The Level 2 row shows a padlock.
+- Daily challenge `answer_15` counts level answers; analytics events.
+- **Your check:** clear Level 1 signed out and get the goal horn. Then sign in
+  and confirm the progress, coins and horn all carried over. Clear it on a
+  second account that already **bought** the horn, and get 100 coins instead.
+- **Your setup:** run `0020_level_prizes.sql`.
+
+### Phase 3: all levels
+
+The rest of the manifest goes live.
+
+- Expose all ~28 levels, with titles (career ladder), `unlockAt(n)`, and the
+  full prize table (odd levels give an item, even levels a 50-coin chest).
+- Migration `0021_level_seed.sql`: every level's questions and prizes.
+- UI: the full scrollable level list with lock states and "needs N solved".
+  The chest sprite shows on even-level rows. Polish sprite sizing on phone
+  screens.
+- **Your check:** Level 2 unlocks at 18 solved, and an even level pays its
+  chest. Scroll the list on a small phone.
+- **Your setup:** run `0021_level_seed.sql`.
 
 ## 9. Out of scope for now
 
