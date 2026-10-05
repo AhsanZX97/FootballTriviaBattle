@@ -7,6 +7,8 @@ export interface PitchState extends PitchSkins {
   dimmed: boolean
   /** Forces the keeper's reaction for the next shot; rolled at random when omitted. */
   reaction?: KeeperReaction
+  /** Forces the next shot to the right-hand side; rolled at random when omitted. */
+  mirror?: boolean
 }
 
 export interface PitchCallbacks {

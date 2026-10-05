@@ -33,6 +33,15 @@ describe('engine shot timeline', () => {
     expect(shotPose('concede', 1700).keeper.x).toBe(0.42)
   })
 
+  it.each(['goal', 'miss', 'save', 'concede'] as const)('mirrors a %s to the other side of the goal', (outcome) => {
+    const left = shotPose(outcome, 1800, 'wrong-way', false)
+    const right = shotPose(outcome, 1800, 'wrong-way', true)
+    expect(right.ball.x).toBeCloseTo(1 - left.ball.x)
+    expect(right.ball.y).toBe(left.ball.y)
+    expect(right.keeper.x).toBeCloseTo(1 - left.keeper.x)
+    if (left.diving) expect(right.flipKeeper).toBe(!left.flipKeeper)
+  })
+
   it('supports frozen and late goal reactions without changing the ball outcome', () => {
     expect(shotPose('goal', 1800, 'frozen').keeper).toEqual({ x: 0.5, y: 0.51 })
     expect(shotPose('goal', 1000, 'late').diving).toBe(false)

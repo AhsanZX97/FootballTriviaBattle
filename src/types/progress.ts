@@ -58,6 +58,10 @@ export interface LocalProgress {
   lastDailyRewardDate: string | null
   /** Cosmetics bought on-device, re-charged against the real balance at claim. */
   pendingPurchases: PendingPurchase[]
+  /** Cosmetics won free on-device (level prizes). Never re-charged at claim:
+   * the account gets them through `import_level_progress`, which checks the
+   * level was actually completed. */
+  grantedItems: string[]
   /** Cosmetics equipped on-device. Applied to the profile at claim, for
    * whichever slots the player still owns once the server has charged them. */
   customization: Customization
@@ -83,6 +87,7 @@ export const emptyLocalProgress = (): LocalProgress => ({
   dailyRewardStreak: 0,
   lastDailyRewardDate: null,
   pendingPurchases: [],
+  grantedItems: [],
   customization: defaultCustomization(),
   adsToday: 0,
   adsDate: null,

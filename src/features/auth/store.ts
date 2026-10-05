@@ -239,6 +239,14 @@ export function createAuthStore(
   // event they just caused — sign out has to mean signed out.
   let playGamesAttempted = false
 
+  // Work other stores need done as a session starts (the level store's import
+  // of offline progress). Registered rather than imported so this store never
+  // depends on them.
+  const signInTasks: Array<() => Promise<void>> = []
+  function addSignInTask(task: () => Promise<void>): void {
+    signInTasks.push(task)
+  }
+
   const getState = () => state
   const subscribe = (l: Listener): (() => void) => {
     listeners.add(l)
@@ -322,6 +330,15 @@ export function createAuthStore(
       welcomeCoins: null,
       error: null,
     })
+    // Before the local claim: the level import grants offline prize items,
+    // which the claim then re-equips.
+    for (const task of signInTasks) {
+      try {
+        await task()
+      } catch (err) {
+        console.error('[auth] sign-in task failed', err)
+      }
+    }
     // `welcome_bonus_seen === false` is only ever true for an account whose
     // profile row was created by 0016's trigger and has not yet been shown the
     // notice. Older accounts backfilled to true and never see one.
@@ -555,6 +572,7 @@ export function createAuthStore(
     signOut,
     clearError,
     clearWelcomeNotice,
+    addSignInTask,
     applyCoinsUpdate,
     claimDailyReward,
     applyCustomizationUpdate,

@@ -31,6 +31,7 @@ export function createPitchGame(parent: HTMLElement, initial: PitchState, callba
     private fills: Phaser.GameObjects.Image[] = []
     private shot: ShotTimeline | null = null
     private reaction: KeeperReaction = 'wrong-way'
+    private mirror = false
     private idleElapsed = 0
     private ready = false
 
@@ -80,6 +81,7 @@ export function createPitchGame(parent: HTMLElement, initial: PitchState, callba
       this.shot = state.feedback ? new ShotTimeline(state.feedback) : null
       const reactions: KeeperReaction[] = ['wrong-way', 'frozen', 'late']
       this.reaction = state.reaction ?? reactions[Math.floor(Math.random() * reactions.length)]
+      this.mirror = state.mirror ?? Math.random() < 0.5
     }
 
     receive(next: PitchState) {
@@ -116,7 +118,7 @@ export function createPitchGame(parent: HTMLElement, initial: PitchState, callba
       const art = resolvePitchArt(state)
       const elapsed = this.shot?.elapsed ?? 0
       const visualTime = reducedMotion && state.feedback ? FEEDBACK_MS : elapsed
-      const pose = state.feedback ? shotPose(state.feedback, visualTime, this.reaction) : null
+      const pose = state.feedback ? shotPose(state.feedback, visualTime, this.reaction, this.mirror) : null
       const ball = pose?.ball ?? { x: 0.5, y: 0.8 }
       const keeper = pose?.keeper ?? { x: 0.5, y: 0.51 }
       const position = (point: { x: number; y: number }) => [
@@ -134,7 +136,7 @@ export function createPitchGame(parent: HTMLElement, initial: PitchState, callba
       const spinning = !!state.feedback && visualTime >= KICK_MS
       const ballFrame = reducedMotion ? 0 : Math.floor(Math.min(Math.max(0, elapsed - KICK_MS), state.feedback ? impactTime(state.feedback) - KICK_MS : 0) / 50) % 4
       this.actor(this.ball, spinning ? art.spin : art.ball, spinning ? stock.spin : stock.ball, ballFrame, layout.width * 0.049 * 0.45)
-      this.ball.setPosition(...position(ball)).setFlipX(state.feedback === 'miss' || state.feedback === 'concede')
+      this.ball.setPosition(...position(ball)).setFlipX(pose?.flipBall ?? false)
       this.label.setText(state.label ?? '').setPosition(width / 2, layout.y + layout.height * 0.61)
         .setFontSize(Math.max(10 * pixelRatio, Math.min(24 * pixelRatio, width / Math.max(26, (state.label?.length ?? 0) + 4))))
         .setVisible(!!state.feedback && visualTime >= impactTime(state.feedback))

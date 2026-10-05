@@ -108,6 +108,9 @@ export function createLocalProgressStore(
                 typeof p === 'object' && p !== null && typeof (p as PendingPurchase).id === 'string',
             )
           : [],
+        grantedItems: Array.isArray(parsed.grantedItems)
+          ? parsed.grantedItems.filter((id): id is string => typeof id === 'string')
+          : [],
         customization: readCustomization(parsed.customization),
         adsToday:
           typeof parsed.adsToday === 'number' && parsed.adsToday > 0 ? Math.floor(parsed.adsToday) : 0,
@@ -170,7 +173,19 @@ export function createLocalProgressStore(
   /** Cosmetics bought on this device. `default` is never bought — every player
    * starts on it — so it always counts as owned. */
   function owns(itemId: string): boolean {
-    return itemId === DEFAULT_ITEM_ID || state.pendingPurchases.some((p) => p.id === itemId)
+    return (
+      itemId === DEFAULT_ITEM_ID ||
+      state.pendingPurchases.some((p) => p.id === itemId) ||
+      state.grantedItems.includes(itemId)
+    )
+  }
+
+  /** Hand over a cosmetic for free (a level prize). False when it is already
+   * owned, so the caller can pay the fallback instead. */
+  function grantItem(itemId: string): boolean {
+    if (owns(itemId)) return false
+    commit({ ...state, grantedItems: [...state.grantedItems, itemId] })
+    return true
   }
 
   /**
@@ -237,7 +252,8 @@ export function createLocalProgressStore(
     state.coins > 0 ||
     state.matches.length > 0 ||
     state.dailyRewardStreak > 0 ||
-    state.pendingPurchases.length > 0
+    state.pendingPurchases.length > 0 ||
+    state.grantedItems.length > 0
 
   /** Coins to claim: the balance *plus* everything already spent on-device. The
    * server re-charges those purchases at its own prices immediately after, so
@@ -256,7 +272,9 @@ export function createLocalProgressStore(
    * back to the stock look rather than showing something unowned.
    */
   async function syncPurchases(): Promise<void> {
-    const granted = new Set<string>([DEFAULT_ITEM_ID])
+    // Granted items reached the account through the level import, which runs
+    // before this claim; if one didn't, set_customization refuses it.
+    const granted = new Set<string>([DEFAULT_ITEM_ID, ...state.grantedItems])
     for (const pending of state.pendingPurchases) {
       const { status } = await shop.purchaseItem(pending.id)
       if (status === 'ok' || status === 'already_owned') granted.add(pending.id)
@@ -320,6 +338,7 @@ export function createLocalProgressStore(
     recordMatch,
     claimDailyReward,
     owns,
+    grantItem,
     purchaseItem,
     equip,
     adsRemaining,

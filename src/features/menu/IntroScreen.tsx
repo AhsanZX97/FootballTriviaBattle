@@ -4,10 +4,13 @@ import bg from '../../assets/bg.jpg'
 import logo from '../../assets/logo.png'
 import coinSprite from '../../assets/sprites/coin.png'
 import playVsHuman from '../../assets/levels/play-vs-human.png'
-import { LEVELS } from '../../game/levels/manifest'
+import padlock from '../../assets/levels/padlock.png'
+import { LEVELS, NEXT_LEVEL } from '../../game/levels/manifest'
 import { levelProgress } from '../../game/levels/progress'
 import { authStore } from '../auth/store'
 import { levelStore } from '../levels/store'
+import { PrizeBadge } from '../levels/PrizeBadge'
+import { prizeArt } from '../levels/prizeArt'
 import './IntroScreen.css'
 import '../levels/LevelScreen.css'
 import { useT } from '../../services/i18n/store'
@@ -97,12 +100,14 @@ export function IntroScreen({ onPlayNow, onOpenLevel, onSignIn, onShop, onTestMo
         <section className="home__levels" aria-label="Levels">
           {LEVELS.map((def) => {
             const { solved, total } = levelProgress(def, levels.solved)
+            const claimed = levels.prizes.includes(def.level)
+            const prize = `Prize: ${prizeArt(def.prize).name}${claimed ? ', claimed' : ''}`
             return (
               <button
                 key={def.level}
                 type="button"
                 className={`pixel-card${solved === total ? ' pixel-card--done' : ''}`}
-                aria-label={t('levels.levelAria', { level: def.level, solved, total })}
+                aria-label={`${t('levels.levelAria', { level: def.level, solved, total })}. ${prize}`}
                 onClick={() => onOpenLevel?.(def.level)}
               >
                 <span className="pixel-card__plate" aria-hidden>
@@ -118,12 +123,30 @@ export function IntroScreen({ onPlayNow, onOpenLevel, onSignIn, onShop, onTestMo
                     </span>
                   </span>
                 </span>
-                <span className="pixel-card__arrow" aria-hidden>
-                  ▸
-                </span>
+                <PrizeBadge prize={def.prize} claimed={claimed} decorative />
               </button>
             )
           })}
+
+          {/* Not playable yet: its questions aren't seeded server-side, so
+              even reaching the solve count only says it's on its way. */}
+          <div className="pixel-card pixel-card--locked" role="group" aria-label={`Level ${NEXT_LEVEL.level}, locked`}>
+            <span className="pixel-card__plate" aria-hidden>
+              <span className="pixel-card__plate-label">LV</span>
+              <span className="pixel-card__plate-num">{NEXT_LEVEL.level}</span>
+            </span>
+            <span className="pixel-card__text">
+              <span className="pixel-card__title">{NEXT_LEVEL.title}</span>
+              <span className="pixel-card__sub">
+                {Object.keys(levels.solved).length >= NEXT_LEVEL.unlockAt
+                  ? 'COMING SOON'
+                  : `SOLVE ${NEXT_LEVEL.unlockAt} TO UNLOCK`}
+              </span>
+            </span>
+            <span className="level-prize" aria-hidden>
+              <img className="level-prize__art" src={padlock} alt="" />
+            </span>
+          </div>
         </section>
       </div>
     </main>

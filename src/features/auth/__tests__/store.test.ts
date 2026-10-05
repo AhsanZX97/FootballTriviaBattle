@@ -226,6 +226,48 @@ describe('claiming on-device progress at sign-in', () => {
     expect(progress.claim).not.toHaveBeenCalled()
   })
 
+  it('runs sign-in tasks once signed in, before the local claim', async () => {
+    const fake = createFakeSupabase({ u1: { username: 'bob', coins: 5 } })
+    const order: string[] = []
+    const progress = { claim: vi.fn(async () => (order.push('claim'), null)) }
+    const store = createAuthStore({ supabaseClient: fake.client as never, storage: fakeStorage(), progress })
+    store.addSignInTask(async () => {
+      order.push(`task:${store.getState().status}`)
+    })
+
+    await fake.emit('INITIAL_SESSION', session('u1', 'bob@example.com'))
+
+    expect(order).toEqual(['task:signedIn', 'claim'])
+  })
+
+  it('still claims when a sign-in task throws', async () => {
+    const fake = createFakeSupabase({ u1: { username: 'bob', coins: 5 } })
+    const progress = fakeProgress(null)
+    const store = createAuthStore({ supabaseClient: fake.client as never, storage: fakeStorage(), progress })
+    store.addSignInTask(async () => {
+      throw new Error('offline')
+    })
+
+    await fake.emit('INITIAL_SESSION', session('u1', 'bob@example.com'))
+
+    expect(progress.claim).toHaveBeenCalledOnce()
+  })
+
+  it('runs no sign-in tasks for a signed-out session', async () => {
+    const fake = createFakeSupabase()
+    const store = createAuthStore({
+      supabaseClient: fake.client as never,
+      storage: fakeStorage(),
+      progress: fakeProgress(null),
+    })
+    const task = vi.fn(async () => {})
+    store.addSignInTask(task)
+
+    await fake.emit('INITIAL_SESSION', null)
+
+    expect(task).not.toHaveBeenCalled()
+  })
+
   it('dismisses the notice when acknowledged', async () => {
     const fake = createFakeSupabase({ u1: { username: 'bob', coins: 5 } })
     const progress = fakeProgress({ coins: 47, granted: 42 })

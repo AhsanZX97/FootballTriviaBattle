@@ -43,8 +43,15 @@ levels and break saved progress plus the server's seed data.
 
 Build rules:
 - Pool = the full `footballBank` (665 questions today).
-- Sort by difficulty (easy → medium → hard), then deal round-robin across
-  topics, so each level mixes categories and later levels are harder.
+- Sort each topic by difficulty (easy → medium → hard), then place every
+  question by its relative position inside its own topic. Each topic is spread
+  evenly over the whole run, so every level gets a proportional category mix,
+  and difficulty climbs because every topic climbs. (Plain round-robin was
+  dropped: the small topics run dry early and the late levels would be almost
+  all picture questions.)
+- The frozen output lives in `src/game/levels/levelIds.ts`; re-running the
+  script keeps existing levels and only deals unassigned questions into new
+  ones. `--sql 1-1` prints the `level_questions` seed rows for a level range.
 - **24 cards per level** → 27 full levels plus a short final level (17 cards).
   New questions added later become new levels at the end.
 - Level titles are a career ladder in plain text, so no art is needed:
@@ -124,8 +131,8 @@ prizesClaimed: number[] }`.
   `answer(qid, choice)`, and `claimPrize(level)`, and switches between the
   local and server paths on `authStore` status.
 - Screens (plain co-located CSS, Press Start 2P, `PixelButton`, `Sprite`):
-  - `HomeScreen` replaces `IntroScreen`'s button stack: logo, a Play vs Human
-    card, then a scrollable level list. Each row shows the title, a progress
+  - `IntroScreen` is the home screen (restyled in Phase 1, no separate
+    `HomeScreen`): logo, a Play vs Human card, then a scrollable level list. Each row shows the title, a progress
     bar `n/24`, the prize, or a lock with its requirement. Shop and Sign In
     move to a header row; the Play Games / sign-out rules are unchanged.
   - `LevelScreen`: header (back, title, progress bar), a 3-column card grid.
@@ -182,9 +189,23 @@ Three phases. Each one is test-first (Vitest beside the code), ends with
 `npm test` + `npm run typecheck` green, and finishes with you playing it on
 the phone.
 
-### Phase 1: Level 1, first question (vertical slice)
+### Phase 1: Level 1, first question (vertical slice) — DONE
 
-The whole loop, end to end, with one question.
+Shipped in `50bf4ef` (2026-10-05). The whole loop, end to end, with one
+question (`wc-1`). Where it differs from the bullets below:
+
+- No separate `HomeScreen`: `IntroScreen` itself was restyled into the home
+  screen (header chips for Shop / Sign In, logo, Play vs Human card, level
+  rows in the same `.pixel-card` style).
+- `LevelQuestion` plays each answer as a **penalty** on the shootout's
+  `PitchScene`: a wrong answer is a miss and returns to the question, a right
+  one is a goal and then reveals the coins. This replaces the planned wrong
+  shake / correct flash.
+- Its strings went into the i18n catalogues (`levels.*`, `home.*`) before the
+  English-mobile-only rule landed. They stay; new level strings are English
+  literals.
+
+Original scope:
 
 - `src/game/levels/`: `coinsForTries` (3/2/1/1) and a hand-written
   manifest holding just **Level 1 with one question**.
@@ -201,9 +222,32 @@ The whole loop, end to end, with one question.
   pays nothing. Do it signed out and signed in.
 - **Your setup:** run `0019_level_mode.sql`.
 
-### Phase 2: Level 1 complete, with rewards
+### Phase 2: Level 1 complete, with rewards — BUILT, awaiting your check
 
-Level 1 becomes a real 24-card level, and finishing it pays out.
+Code, tests and `0020_level_prizes.sql` are in (uncommitted). Level 1 is the
+first 24 cards of the frozen deal and still holds `wc-1`, so Phase 1 solves
+carry over. How it was built, where the bullets below leave room:
+
+- The prize **auto-claims** when you land back on a finished grid, then
+  `LevelCompletePopup` reveals it. A failed signed-in claim shows a
+  CLAIM PRIZE retry button instead of looping.
+- Signed out, a won item goes into a new `grantedItems` list in local progress,
+  not `pendingPurchases`, because the sign-in claim re-charges pending
+  purchases at shop price. Granted items show as owned in the shop and can be
+  equipped.
+- On sign-in, the auth store runs registered **sign-in tasks** before its
+  local-progress claim. The level store's task imports device progress
+  (`import_level_progress`, zero coins) or just loads the account
+  (`list_level_progress`), then mirrors the account locally. It runs first so
+  the claim can re-equip a prize item that the import just granted.
+- Signing out wipes the local level mirror, so one account's progress can't be
+  imported into the next account on the same device.
+- The Level 2 row is a grey, non-tappable card reading "SOLVE 18 TO UNLOCK",
+  or "COMING SOON" once you have 18, because its questions aren't seeded until
+  Phase 3. Level rows show the prize where the ▸ arrow was.
+- `level_question_answered` fires only on a first solve, not on every tap.
+
+Original scope:
 
 - Manifest builder: a pure function (bank → levels) that is deterministic,
   24 per level, ramps difficulty and mixes categories. It generates the

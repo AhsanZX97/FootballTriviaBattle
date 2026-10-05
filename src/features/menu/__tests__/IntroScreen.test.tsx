@@ -65,13 +65,21 @@ describe('IntroScreen', () => {
     expect(onPlayNow).toHaveBeenCalled()
   })
 
-  it('shows Level 1 progress and opens it', () => {
+  it('shows Level 1 progress and prize, and opens it', () => {
     const onOpenLevel = vi.fn()
     render(<IntroScreen onOpenLevel={onOpenLevel} />)
-    const row = screen.getByRole('button', { name: 'Level 1, 0 of 1 solved' })
+    const row = screen.getByRole('button', { name: 'Level 1, 0 of 24 solved. Prize: goal + horn' })
     expect(screen.getByText('SUNDAY LEAGUE')).toBeDefined()
     fireEvent.click(row)
     expect(onOpenLevel).toHaveBeenCalledWith(1)
+  })
+
+  it('shows Level 2 locked, with what it takes to open', () => {
+    render(<IntroScreen />)
+    expect(screen.getByRole('group', { name: 'Level 2, locked' })).toBeDefined()
+    expect(screen.getByText('ACADEMY')).toBeDefined()
+    expect(screen.getByText('SOLVE 18 TO UNLOCK')).toBeDefined()
+    expect(screen.queryByRole('button', { name: /level 2/i })).toBeNull()
   })
 
   it('shows a Sign In button when signed out', () => {

@@ -75,7 +75,7 @@ export function LevelQuestion({ questionId, onBack, store = levelStore }: Props)
     if (result.kind === 'wrong') {
       setWrongPicks((prev) => new Set(prev).add(answer))
       setOutcome({ kind: 'wrong' })
-      setShot('miss')
+      setShot(Math.random() < 0.5 ? 'save' : 'miss')
     } else if (result.kind === 'correct') {
       setOutcome({ kind: 'correct', answer, coins: result.coins, alreadySolved: result.alreadySolved })
       setShot('goal')

@@ -30,7 +30,7 @@ export interface ShopAuthSeam {
 
 /** The on-device shop a signed-out player uses. Injected for tests. */
 export interface ShopProgressSeam {
-  getState(): { coins: number; pendingPurchases: { id: string }[] }
+  getState(): { coins: number; pendingPurchases: { id: string }[]; grantedItems: string[] }
   owns(itemId: string): boolean
   purchaseItem(itemId: string, price: number): boolean
   equip(slot: CustomizationSlot, itemId: string): boolean
@@ -94,9 +94,10 @@ export function createShopStore(
    * network failure leaves the catalogue browsable rather than crashing. */
   async function refresh(): Promise<void> {
     if (!signedIn()) {
-      // Signed out the "owned" list is whatever was bought on-device, so the
-      // Customize tab has something real to show before an account exists.
-      set({ owned: progress.getState().pendingPurchases.map((p) => p.id), status: 'loaded' })
+      // Signed out the "owned" list is whatever was bought or won on-device,
+      // so the Customize tab has something real to show before an account exists.
+      const local = progress.getState()
+      set({ owned: [...local.pendingPurchases.map((p) => p.id), ...local.grantedItems], status: 'loaded' })
       return
     }
     set({ status: state.status === 'loaded' ? 'loaded' : 'loading' })

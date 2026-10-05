@@ -356,6 +356,39 @@ describe('local progress store', () => {
     expect(await store.claim()).not.toBeNull()
   })
 
+  it('grants a prize item for free: owned, equippable, and persisted', () => {
+    const store = createLocalProgressStore({ storage, api })
+
+    expect(store.grantItem('goal_horn')).toBe(true)
+    expect(store.getState().coins).toBe(0)
+    expect(store.owns('goal_horn')).toBe(true)
+    expect(store.equip('goalSound', 'goal_horn')).toBe(true)
+    expect(createLocalProgressStore({ storage, api }).owns('goal_horn')).toBe(true)
+  })
+
+  it('does not grant an item already owned', () => {
+    const store = createLocalProgressStore({ storage, api })
+    store.addCoins(100)
+    store.purchaseItem('goal_horn', 100)
+
+    expect(store.grantItem('goal_horn')).toBe(false)
+    expect(store.getState().grantedItems).toEqual([])
+  })
+
+  it('never re-charges a granted item at sign-in, but keeps it equipped', async () => {
+    const store = createLocalProgressStore({ storage, api, shop })
+    store.grantItem('goal_horn')
+    store.equip('goalSound', 'goal_horn')
+
+    expect(store.hasProgress()).toBe(true)
+    await store.claim()
+
+    expect(api.claimLocalProgress.mock.calls[0][0]).toBe(0)
+    expect(shop.purchaseItem).not.toHaveBeenCalled()
+    expect(shop.setCustomization).toHaveBeenCalledWith('goalSound', 'goal_horn')
+    expect(store.getState()).toEqual(emptyLocalProgress())
+  })
+
   it('does not run two claims at once', async () => {
     const store = createLocalProgressStore({ storage, api })
     store.addCoins(4)

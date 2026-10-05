@@ -63,7 +63,7 @@ vi.mock('phaser', () => ({
 }))
 import { createPitchGame } from '../createPitchGame'
 
-const state: PitchState = { stage: 'shoot', feedback: null, label: null, dimmed: false }
+const state: PitchState = { stage: 'shoot', feedback: null, label: null, dimmed: false, mirror: false }
 
 beforeEach(() => {
   harness.objects.length = 0
@@ -162,6 +162,31 @@ describe('Phaser match renderer', () => {
     expect(keeperAfterDive('wrong-way')?.x).toBeGreaterThan(422)
     expect(keeperAfterDive('late')?.x).toBeLessThan(422)
     vi.restoreAllMocks()
+  })
+
+  it('sends a mirrored shot into the other side of the goal', () => {
+    const ballAfterGoal = (mirror: boolean) => {
+      harness.objects.length = 0
+      const game = createPitchGame(document.createElement('div'), state, { onEvent: vi.fn(), onReady: vi.fn(), onError: vi.fn() })
+      game.update({ ...state, feedback: 'goal', label: 'GOAL!', mirror })
+      harness.getScene().update(0, 2000)
+      return harness.objects.find((o) => String(o.key).includes('ball-spin'))
+    }
+    expect(ballAfterGoal(false)?.x).toBeLessThan(422)
+    expect(ballAfterGoal(true)?.x).toBeGreaterThan(422)
+  })
+
+  it('rolls the side of each shot when none is forced', () => {
+    const sides = [0.2, 0.8].map((roll) => {
+      harness.objects.length = 0
+      vi.spyOn(Math, 'random').mockReturnValue(roll)
+      const game = createPitchGame(document.createElement('div'), state, { onEvent: vi.fn(), onReady: vi.fn(), onError: vi.fn() })
+      game.update({ stage: 'shoot', feedback: 'goal', label: 'GOAL!', dimmed: false })
+      harness.getScene().update(0, 2000)
+      vi.restoreAllMocks()
+      return harness.objects.find((o) => String(o.key).includes('ball-spin'))!.x > 422
+    })
+    expect(new Set(sides).size).toBe(2)
   })
 
   it('cancels callbacks and removes the canvas on destroy', () => {

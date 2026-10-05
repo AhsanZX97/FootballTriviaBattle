@@ -39,19 +39,32 @@ function interpolate(start: Point, end: Point, progress: number): Point {
   return { x: start.x + (end.x - start.x) * progress, y: start.y + (end.y - start.y) * progress }
 }
 
-export function shotPose(outcome: SceneFeedback, elapsed: number, reaction: KeeperReaction = 'wrong-way') {
+/** Reflects a pose across the centre line, so a shot can go to either side. */
+const side = (point: Point, mirror: boolean): Point => (mirror ? { x: 1 - point.x, y: point.y } : point)
+
+export function shotPose(
+  outcome: SceneFeedback,
+  elapsed: number,
+  reaction: KeeperReaction = 'wrong-way',
+  mirror = false,
+) {
   const progress = Math.min(1, Math.max(0, (elapsed - KICK_MS) / (impactTime(outcome) - KICK_MS)))
   const diveStart = KICK_MS + (outcome === 'goal' && reaction === 'late' ? 350 : 0)
   const frozen = outcome === 'miss' || (outcome === 'goal' && reaction === 'frozen')
-  const keeperTarget = outcome === 'save' ? { x: 0.4, y: 0.49 }
-    : outcome === 'concede' ? { x: 0.42, y: 0.52 }
-      : reaction === 'late' ? { x: 0.43, y: 0.52 } : { x: 0.6, y: 0.52 }
+  const keeperTarget = side(
+    outcome === 'save' ? { x: 0.4, y: 0.49 }
+      : outcome === 'concede' ? { x: 0.42, y: 0.52 }
+        : reaction === 'late' ? { x: 0.43, y: 0.52 } : { x: 0.6, y: 0.52 },
+    mirror,
+  )
   return {
-    ball: interpolate(ballStart, targets[outcome], progress),
+    ball: interpolate(ballStart, side(targets[outcome], mirror), progress),
     keeper: frozen ? keeperStart : interpolate(keeperStart, keeperTarget, (elapsed - diveStart) / (outcome === 'save' ? 500 : 600)),
     diving: !frozen && elapsed >= diveStart,
     diveElapsed: Math.max(0, elapsed - diveStart),
     flipKeeper: keeperTarget.x < keeperStart.x,
+    /** The ball sprite's spin faces left by default; flip it for shots heading right. */
+    flipBall: side(targets[outcome], mirror).x > ballStart.x,
     progress,
   }
 }

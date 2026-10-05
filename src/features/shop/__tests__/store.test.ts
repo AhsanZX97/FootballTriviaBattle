@@ -27,9 +27,10 @@ function makeDeps(overrides: ApiOverrides = {}, status = 'signedIn') {
   // on-device against local coins.
   let coins = 500
   const bought: Array<{ id: string; price: number }> = []
+  const granted: string[] = []
   const equipped: Array<[CustomizationSlot, string]> = []
   const progress = {
-    getState: () => ({ coins, pendingPurchases: bought }),
+    getState: () => ({ coins, pendingPurchases: bought, grantedItems: granted }),
     owns: (itemId: string) => itemId === 'default' || bought.some((b) => b.id === itemId),
     purchaseItem: vi.fn((itemId: string, price: number) => {
       if (coins < price) return false
@@ -47,7 +48,7 @@ function makeDeps(overrides: ApiOverrides = {}, status = 'signedIn') {
       coins = n
     },
   }
-  return { api, auth, applied, coinUpdates, progress, bought, equipped }
+  return { api, auth, applied, coinUpdates, progress, bought, granted, equipped }
 }
 
 describe('shop store', () => {
@@ -113,6 +114,16 @@ describe('shop store', () => {
 
     expect(deps.api.listOwnedItems).not.toHaveBeenCalled()
     expect(store.getState().owned).toEqual([])
+  })
+
+  it('counts a level prize won on-device as owned when signed out', async () => {
+    const deps = makeDeps({}, 'signedOut')
+    deps.granted.push('goal_horn')
+    const store = createShopStore(deps)
+
+    await store.refresh()
+
+    expect(store.isOwned('goal_horn')).toBe(true)
   })
 })
 

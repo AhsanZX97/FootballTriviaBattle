@@ -24,6 +24,7 @@ let pitch: PitchState
 let callbacks: PitchCallbacks
 
 beforeEach(() => {
+  vi.restoreAllMocks()
   vi.clearAllMocks()
   engine.create.mockImplementation((_host: HTMLElement, state: PitchState, events: PitchCallbacks) => {
     pitch = state
@@ -47,9 +48,16 @@ function memoryStorage() {
 function makeStore(opts: { status?: string; claim?: LevelsApi['claimQuestion'] } = {}) {
   const addCoins = vi.fn()
   const store = createLevelStore({
-    api: { claimQuestion: opts.claim ?? vi.fn(async () => null) },
+    api: {
+      claimQuestion: opts.claim ?? vi.fn(async () => null),
+      claimPrize: vi.fn(async () => null),
+      listProgress: vi.fn(async () => null),
+      importProgress: vi.fn(async () => null),
+    },
     auth: { getState: () => ({ status: opts.status ?? 'signedOut' }), applyCoinsUpdate: vi.fn() },
-    progress: { addCoins },
+    progress: { addCoins, owns: () => false, grantItem: () => true },
+    challenges: { recordAnswer: vi.fn() },
+    track: vi.fn(),
     storage: memoryStorage(),
   })
   return { store, addCoins }
@@ -85,7 +93,22 @@ describe('LevelQuestion', () => {
     expect(pitch.feedback).toBeNull()
   })
 
+  it('plays a saved penalty on a wrong answer when the roll lands low', async () => {
+    vi.spyOn(Math, 'random').mockReturnValue(0.2)
+    const { store } = makeStore()
+    await mount(store)
+
+    await pick('Italy')
+    expect(pitch.feedback).toBe('save')
+
+    act(() => callbacks.onEvent('impact', 'save'))
+    expect(play).toHaveBeenCalledWith('shock')
+    finishShot()
+    expect(screen.getByText('WRONG! TRY AGAIN')).toBeDefined()
+  })
+
   it('plays a missed penalty on a wrong answer, then shows the question again', async () => {
+    vi.spyOn(Math, 'random').mockReturnValue(0.8)
     const { store } = makeStore()
     await mount(store)
 

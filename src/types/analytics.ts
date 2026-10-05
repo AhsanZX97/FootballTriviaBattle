@@ -70,6 +70,13 @@ export type AnalyticsEvent =
   /** The one-off signup bonus landing on a brand-new account. Fires once per
    * account ever, so a count of these is a clean new-account tally. */
   | { name: 'signup_bonus_granted'; props: { coins: number } }
+  /** A level card solved for the first time. Repeats and wrong tries don't
+   * fire, so this stays one event per card per player at most. */
+  | { name: 'level_question_answered'; props: { level: number; wrongTries: number } }
+  /** The last card of a level fell. */
+  | { name: 'level_completed'; props: { level: number } }
+  /** A finished level's prize was paid out. */
+  | { name: 'level_prize_claimed'; props: { level: number; kind: 'item' | 'coins' } }
 
 /** Event names, derived so a call site can never invent one. */
 export type AnalyticsEventName = AnalyticsEvent['name']
