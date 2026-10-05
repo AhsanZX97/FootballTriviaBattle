@@ -1,7 +1,8 @@
 import { useEffect, useState, useSyncExternalStore } from 'react'
 import coinSprite from '../../assets/sprites/coin.png'
+import { LEVELS } from '../../game/levels/manifest'
 import { coinsForTries } from '../../game/levels/rewards'
-import { isSolved } from '../../game/levels/progress'
+import { isSolved, nextLevelQuestion } from '../../game/levels/progress'
 import { footballBank } from '../../services/trivia/bank'
 import { useT } from '../../services/i18n/store'
 import { fadeOutCrowd, play, playGoalCelebration } from '../../services/sound'
@@ -17,6 +18,8 @@ import './LevelScreen.css'
 type Props = {
   questionId: string
   onBack: () => void
+  /** Opens another card in this level. */
+  onNext?: (questionId: string) => void
   /** Defaults to the real singleton; tests inject one. */
   store?: Pick<LevelStore, 'getState' | 'subscribe' | 'answer'>
 }
@@ -41,7 +44,7 @@ function shuffle<T>(items: readonly T[]): T[] {
  * coins. The outcome only shows once the pitch reports `complete`, so the
  * reward never spoils the kick.
  */
-export function LevelQuestion({ questionId, onBack, store = levelStore }: Props) {
+export function LevelQuestion({ questionId, onBack, onNext, store = levelStore }: Props) {
   const t = useT()
   const state = useSyncExternalStore(store.subscribe, store.getState)
   const auth = useSyncExternalStore(authStore.subscribe, authStore.getState)
@@ -140,7 +143,15 @@ export function LevelQuestion({ questionId, onBack, store = levelStore }: Props)
               ) : (
                 <CoinReward amount={outcome.coins} />
               )}
-              <button type="button" className="pixel-card pixel-card--center" onClick={onBack}>
+              <button
+                type="button"
+                className="pixel-card pixel-card--center"
+                onClick={() => {
+                  const next = nextLevelQuestion(questionId, state.solved, LEVELS)
+                  if (next && onNext) onNext(next)
+                  else onBack()
+                }}
+              >
                 <span className="pixel-card__title">{t('levels.continue')}</span>
               </button>
             </section>

@@ -182,12 +182,37 @@
 
 /* --- home: header chips, Play vs Human card, level list --- */
 
-/* Scrolls instead of centring: the level list grows past one screen. */
-.home__content {
-  justify-content: flex-start;
+/* Coin bar, Shop / Sign In and the logo stay put. Only the mode list scrolls. */
+.home {
+  height: 100dvh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.home__fixed {
+  flex: none;
+  z-index: 2;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 100%;
+  gap: clamp(16px, 2.8vh, 28px);
+  padding: calc(64px + env(safe-area-inset-top)) 6% 0;
+}
+
+.home__modes {
+  position: relative;
+  z-index: 1;
+  flex: 1;
+  min-height: 0;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
   gap: clamp(16px, 2.8vh, 28px);
   overflow-y: auto;
-  padding-top: calc(64px + env(safe-area-inset-top));
+  padding: 16px 6% calc(12px + var(--ad-banner-height, 0px));
 }
 
 .home__header {
@@ -394,6 +419,30 @@ header.pixel-card {
   flex-direction: column;
   gap: 24px;
   padding-bottom: 12px;
+}
+
+/* A full ladder is ~28 rows. On a phone the 96px plate crowds the title,
+   so the number plate shrinks and the 32px prize art stays at 1x. */
+@media (max-width: 400px) {
+  .home__levels {
+    gap: 14px;
+  }
+
+  .pixel-card {
+    gap: 8px;
+    padding: 10px;
+  }
+
+  .pixel-card__plate {
+    width: 64px;
+    height: 40px;
+    padding-top: 9px;
+    gap: 4px;
+  }
+
+  .pixel-card__plate-num {
+    font-size: 14px;
+  }
 }
 
 @media (prefers-reduced-motion: reduce) {

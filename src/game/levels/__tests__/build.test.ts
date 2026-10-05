@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { buildLevelIds } from '../build'
+import { buildLevelIds, levelSeedSql } from '../build'
 import { footballBank } from '../../../services/trivia/bank'
 import type { Difficulty } from '../../../types/trivia'
 
@@ -54,5 +54,18 @@ describe('buildLevelIds', () => {
   it('starts each topic on its easiest questions', () => {
     const first = levels[0].filter((id) => topic(id) === 'wc')
     expect(first.every((id) => byId.get(id)!.difficulty === 'easy')).toBe(true)
+  })
+})
+
+describe('levelSeedSql', () => {
+  it('seeds only the requested levels that exist, questions and prizes', () => {
+    const sql = levelSeedSql([['wc-1'], ['pt-4', 'pl-3']], 2, 9)
+    expect(sql).toContain("('pt-4', 2)")
+    expect(sql).toContain("('pl-3', 2)")
+    expect(sql).not.toContain('wc-1')
+    expect(sql).toContain('(2, null, 50)')
+    expect(sql).not.toContain('(3,')
+    expect(sql).toContain('on conflict (question_id) do nothing')
+    expect(sql).toContain('on conflict (level) do nothing')
   })
 })

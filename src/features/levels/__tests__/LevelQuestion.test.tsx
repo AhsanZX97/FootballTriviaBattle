@@ -12,6 +12,8 @@ vi.mock('../../../services/sound', () => ({
   fadeOutCrowd: vi.fn(),
 }))
 
+import { LEVELS } from '../../../game/levels/manifest'
+import { footballBank } from '../../../services/trivia/bank'
 import { createLevelStore } from '../store'
 import type { ClaimQuestionResponse, LevelsApi } from '../../../services/levels'
 import { LevelQuestion } from '../LevelQuestion'
@@ -63,8 +65,13 @@ function makeStore(opts: { status?: string; claim?: LevelsApi['claimQuestion'] }
   return { store, addCoins }
 }
 
-async function mount(store: ReturnType<typeof makeStore>['store'], onBack = () => {}) {
-  render(<LevelQuestion questionId={QID} store={store} onBack={onBack} />)
+async function mount(
+  store: ReturnType<typeof makeStore>['store'],
+  onBack = () => {},
+  onNext = () => {},
+  questionId = QID,
+) {
+  render(<LevelQuestion questionId={questionId} store={store} onBack={onBack} onNext={onNext} />)
   await act(async () => {})
 }
 
@@ -132,7 +139,8 @@ describe('LevelQuestion', () => {
   it('scores a penalty on the right answer, then shows the coins and Continue', async () => {
     const { store, addCoins } = makeStore()
     const onBack = vi.fn()
-    await mount(store, onBack)
+    const onNext = vi.fn()
+    await mount(store, onBack, onNext)
 
     await pick('Italy')
     finishShot()
@@ -149,7 +157,24 @@ describe('LevelQuestion', () => {
     expect(addCoins).toHaveBeenCalledWith(2)
 
     fireEvent.click(screen.getByRole('button', { name: 'CONTINUE' }))
+    const ids = LEVELS[0].questionIds
+    expect(onNext).toHaveBeenCalledWith(ids[ids.indexOf(QID) + 1])
+    expect(onBack).not.toHaveBeenCalled()
+  })
+
+  it('leaves the level when Continue is on the last unsolved card', async () => {
+    const { store } = makeStore()
+    const onBack = vi.fn()
+    const onNext = vi.fn()
+    const lastId = LEVELS[0].questionIds.at(-1)!
+    const last = footballBank.find((q) => q.id === lastId)!
+    await mount(store, onBack, onNext, lastId)
+
+    await pick(last.correctAnswer)
+    finishShot()
+    fireEvent.click(screen.getByRole('button', { name: 'CONTINUE' }))
     expect(onBack).toHaveBeenCalled()
+    expect(onNext).not.toHaveBeenCalled()
   })
 
   it('says a solved card pays nothing when answered again', async () => {

@@ -40,11 +40,26 @@ vi.mock('../../progress/store', () => ({
   },
 }))
 
+const emptyLevels = () => ({
+  solved: {} as Record<string, number>,
+  tries: {} as Record<string, number>,
+  prizes: [] as number[],
+})
+let levelState = emptyLevels()
+vi.mock('../../levels/store', () => ({
+  levelStore: {
+    getState: () => levelState,
+    subscribe: () => () => {},
+  },
+}))
+
+import { LEVELS } from '../../../game/levels/manifest'
 import { IntroScreen } from '../IntroScreen'
 
 beforeEach(() => {
   authState = signedOut()
   localProgress = { coins: 0, matches: [] }
+  levelState = emptyLevels()
   signOut.mockClear()
   clearWelcomeNotice.mockClear()
 })
@@ -74,12 +89,30 @@ describe('IntroScreen', () => {
     expect(onOpenLevel).toHaveBeenCalledWith(1)
   })
 
-  it('shows Level 2 locked, with what it takes to open', () => {
+  it('shows later levels locked, with the solve count each one needs', () => {
     render(<IntroScreen />)
-    expect(screen.getByRole('group', { name: 'Level 2, locked' })).toBeDefined()
+    const locked = screen.getByRole('group', { name: 'Level 2, locked' })
     expect(screen.getByText('ACADEMY')).toBeDefined()
-    expect(screen.getByText('SOLVE 18 TO UNLOCK')).toBeDefined()
+    expect(screen.getByText('NEEDS 18 SOLVED')).toBeDefined()
+    expect(screen.getByText('NEEDS 36 SOLVED')).toBeDefined()
+    expect(locked.querySelector('img')?.getAttribute('src')).toMatch(/chest-closed/)
     expect(screen.queryByRole('button', { name: /level 2/i })).toBeNull()
+    expect(screen.getAllByRole('group', { name: /locked/i })).toHaveLength(LEVELS.length - 1)
+  })
+
+  it('opens Level 2 once 18 questions are solved, chest and all', () => {
+    const onOpenLevel = vi.fn()
+    levelState = {
+      solved: Object.fromEntries(Array.from({ length: 18 }, (_, i) => [`q${i}`, 0])),
+      tries: {},
+      prizes: [],
+    }
+    render(<IntroScreen onOpenLevel={onOpenLevel} />)
+    const row = screen.getByRole('button', { name: 'Level 2, 0 of 24 solved. Prize: 50 coins' })
+    expect(row.querySelector('img')?.getAttribute('src')).toMatch(/chest-closed/)
+    fireEvent.click(row)
+    expect(onOpenLevel).toHaveBeenCalledWith(2)
+    expect(screen.getByRole('group', { name: 'Level 3, locked' })).toBeDefined()
   })
 
   it('shows a Sign In button when signed out', () => {

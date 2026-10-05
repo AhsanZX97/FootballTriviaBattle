@@ -2,7 +2,7 @@
  * Deals the question bank into levels and freezes the result.
  *
  *   npx tsx scripts/buildLevels.ts            # rewrite src/game/levels/levelIds.ts
- *   npx tsx scripts/buildLevels.ts --sql 1-1  # print level_questions seed rows for levels 1..1
+ *   npx tsx scripts/buildLevels.ts --sql 2-28  # print question and prize seed rows
  *
  * Append-only: levels already in levelIds.ts are kept exactly as they are, and
  * only bank questions that no level holds yet are dealt into new levels at the
@@ -14,7 +14,7 @@ import { writeFile } from 'node:fs/promises'
 import { dirname, join } from 'node:path'
 import { fileURLToPath, pathToFileURL } from 'node:url'
 import { footballBank } from '../src/services/trivia/bank'
-import { buildLevelIds } from '../src/game/levels/build'
+import { buildLevelIds, levelSeedSql } from '../src/game/levels/build'
 
 const PER_LEVEL = 24
 const HERE = dirname(fileURLToPath(import.meta.url))
@@ -36,21 +36,13 @@ ${rows}
 `
 }
 
-function seedSql(levels: string[][], from: number, to: number): string {
-  const rows: string[] = []
-  for (let n = from; n <= to; n++) {
-    for (const id of levels[n - 1] ?? []) rows.push(`  ('${id}', ${n})`)
-  }
-  return `insert into level_questions (question_id, level) values\n${rows.join(',\n')}\non conflict (question_id) do nothing;`
-}
-
 const args = process.argv.slice(2)
 const sqlAt = args.indexOf('--sql')
 const existing = await frozenLevels()
 
 if (sqlAt >= 0) {
   const [from, to] = (args[sqlAt + 1] ?? '1-1').split('-').map(Number)
-  console.log(seedSql(existing, from, to ?? from))
+  console.log(levelSeedSql(existing, from, to ?? from))
 } else {
   const taken = new Set(existing.flat())
   const fresh = buildLevelIds(

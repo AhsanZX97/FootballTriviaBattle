@@ -1,8 +1,8 @@
 import { describe, expect, it } from 'vitest'
 import { CHEST_COINS, coinsForTries, levelPrize, unlockAt } from '../rewards'
-import { LEVELS, NEXT_LEVEL, levelOf } from '../manifest'
+import { LEVELS, levelOf } from '../manifest'
 import { LEVEL_IDS } from '../levelIds'
-import { isComplete, levelProgress } from '../progress'
+import { isComplete, isUnlocked, levelProgress, nextLevelQuestion, totalSolved } from '../progress'
 import { footballBank } from '../../../services/trivia/bank'
 import { findItem } from '../../../services/shopCatalogue'
 
@@ -46,10 +46,18 @@ describe('level manifest', () => {
     expect(LEVELS[0].prize).toEqual({ kind: 'item', itemId: 'goal_horn' })
   })
 
-  it('only exposes Level 1 for now, with Level 2 shown locked', () => {
-    expect(LEVELS.map((l) => l.level)).toEqual([1])
-    expect(levelOf(2)).toBeUndefined()
-    expect(NEXT_LEVEL).toEqual({ level: 2, title: 'ACADEMY', unlockAt: 18 })
+  it('exposes every frozen level, titled as a career ladder ending at the Ballon d’Or', () => {
+    expect(LEVELS.map((l) => l.level)).toEqual(LEVEL_IDS.map((_, i) => i + 1))
+    expect(LEVELS.map((l) => l.questionIds)).toEqual(LEVEL_IDS)
+    expect(LEVELS[1]).toMatchObject({
+      title: 'ACADEMY',
+      prize: { kind: 'coins', coins: CHEST_COINS },
+    })
+    expect(LEVELS[2].title).toBe('RESERVES')
+    expect(LEVELS[3].title).toBe('FIRST TEAM')
+    expect(LEVELS[4].title).toBe('CAPTAIN')
+    expect(LEVELS.at(-1)?.title).toBe("BALLON D'OR")
+    expect(new Set(LEVELS.map((l) => l.title)).size).toBe(LEVELS.length)
   })
 })
 
@@ -88,6 +96,19 @@ describe('unlockAt', () => {
   })
 })
 
+describe('isUnlocked', () => {
+  const solved = (n: number) => Object.fromEntries(Array.from({ length: n }, (_, i) => [`q${i}`, 0]))
+
+  it('counts every solved question, and opens a level once that count is met', () => {
+    expect(totalSolved(solved(18))).toBe(18)
+    expect(isUnlocked(1, {})).toBe(true)
+    expect(isUnlocked(2, solved(17))).toBe(false)
+    expect(isUnlocked(2, solved(18))).toBe(true)
+    expect(isUnlocked(3, solved(18))).toBe(false)
+    expect(isUnlocked(3, solved(36))).toBe(true)
+  })
+})
+
 describe('levelProgress', () => {
   const level = { level: 1, title: 'T', questionIds: ['a', 'b', 'c'] }
 
@@ -102,5 +123,20 @@ describe('levelProgress', () => {
   it('is complete only when every card is solved', () => {
     expect(isComplete(level, { a: 0, b: 1 })).toBe(false)
     expect(isComplete(level, { a: 0, b: 1, c: 3 })).toBe(true)
+  })
+})
+
+describe('nextLevelQuestion', () => {
+  const levels = [{ questionIds: ['a', 'b', 'c'] }]
+
+  it('is the following card, skipping ones already solved', () => {
+    expect(nextLevelQuestion('a', {}, levels)).toBe('b')
+    expect(nextLevelQuestion('a', { b: 0 }, levels)).toBe('c')
+  })
+
+  it('is nothing after the last unsolved card', () => {
+    expect(nextLevelQuestion('c', {}, levels)).toBeUndefined()
+    expect(nextLevelQuestion('a', { b: 0, c: 1 }, levels)).toBeUndefined()
+    expect(nextLevelQuestion('missing', {}, levels)).toBeUndefined()
   })
 })

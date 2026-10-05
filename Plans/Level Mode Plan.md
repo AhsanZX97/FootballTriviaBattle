@@ -267,9 +267,14 @@ Original scope:
   second account that already **bought** the horn, and get 100 coins instead.
 - **Your setup:** run `0020_level_prizes.sql`.
 
-### Phase 3: all levels
+### Phase 3: all levels — BUILT, awaiting your check
 
-The rest of the manifest goes live.
+Every frozen level is playable. Odd levels still pay the item table, even
+levels a 50-coin chest (the chest sprite sits on those rows, locked or not).
+A row stays grey with "NEEDS N SOLVED" until `unlockAt` is met, then it opens.
+`0021_level_seed.sql` seeds levels 2 onward; Level 1 stayed in 0019/0020.
+
+Original scope:
 
 - Expose all ~28 levels, with titles (career ladder), `unlockAt(n)`, and the
   full prize table (odd levels give an item, even levels a 50-coin chest).

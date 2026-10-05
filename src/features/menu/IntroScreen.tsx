@@ -4,9 +4,9 @@ import bg from '../../assets/bg.jpg'
 import logo from '../../assets/logo.png'
 import coinSprite from '../../assets/sprites/coin.png'
 import playVsHuman from '../../assets/levels/play-vs-human.png'
-import padlock from '../../assets/levels/padlock.png'
-import { LEVELS, NEXT_LEVEL } from '../../game/levels/manifest'
-import { levelProgress } from '../../game/levels/progress'
+import { LEVELS } from '../../game/levels/manifest'
+import { isUnlocked, levelProgress } from '../../game/levels/progress'
+import { unlockAt } from '../../game/levels/rewards'
 import { authStore } from '../auth/store'
 import { levelStore } from '../levels/store'
 import { PrizeBadge } from '../levels/PrizeBadge'
@@ -36,41 +36,41 @@ export function IntroScreen({ onPlayNow, onOpenLevel, onSignIn, onShop, onTestMo
   const signedIn = auth.status === 'signedIn'
 
   return (
-    <main className="intro">
+    <main className="intro home">
       <img className="intro__bg" src={bg} alt="" aria-hidden />
       <div className="intro__overlay" aria-hidden />
       <div className="intro__vignette" aria-hidden />
       <div className="intro__scanlines" aria-hidden />
-      <div className="intro__content home__content">
-        <div className="home__header">
-          <button type="button" className="intro__play intro__play--secondary home__chip" onClick={onShop}>
-            <span className="intro__play-label">{t('intro.shop')}</span>
+      <div className="home__fixed">
+      <div className="home__header">
+        <button type="button" className="intro__play intro__play--secondary home__chip" onClick={onShop}>
+          <span className="intro__play-label">{t('intro.shop')}</span>
+        </button>
+
+        {__TEST_MODE__ && onTestMode && (
+          <button type="button" className="intro__play intro__play--secondary home__chip" onClick={onTestMode}>
+            <span className="intro__play-label">TEST MODE</span>
           </button>
+        )}
 
-          {__TEST_MODE__ && onTestMode && (
-            <button type="button" className="intro__play intro__play--secondary home__chip" onClick={onTestMode}>
-              <span className="intro__play-label">TEST MODE</span>
-            </button>
-          )}
-
-          {/* A Play Games account is deliberately given no way out: it has no
-              password and an unroutable email, so signing out would strand the
-              player on a sign-in screen that cannot let them back in. Play Games
-              signs them in again on the next cold start regardless. */}
-          {signedIn && auth.isPlayGamesAccount ? null : signedIn ? (
-            <button
-              type="button"
-              className="intro__play intro__play--secondary home__chip"
-              onClick={() => void authStore.signOut()}
-            >
-              <span className="intro__play-label">{t('intro.signOut')}</span>
-            </button>
-          ) : (
-            <button type="button" className="intro__play intro__play--secondary home__chip" onClick={onSignIn}>
-              <span className="intro__play-label">{t('intro.signIn')}</span>
-            </button>
-          )}
-        </div>
+        {/* A Play Games account is deliberately given no way out: it has no
+            password and an unroutable email, so signing out would strand the
+            player on a sign-in screen that cannot let them back in. Play Games
+            signs them in again on the next cold start regardless. */}
+        {signedIn && auth.isPlayGamesAccount ? null : signedIn ? (
+          <button
+            type="button"
+            className="intro__play intro__play--secondary home__chip"
+            onClick={() => void authStore.signOut()}
+          >
+            <span className="intro__play-label">{t('intro.signOut')}</span>
+          </button>
+        ) : (
+          <button type="button" className="intro__play intro__play--secondary home__chip" onClick={onSignIn}>
+            <span className="intro__play-label">{t('intro.signIn')}</span>
+          </button>
+        )}
+      </div>
 
         <img className="intro__logo home__logo" src={logo} alt={t('intro.logoAlt')} />
 
@@ -85,7 +85,9 @@ export function IntroScreen({ onPlayNow, onOpenLevel, onSignIn, onShop, onTestMo
             {t('intro.claimed', { coins: auth.welcomeCoins })}
           </button>
         )}
+      </div>
 
+      <div className="home__modes">
         <button type="button" className="pixel-card" onClick={onPlayNow}>
           <img className="pixel-card__art" src={playVsHuman} alt="" aria-hidden />
           <span className="pixel-card__text">
@@ -101,6 +103,27 @@ export function IntroScreen({ onPlayNow, onOpenLevel, onSignIn, onShop, onTestMo
           {LEVELS.map((def) => {
             const { solved, total } = levelProgress(def, levels.solved)
             const claimed = levels.prizes.includes(def.level)
+            const open = isUnlocked(def.level, levels.solved)
+            if (!open) {
+              return (
+                <div
+                  key={def.level}
+                  className="pixel-card pixel-card--locked"
+                  role="group"
+                  aria-label={`Level ${def.level}, locked`}
+                >
+                  <span className="pixel-card__plate" aria-hidden>
+                    <span className="pixel-card__plate-label">LV</span>
+                    <span className="pixel-card__plate-num">{def.level}</span>
+                  </span>
+                  <span className="pixel-card__text">
+                    <span className="pixel-card__title">{def.title}</span>
+                    <span className="pixel-card__sub">NEEDS {unlockAt(def.level)} SOLVED</span>
+                  </span>
+                  <PrizeBadge prize={def.prize} claimed={false} decorative />
+                </div>
+              )
+            }
             const prize = `Prize: ${prizeArt(def.prize).name}${claimed ? ', claimed' : ''}`
             return (
               <button
@@ -127,26 +150,6 @@ export function IntroScreen({ onPlayNow, onOpenLevel, onSignIn, onShop, onTestMo
               </button>
             )
           })}
-
-          {/* Not playable yet: its questions aren't seeded server-side, so
-              even reaching the solve count only says it's on its way. */}
-          <div className="pixel-card pixel-card--locked" role="group" aria-label={`Level ${NEXT_LEVEL.level}, locked`}>
-            <span className="pixel-card__plate" aria-hidden>
-              <span className="pixel-card__plate-label">LV</span>
-              <span className="pixel-card__plate-num">{NEXT_LEVEL.level}</span>
-            </span>
-            <span className="pixel-card__text">
-              <span className="pixel-card__title">{NEXT_LEVEL.title}</span>
-              <span className="pixel-card__sub">
-                {Object.keys(levels.solved).length >= NEXT_LEVEL.unlockAt
-                  ? 'COMING SOON'
-                  : `SOLVE ${NEXT_LEVEL.unlockAt} TO UNLOCK`}
-              </span>
-            </span>
-            <span className="level-prize" aria-hidden>
-              <img className="level-prize__art" src={padlock} alt="" />
-            </span>
-          </div>
         </section>
       </div>
     </main>

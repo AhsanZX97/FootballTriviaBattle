@@ -1,4 +1,5 @@
 import type { Difficulty } from '../../types/trivia'
+import { levelPrize } from './rewards'
 
 const RANK: Record<Difficulty, number> = { easy: 0, medium: 1, hard: 2 }
 
@@ -46,4 +47,18 @@ export function buildLevelIds(bank: readonly Dealable[], perLevel: number): stri
     levels.push(placed.slice(i, i + perLevel).map((p) => p.id))
   }
   return levels
+}
+
+/** `level_questions` and `level_prizes` rows for levels `from`..`to` that exist.
+ * Used by `scripts/buildLevels.ts --sql`. */
+export function levelSeedSql(levels: readonly (readonly string[])[], from: number, to: number): string {
+  const rows: string[] = []
+  const prizes: string[] = []
+  const last = Math.min(to, levels.length)
+  for (let n = from; n <= last; n++) {
+    for (const id of levels[n - 1] ?? []) rows.push(`  ('${id}', ${n})`)
+    const prize = levelPrize(n)
+    prizes.push(prize.kind === 'item' ? `  (${n}, '${prize.itemId}', 0)` : `  (${n}, null, ${prize.coins})`)
+  }
+  return `insert into level_questions (question_id, level) values\n${rows.join(',\n')}\non conflict (question_id) do nothing;\n\ninsert into level_prizes (level, item_id, coins) values\n${prizes.join(',\n')}\non conflict (level) do nothing;`
 }

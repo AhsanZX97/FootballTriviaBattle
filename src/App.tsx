@@ -223,7 +223,14 @@ function App() {
       />
     )
   } else if (screen === 'levelQuestion' && levelQuestionId) {
-    content = <LevelQuestion questionId={levelQuestionId} onBack={() => setScreen('level')} />
+    content = (
+      <LevelQuestion
+        key={levelQuestionId}
+        questionId={levelQuestionId}
+        onBack={() => setScreen('level')}
+        onNext={(id) => setLevelQuestionId(id)}
+      />
+    )
   } else if (screen === 'auth') {
     content = <AuthScreen onBack={() => setScreen('intro')} onAuthenticated={() => setScreen('intro')} />
   } else {

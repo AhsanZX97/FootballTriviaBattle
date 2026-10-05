@@ -231,7 +231,8 @@
     0 0 0 3px #0a0a0a;
 }
 
-/* 32px art at an integer 2x so the pixels stay square */
+/* 32px art at an integer 2x so the pixels stay square. A narrow phone's
+   3-column grid can't hold 64px plus the card padding, so it drops to 1x. */
 .level-card__icon {
   width: 64px;
   height: 64px;
@@ -271,6 +272,19 @@
   height: 64px;
   image-rendering: pixelated;
   animation: level-pop 0.24s steps(3) both;
+}
+
+@media (max-width: 400px) {
+  .level-card__icon,
+  .level-card__tick {
+    width: 32px;
+    height: 32px;
+  }
+
+  .level-prize {
+    width: 40px;
+    height: 40px;
+  }
 }
 
 .level-card--tried .level-card__icon {
