@@ -231,5 +231,16 @@ Google Ads has its own server (`google-ads-mcp`, stdio via pipx) already wired
 up for the same account family; the Play listing side is `play-store`.
 
 
+## Scope: English mobile only
+
+No more language or web-exclusive work unless I explicitly ask for it on a
+specific task:
+
+- Don't touch `src/services/i18n/messages/{es,fr,de,it}.ts`. New UI text goes
+  in as plain English literals in the component, not into the i18n catalogues.
+  Leave existing `t()` calls alone.
+- Don't build, fix, deploy or optimise anything that only affects the web or
+  desktop build. Shared code is fine; the target is the Android app.
+
 ## Additional Notes
 - Treat a question as a question — answer it, then stop. Treat an imperative ("add," "fix," "build") as the go-ahead to work: make reasonable assumptions, no preamble/summaries, only ask if genuinely blocked. Don't explain things I didn't ask about.

@@ -6,6 +6,8 @@ import { MatchScreen } from './features/match/MatchScreen'
 import { matchStore } from './features/match/store'
 import { LobbyScreen } from './features/lobby/LobbyScreen'
 import { lobbyStore } from './features/lobby/store'
+import { LevelScreen } from './features/levels/LevelScreen'
+import { LevelQuestion } from './features/levels/LevelQuestion'
 import { AuthScreen } from './features/auth/AuthScreen'
 import { authStore } from './features/auth/store'
 import { presenceStore } from './features/friends/presenceStore'
@@ -23,7 +25,7 @@ import type { MatchReadySession } from './features/lobby/store'
 import { playTheme, stopTheme } from './services/sound'
 import { isNative } from './services/platform'
 
-type Screen = 'intro' | 'lobby' | 'match' | 'auth' | 'test'
+type Screen = 'intro' | 'lobby' | 'match' | 'auth' | 'test' | 'level' | 'levelQuestion'
 
 // `null` in release builds, so the import and its chunk are dropped entirely.
 const TestModeScreen = __TEST_MODE__
@@ -37,6 +39,9 @@ function App() {
   // Where the current match exits to. Captured at launch so it can't be
   // disturbed by the store reset the exit buttons trigger before onExit runs.
   const [matchExit, setMatchExit] = useState<'intro' | 'lobby'>('intro')
+  // The level grid being browsed, and the card opened from it.
+  const [level, setLevel] = useState(1)
+  const [levelQuestionId, setLevelQuestionId] = useState<string | null>(null)
   // Friends picker opened from the lobby's FRIENDLY MATCH button. App owns it so
   // the lobby screen stays free of the friends/presence module graph.
   const [friendsPickerOpen, setFriendsPickerOpen] = useState(false)
@@ -156,7 +161,8 @@ function App() {
         if (s !== 'match' && getCoinsOpenRef.current) setGetCoinsOpen(false)
         else if (s === 'intro' && shopOpenRef.current) setShopOpen(false)
         else if (s === 'intro') void CapApp.exitApp()
-        else if (s === 'lobby' || s === 'auth' || s === 'test') setScreen('intro')
+        else if (s === 'levelQuestion') setScreen('level')
+        else if (s === 'lobby' || s === 'auth' || s === 'test' || s === 'level') setScreen('intro')
         // in a match the on-screen buttons own every exit
       }).then((h) => {
         if (cancelled) h.remove()
@@ -205,6 +211,19 @@ function App() {
         <TestModeScreen onExit={() => setScreen('intro')} />
       </Suspense>
     )
+  } else if (screen === 'level') {
+    content = (
+      <LevelScreen
+        level={level}
+        onBack={() => setScreen('intro')}
+        onOpen={(questionId) => {
+          setLevelQuestionId(questionId)
+          setScreen('levelQuestion')
+        }}
+      />
+    )
+  } else if (screen === 'levelQuestion' && levelQuestionId) {
+    content = <LevelQuestion questionId={levelQuestionId} onBack={() => setScreen('level')} />
   } else if (screen === 'auth') {
     content = <AuthScreen onBack={() => setScreen('intro')} onAuthenticated={() => setScreen('intro')} />
   } else {
@@ -214,6 +233,10 @@ function App() {
           // fresh identity each visit — the lobby never reuses last session's name
           lobbyStore.rerollName()
           setScreen('lobby')
+        }}
+        onOpenLevel={(n) => {
+          setLevel(n)
+          setScreen('level')
         }}
         onSignIn={() => setScreen('auth')}
         onShop={() => setShopOpen(true)}

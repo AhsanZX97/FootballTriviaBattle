@@ -139,7 +139,8 @@ prizesClaimed: number[] }`.
   sub-state), same `useState<Screen>` pattern.
 - Analytics: `level_question_answered`, `level_completed`, `level_prize_claimed`.
 - Daily challenge `answer_15` also counts level answers.
-- English only per `AGENTS.md`; new strings go through the i18n `en` table.
+- English mobile only per `AGENTS.md`: new strings are plain English literals
+  in the component, not i18n keys, and no translations are added.
 
 ## 7. Assets (done)
 

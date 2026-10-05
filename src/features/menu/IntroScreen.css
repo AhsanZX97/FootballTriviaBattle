@@ -180,42 +180,229 @@
   }
 }
 
-/* Pre-account coin notice. A child of the flex column, so it takes its own
-   max-width rather than sizing .intro__content — that container must stay
-   width-free or the whole menu reflows. */
-.intro__local-coins {
+/* --- home: header chips, Play vs Human card, level list --- */
+
+/* Scrolls instead of centring: the level list grows past one screen. */
+.home__content {
+  justify-content: flex-start;
+  gap: clamp(16px, 2.8vh, 28px);
+  overflow-y: auto;
+  padding-top: calc(64px + env(safe-area-inset-top));
+}
+
+.home__header {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 20px;
+  padding: 8px;
+}
+
+.intro__play.home__chip {
+  padding: 9px 14px;
+  font-size: clamp(8px, 1.1vw, 11px);
+  box-shadow:
+    inset 3px 3px 0 0 rgba(255, 255, 255, 0.55),
+    inset -3px -3px 0 0 rgba(0, 0, 0, 0.45),
+    0 0 0 3px #0a0a0a,
+    0 0 0 6px var(--accent),
+    5px 5px 0 6px rgba(0, 0, 0, 0.85);
+}
+
+.intro__play.home__chip:active {
+  transform: translate(4px, 4px);
+  box-shadow:
+    inset 3px 3px 0 0 rgba(255, 255, 255, 0.55),
+    inset -3px -3px 0 0 rgba(0, 0, 0, 0.45),
+    0 0 0 3px #0a0a0a,
+    0 0 0 6px var(--accent),
+    1px 1px 0 6px rgba(0, 0, 0, 0.85);
+}
+
+.home__logo {
+  flex: none;
+  width: min(62%, 420px);
+}
+
+/* The Play vs Human card is the house style for every big tappable row and
+   banner: yellow bevel, black ring, hard drop shadow, a 96x48 art slot on the
+   left, a title and a sub line. One size everywhere. */
+.pixel-card {
+  flex: none;
+  width: min(100%, 480px);
+  min-height: 76px;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  margin: 0;
+  padding: 12px 16px;
+  border: none;
+  border-radius: 0;
+  background: #ffcf1a;
+  color: #1a1206;
+  font-family: 'Press Start 2P', ui-monospace, Consolas, monospace;
+  text-align: left;
+  cursor: pointer;
+  image-rendering: pixelated;
+  -webkit-font-smoothing: none;
+  transition: transform 0.04s steps(1), box-shadow 0.04s steps(1);
+  box-shadow:
+    inset 4px 4px 0 0 rgba(255, 255, 255, 0.55),
+    inset -4px -4px 0 0 rgba(0, 0, 0, 0.45),
+    0 0 0 4px #0a0a0a,
+    6px 6px 0 4px rgba(0, 0, 0, 0.85);
+}
+
+@media (hover: hover) {
+  button.pixel-card:hover {
+    background: #fff04a;
+  }
+
+  button.pixel-card--done:hover {
+    background: #9be873;
+  }
+}
+
+button.pixel-card:active {
+  transform: translate(5px, 5px);
+  box-shadow:
+    inset 4px 4px 0 0 rgba(255, 255, 255, 0.55),
+    inset -4px -4px 0 0 rgba(0, 0, 0, 0.45),
+    0 0 0 4px #0a0a0a,
+    1px 1px 0 4px rgba(0, 0, 0, 0.85);
+}
+
+.pixel-card:focus-visible {
+  outline: 3px solid #fff;
+  outline-offset: 8px;
+}
+
+/* a banner, not a button */
+div.pixel-card,
+header.pixel-card {
+  cursor: default;
+}
+
+.pixel-card--done {
+  background: #7ed957;
+  color: #0d1f0d;
+}
+
+.pixel-card--center {
+  justify-content: center;
+  text-align: center;
+}
+
+/* 96x48 art at an integer 1x so the pixels stay square on a phone */
+.pixel-card__art {
+  flex: none;
+  width: 96px;
+  height: 48px;
+  image-rendering: pixelated;
+}
+
+/* the art slot as a dark inset plate, for cards with a number instead of art */
+.pixel-card__plate {
+  flex: none;
+  width: 96px;
+  height: 48px;
+  display: flex;
+  align-items: baseline;
+  justify-content: center;
+  gap: 6px;
+  padding-top: 13px;
+  box-sizing: border-box;
+  background: #0a2416;
+  color: #ffcf1a;
+  box-shadow:
+    inset 3px 3px 0 rgba(0, 0, 0, 0.5),
+    inset -2px -2px 0 rgba(255, 255, 255, 0.12),
+    0 0 0 3px #0a0a0a;
+}
+
+.pixel-card__plate-label {
+  font-size: 8px;
+  color: #cfe8d8;
+}
+
+.pixel-card__plate-num {
+  font-size: 18px;
+  text-shadow: 2px 2px 0 #000;
+}
+
+.pixel-card--done .pixel-card__plate-num {
+  color: #7ed957;
+}
+
+.pixel-card__text {
+  flex: 1;
+  min-width: 0;
   display: flex;
   flex-direction: column;
-  align-items: center;
-  gap: 6px;
-  max-width: min(92%, 420px);
-  padding: 10px 16px;
-  text-align: center;
-  border: 2px solid #ffd447;
-  background: rgba(0, 0, 0, 0.55);
-  box-shadow: 4px 4px 0 rgba(0, 0, 0, 0.5);
+  gap: 10px;
 }
 
-.intro__local-coins-total {
+.pixel-card__title {
+  margin: 0;
+  font-family: inherit;
+  font-weight: 400;
+  font-size: clamp(11px, 1.6vw, 15px);
+  line-height: 1.3;
+  color: inherit;
+  text-shadow: 2px 2px 0 rgba(255, 255, 255, 0.4);
+}
+
+.pixel-card__sub {
+  font-size: clamp(7px, 0.95vw, 9px);
+  letter-spacing: 0.06em;
+  color: #5a3d06;
+}
+
+.pixel-card--done .pixel-card__sub {
+  color: #1f4d12;
+}
+
+.pixel-card__bar {
   display: flex;
   align-items: center;
-  justify-content: center;
-  gap: 8px;
-  font-size: clamp(8px, 1.1vw, 12px);
-  letter-spacing: 0.1em;
-  line-height: 1.5;
-  color: #ffd447;
-  text-shadow: 2px 2px 0 #000;
+  gap: 10px;
+  /* the bar's 3px frame sits outside its box */
+  padding-left: 3px;
 }
 
-.intro__local-coins-cta {
-  font-size: clamp(7px, 0.95vw, 10px);
-  letter-spacing: 0.08em;
-  line-height: 1.5;
-  color: #fff;
-  text-shadow: 2px 2px 0 #000;
+.pixel-card__count {
+  flex: none;
+  font-size: 8px;
 }
 
+.pixel-card__arrow {
+  flex: none;
+  font-size: 14px;
+  animation: home-nudge 1.1s steps(2) infinite;
+}
+
+@keyframes home-nudge {
+  50% {
+    transform: translateX(3px);
+  }
+}
+
+.home__levels {
+  flex: none;
+  width: min(100%, 480px);
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  padding-bottom: 12px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .pixel-card__arrow {
+    animation: none;
+  }
+}
+
+/* Coin icon in the post-claim notice. */
 .intro__local-coins-icon {
   width: 16px;
   height: 16px;

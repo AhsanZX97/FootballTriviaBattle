@@ -50,19 +50,28 @@ beforeEach(() => {
 })
 
 describe('IntroScreen', () => {
-  it('offers Play Now as the only way into a match', () => {
+  it('offers Play vs Human, the level list, Shop and Sign In', () => {
     render(<IntroScreen />)
-    expect(screen.getByRole('button', { name: /play now/i })).toBeDefined()
-    // 1 v CPU is gone: Play Now, Shop and Sign In are the whole menu
-    expect(screen.getAllByRole('button')).toHaveLength(3)
+    expect(screen.getByRole('button', { name: /play vs human/i })).toBeDefined()
+    expect(screen.getByRole('button', { name: /^level 1,/i })).toBeDefined()
+    expect(screen.getAllByRole('button')).toHaveLength(4)
     expect(screen.queryByRole('button', { name: /cpu/i })).toBeNull()
   })
 
-  it('calls onPlayNow when Play Now is clicked', () => {
+  it('calls onPlayNow when Play vs Human is clicked', () => {
     const onPlayNow = vi.fn()
     render(<IntroScreen onPlayNow={onPlayNow} />)
-    fireEvent.click(screen.getByRole('button', { name: /play now/i }))
+    fireEvent.click(screen.getByRole('button', { name: /play vs human/i }))
     expect(onPlayNow).toHaveBeenCalled()
+  })
+
+  it('shows Level 1 progress and opens it', () => {
+    const onOpenLevel = vi.fn()
+    render(<IntroScreen onOpenLevel={onOpenLevel} />)
+    const row = screen.getByRole('button', { name: 'Level 1, 0 of 1 solved' })
+    expect(screen.getByText('SUNDAY LEAGUE')).toBeDefined()
+    fireEvent.click(row)
+    expect(onOpenLevel).toHaveBeenCalledWith(1)
   })
 
   it('shows a Sign In button when signed out', () => {
@@ -142,8 +151,8 @@ describe('IntroScreen with a Play Games account', () => {
 
     expect(screen.queryByRole('button', { name: /sign out/i })).toBeNull()
     expect(screen.queryByRole('button', { name: /sign in/i })).toBeNull()
-    // Play Now and Shop are the whole menu for these players.
-    expect(screen.getAllByRole('button')).toHaveLength(2)
+    // Play vs Human, Level 1 and Shop are the whole menu for these players.
+    expect(screen.getAllByRole('button')).toHaveLength(3)
   })
 
   it('still offers Sign Out to an ordinary email account', () => {
@@ -155,29 +164,12 @@ describe('IntroScreen with a Play Games account', () => {
 })
 
 describe('IntroScreen — on-device progress', () => {
-  it('tells a signed-out player what they have earned and how to keep it', () => {
+  it('shows no coins-earned banner or levels heading', () => {
     localProgress = { coins: 47, matches: [] }
     render(<IntroScreen />)
 
-    expect(screen.getByText(/47 COINS EARNED/i)).toBeDefined()
-    expect(screen.getByText(/sign in to save them/i)).toBeDefined()
-  })
-
-  it('stays quiet when the player has earned nothing yet', () => {
-    localProgress = { coins: 0, matches: [] }
-    render(<IntroScreen />)
-
     expect(screen.queryByText(/COINS EARNED/i)).toBeNull()
-  })
-
-  it('stays quiet while the session is still resolving', () => {
-    // Play Games may be about to sign this player in — promising them a
-    // sign-in prompt they will never see would be a lie.
-    localProgress = { coins: 47, matches: [] }
-    authState = { ...signedOut(), status: 'loading' }
-    render(<IntroScreen />)
-
-    expect(screen.queryByText(/COINS EARNED/i)).toBeNull()
+    expect(screen.queryByText('LEVELS')).toBeNull()
   })
 
   it('announces the welcome coins once signed in, and dismisses on tap', () => {

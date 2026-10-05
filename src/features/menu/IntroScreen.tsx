@@ -3,14 +3,20 @@ import { useBottomBanner } from '../../services/ads'
 import bg from '../../assets/bg.jpg'
 import logo from '../../assets/logo.png'
 import coinSprite from '../../assets/sprites/coin.png'
+import playVsHuman from '../../assets/levels/play-vs-human.png'
+import { LEVELS } from '../../game/levels/manifest'
+import { levelProgress } from '../../game/levels/progress'
 import { authStore } from '../auth/store'
-import { localProgressStore } from '../progress/store'
+import { levelStore } from '../levels/store'
 import './IntroScreen.css'
+import '../levels/LevelScreen.css'
 import { useT } from '../../services/i18n/store'
 
 type Props = {
-  /** Called when the player picks Play Now, taking them to the multiplayer lobby. */
+  /** Called when the player picks Play vs Human, taking them to the multiplayer lobby. */
   onPlayNow?: () => void
+  /** Opens a level's card grid. */
+  onOpenLevel?: (level: number) => void
   /** Called when a signed-out player taps Sign In, taking them to the auth screen. */
   onSignIn?: () => void
   /** Opens the shop popup (skins, balls, goal sounds). */
@@ -19,15 +25,12 @@ type Props = {
   onTestMode?: () => void
 }
 
-export function IntroScreen({ onPlayNow, onSignIn, onShop, onTestMode }: Props) {
+export function IntroScreen({ onPlayNow, onOpenLevel, onSignIn, onShop, onTestMode }: Props) {
   const t = useT()
   useBottomBanner(true) // ad banner sits under the menu for as long as it's open
   const auth = useSyncExternalStore(authStore.subscribe, authStore.getState)
-  const local = useSyncExternalStore(localProgressStore.subscribe, localProgressStore.getState)
+  const levels = useSyncExternalStore(levelStore.subscribe, levelStore.getState)
   const signedIn = auth.status === 'signedIn'
-  // Only once the session is settled: flashing "sign in to keep your coins" at
-  // a player who is about to be signed in by Play Games would be a lie.
-  const showLocalCoins = auth.status === 'signedOut' && local.coins > 0
 
   return (
     <main className="intro">
@@ -35,51 +38,38 @@ export function IntroScreen({ onPlayNow, onSignIn, onShop, onTestMode }: Props) 
       <div className="intro__overlay" aria-hidden />
       <div className="intro__vignette" aria-hidden />
       <div className="intro__scanlines" aria-hidden />
-      <div className="intro__content">
-        <img className="intro__logo" src={logo} alt={t('intro.logoAlt')} />
-        <button type="button" className="intro__play" onClick={onPlayNow}>
-          <span className="intro__play-label">{t('intro.playNow')}</span>
-        </button>
-
-        <button type="button" className="intro__play intro__play--secondary" onClick={onShop}>
-          <span className="intro__play-label">{t('intro.shop')}</span>
-        </button>
-
-        {__TEST_MODE__ && onTestMode && (
-          <button type="button" className="intro__play intro__play--secondary intro__testmode" onClick={onTestMode}>
-            <span className="intro__play-label">TEST MODE</span>
+      <div className="intro__content home__content">
+        <div className="home__header">
+          <button type="button" className="intro__play intro__play--secondary home__chip" onClick={onShop}>
+            <span className="intro__play-label">{t('intro.shop')}</span>
           </button>
-        )}
 
-{/* A Play Games account is deliberately given no way out: it has no
-            password and an unroutable email, so signing out would strand the
-            player on a sign-in screen that cannot let them back in. Play Games
-            signs them in again on the next cold start regardless. */}
-        {signedIn && auth.isPlayGamesAccount ? null : signedIn ? (
-          <button
-            type="button"
-            className="intro__play intro__play--secondary"
-            onClick={() => void authStore.signOut()}
-          >
-            <span className="intro__play-label">{t('intro.signOut')}</span>
-          </button>
-        ) : (
-          <button type="button" className="intro__play intro__play--secondary" onClick={onSignIn}>
-            <span className="intro__play-label">{t('intro.signIn')}</span>
-          </button>
-        )}
+          {__TEST_MODE__ && onTestMode && (
+            <button type="button" className="intro__play intro__play--secondary home__chip" onClick={onTestMode}>
+              <span className="intro__play-label">TEST MODE</span>
+            </button>
+          )}
 
-        {/* The conversion prompt: a pre-account player's coins are real and
-            visible, and this is the only place that says what keeps them. */}
-        {showLocalCoins && (
-          <div className="intro__local-coins">
-            <span className="intro__local-coins-total">
-              <img className="intro__local-coins-icon" src={coinSprite} alt="" aria-hidden />
-              {t('intro.localCoins', { coins: local.coins })}
-            </span>
-            <span className="intro__local-coins-cta">{t('intro.localCoinsCta')}</span>
-          </div>
-        )}
+          {/* A Play Games account is deliberately given no way out: it has no
+              password and an unroutable email, so signing out would strand the
+              player on a sign-in screen that cannot let them back in. Play Games
+              signs them in again on the next cold start regardless. */}
+          {signedIn && auth.isPlayGamesAccount ? null : signedIn ? (
+            <button
+              type="button"
+              className="intro__play intro__play--secondary home__chip"
+              onClick={() => void authStore.signOut()}
+            >
+              <span className="intro__play-label">{t('intro.signOut')}</span>
+            </button>
+          ) : (
+            <button type="button" className="intro__play intro__play--secondary home__chip" onClick={onSignIn}>
+              <span className="intro__play-label">{t('intro.signIn')}</span>
+            </button>
+          )}
+        </div>
+
+        <img className="intro__logo home__logo" src={logo} alt={t('intro.logoAlt')} />
 
         {/* The payoff, shown once after the claim lands. Tapping dismisses it. */}
         {signedIn && auth.welcomeCoins !== null && (
@@ -93,7 +83,48 @@ export function IntroScreen({ onPlayNow, onSignIn, onShop, onTestMode }: Props) 
           </button>
         )}
 
-        <div className="intro__prompt">▸ {t('intro.pressStart')} ◂</div>
+        <button type="button" className="pixel-card" onClick={onPlayNow}>
+          <img className="pixel-card__art" src={playVsHuman} alt="" aria-hidden />
+          <span className="pixel-card__text">
+            <span className="pixel-card__title">{t('home.playVsHuman')}</span>
+            <span className="pixel-card__sub">{t('home.playVsHumanSub')}</span>
+          </span>
+          <span className="pixel-card__arrow" aria-hidden>
+            ▸
+          </span>
+        </button>
+
+        <section className="home__levels" aria-label="Levels">
+          {LEVELS.map((def) => {
+            const { solved, total } = levelProgress(def, levels.solved)
+            return (
+              <button
+                key={def.level}
+                type="button"
+                className={`pixel-card${solved === total ? ' pixel-card--done' : ''}`}
+                aria-label={t('levels.levelAria', { level: def.level, solved, total })}
+                onClick={() => onOpenLevel?.(def.level)}
+              >
+                <span className="pixel-card__plate" aria-hidden>
+                  <span className="pixel-card__plate-label">LV</span>
+                  <span className="pixel-card__plate-num">{def.level}</span>
+                </span>
+                <span className="pixel-card__text" aria-hidden>
+                  <span className="pixel-card__title">{def.title}</span>
+                  <span className="pixel-card__bar">
+                    <progress className="pixel-progress" max={total} value={solved} />
+                    <span className="pixel-card__count">
+                      {solved}/{total}
+                    </span>
+                  </span>
+                </span>
+                <span className="pixel-card__arrow" aria-hidden>
+                  ▸
+                </span>
+              </button>
+            )
+          })}
+        </section>
       </div>
     </main>
   )

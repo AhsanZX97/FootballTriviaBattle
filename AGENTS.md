@@ -1,11 +1,20 @@
 # Repository Guidelines
 
-## Scope of Future Codex Work
+## Scope: English mobile only
 
-All future work performed by Codex in this repository must be for the English
-mobile version of Football Trivia Battle. Do not create, modify, or optimize
-features solely for the web, desktop, or non-English localized experiences
-unless the user explicitly overrides this rule.
+All work by any agent in this repository is for the English mobile (Android)
+version of Football Trivia Battle. Unless the user explicitly overrides this
+for a specific task:
+
+- **No translations.** Do not add, edit or translate anything in
+  `src/services/i18n/messages/{es,fr,de,it}.ts`. New UI text is written as
+  plain English string literals in the component, not added to the i18n
+  catalogues (adding a key to `en.ts` forces every locale to change). Existing
+  `t()` calls stay as they are. This overrides any plan doc that says new
+  strings go through the i18n table.
+- **No web-exclusive work.** Do not build, fix, deploy or optimise anything
+  that only affects the web/desktop build (hosted web deploys, desktop-only
+  layout, browser-only code paths). Shared code is fine; verify on mobile.
 
 ## Project Structure & Module Organization
 

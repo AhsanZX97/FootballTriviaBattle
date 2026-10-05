@@ -18,6 +18,21 @@ export const fr: Messages = {
   'intro.localCoinsCta': 'Connecte-toi pour les sauvegarder',
   'intro.claimed': 'BIENVENUE ! +{coins} PIÈCES',
 
+  'home.playVsHuman': 'JOUER CONTRE UN HUMAIN',
+  'home.playVsHumanSub': 'TIRS AU BUT 1V1',
+  'levels.heading': 'NIVEAUX',
+  'levels.level': 'NIVEAU {level}',
+  'levels.levelAria': 'Niveau {level}, {solved} sur {total} résolues',
+  'levels.cardAria': 'Question n°{n}',
+  'levels.cardSolvedAria': 'Question n°{n}, résolue',
+  'levels.worthAria': 'Vaut {coins} pièces',
+  'levels.solvedBadge': 'RÉSOLUE',
+  'levels.wrong': 'RATÉ ! RÉESSAIE',
+  'levels.correct': 'BONNE RÉPONSE !',
+  'levels.alreadySolved': 'DÉJÀ RÉSOLUE, PAS DE PIÈCES',
+  'levels.saveFailed': 'SAUVEGARDE IMPOSSIBLE. RÉESSAIE',
+  'levels.continue': 'CONTINUER',
+
   'language.title': 'LANGUE',
   'language.aria': 'Changer de langue',
 

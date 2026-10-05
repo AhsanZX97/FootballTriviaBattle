@@ -28,6 +28,22 @@ export const en = {
   'intro.localCoinsCta': 'Sign in to save them',
   'intro.claimed': 'WELCOME! +{coins} COINS',
 
+  // --- home / level mode ---
+  'home.playVsHuman': 'PLAY VS HUMAN',
+  'home.playVsHumanSub': 'PENALTY SHOOTOUT 1V1',
+  'levels.heading': 'LEVELS',
+  'levels.level': 'LEVEL {level}',
+  'levels.levelAria': 'Level {level}, {solved} of {total} solved',
+  'levels.cardAria': 'Question {n}',
+  'levels.cardSolvedAria': 'Question {n}, solved',
+  'levels.worthAria': 'Worth {coins} coins',
+  'levels.solvedBadge': 'SOLVED',
+  'levels.wrong': 'WRONG! TRY AGAIN',
+  'levels.correct': 'CORRECT!',
+  'levels.alreadySolved': 'ALREADY SOLVED, NO COINS',
+  'levels.saveFailed': "COULDN'T SAVE. TRY AGAIN",
+  'levels.continue': 'CONTINUE',
+
   // --- language picker ---
   'language.title': 'LANGUAGE',
   'language.aria': 'Change language',

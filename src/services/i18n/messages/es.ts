@@ -18,6 +18,21 @@ export const es: Messages = {
   'intro.localCoinsCta': 'Entra para guardarlas',
   'intro.claimed': '¡BIENVENIDO! +{coins} MONEDAS',
 
+  'home.playVsHuman': 'JUGAR CONTRA HUMANO',
+  'home.playVsHumanSub': 'TANDA DE PENALTIS 1V1',
+  'levels.heading': 'NIVELES',
+  'levels.level': 'NIVEL {level}',
+  'levels.levelAria': 'Nivel {level}, {solved} de {total} resueltas',
+  'levels.cardAria': 'Pregunta {n}',
+  'levels.cardSolvedAria': 'Pregunta {n}, resuelta',
+  'levels.worthAria': 'Vale {coins} monedas',
+  'levels.solvedBadge': 'RESUELTA',
+  'levels.wrong': '¡FALLO! INTÉNTALO DE NUEVO',
+  'levels.correct': '¡CORRECTO!',
+  'levels.alreadySolved': 'YA RESUELTA, SIN MONEDAS',
+  'levels.saveFailed': 'NO SE PUDO GUARDAR. INTÉNTALO DE NUEVO',
+  'levels.continue': 'CONTINUAR',
+
   'language.title': 'IDIOMA',
   'language.aria': 'Cambiar idioma',
 

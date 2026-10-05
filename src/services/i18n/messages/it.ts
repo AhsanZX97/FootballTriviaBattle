@@ -18,6 +18,21 @@ export const it: Messages = {
   'intro.localCoinsCta': 'Accedi per salvarle',
   'intro.claimed': 'BENVENUTO! +{coins} MONETE',
 
+  'home.playVsHuman': 'GIOCA CONTRO UN UMANO',
+  'home.playVsHumanSub': 'RIGORI 1V1',
+  'levels.heading': 'LIVELLI',
+  'levels.level': 'LIVELLO {level}',
+  'levels.levelAria': 'Livello {level}, {solved} su {total} risolte',
+  'levels.cardAria': 'Domanda {n}',
+  'levels.cardSolvedAria': 'Domanda {n}, risolta',
+  'levels.worthAria': 'Vale {coins} monete',
+  'levels.solvedBadge': 'RISOLTA',
+  'levels.wrong': 'SBAGLIATO! RIPROVA',
+  'levels.correct': 'GIUSTO!',
+  'levels.alreadySolved': 'GIÀ RISOLTA, NIENTE MONETE',
+  'levels.saveFailed': 'SALVATAGGIO FALLITO. RIPROVA',
+  'levels.continue': 'CONTINUA',
+
   'language.title': 'LINGUA',
   'language.aria': 'Cambia lingua',
 

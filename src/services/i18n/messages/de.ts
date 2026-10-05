@@ -22,6 +22,21 @@ export const de: Messages = {
   'intro.localCoinsCta': 'Melde dich an, um sie zu sichern',
   'intro.claimed': 'WILLKOMMEN! +{coins} MÜNZEN',
 
+  'home.playVsHuman': 'GEGEN MENSCHEN SPIELEN',
+  'home.playVsHumanSub': 'ELFMETERSCHIESSEN 1V1',
+  'levels.heading': 'STUFEN',
+  'levels.level': 'STUFE {level}',
+  'levels.levelAria': 'Stufe {level}, {solved} von {total} gelöst',
+  'levels.cardAria': 'Frage {n}',
+  'levels.cardSolvedAria': 'Frage {n}, gelöst',
+  'levels.worthAria': 'Wert: {coins} Münzen',
+  'levels.solvedBadge': 'GELÖST',
+  'levels.wrong': 'FALSCH! NOCHMAL',
+  'levels.correct': 'RICHTIG!',
+  'levels.alreadySolved': 'SCHON GELÖST, KEINE MÜNZEN',
+  'levels.saveFailed': 'SPEICHERN FEHLGESCHLAGEN. NOCHMAL',
+  'levels.continue': 'WEITER',
+
   'language.title': 'SPRACHE',
   'language.aria': 'Sprache ändern',
 
