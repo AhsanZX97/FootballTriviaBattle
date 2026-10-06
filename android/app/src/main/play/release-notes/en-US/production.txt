@@ -1,5 +1,4 @@
-- Fixed a bug where a question could be skipped and your penalty taken for you
-- Your kick now has more time to reach the server on slower connections
-- Daily login reward streaks now count correctly
-- Added a link to follow the developer from the main menu
+- New Level Mode: climb the full ladder of levels and win prizes along the way
+- New picture questions: guess players and club crests
+- Smoother, redesigned penalty pitch with new animations and effects
 - Bug fixes and performance improvements
