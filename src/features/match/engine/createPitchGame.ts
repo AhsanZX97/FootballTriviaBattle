@@ -1,8 +1,13 @@
 import Phaser from 'phaser'
 import type { PitchCallbacks, PitchGame, PitchState } from './contracts'
 import { PITCH_BANDS, pitchLayout, resolvePitchArt, type Sheet } from './pitchArt'
-import { FEEDBACK_MS, KICK_MS, ShotTimeline, impactTime, shotPose, type KeeperReaction } from './shotTimeline'
+import {
+  BALL_START, FEEDBACK_MS, KICK_MS, PENALTY_SPOT, STRIKER_SPOT, ShotTimeline, impactTime, shotPose, type KeeperReaction,
+} from './shotTimeline'
 import backgroundSrc from '../../../assets/bg.jpg'
+import strikerSrc from '../../../assets/striker-idle.png'
+
+const strikerSheet: Sheet = { src: strikerSrc, columns: 1, rows: 1 }
 
 /** Phaser owns the display list and clock; React supplies match snapshots only.
  * The scoring rules remain shared with the authoritative multiplayer server. */
@@ -21,11 +26,13 @@ export function createPitchGame(parent: HTMLElement, initial: PitchState, callba
   for (const art of [stock, resolvePitchArt({ ...initial, stage: 'shoot' }), resolvePitchArt({ ...initial, stage: 'keep' })]) {
     for (const sheet of [art.idle, art.dive, art.ball, art.spin]) sheets.set(sheet.src, sheet)
   }
+  sheets.set(strikerSheet.src, strikerSheet)
 
   class MatchPitch extends Phaser.Scene {
     private pitch!: Phaser.GameObjects.Image
     private keeper!: Phaser.GameObjects.Sprite
     private ball!: Phaser.GameObjects.Sprite
+    private striker!: Phaser.GameObjects.Sprite
     private label!: Phaser.GameObjects.Text
     private shade!: Phaser.GameObjects.Rectangle
     private fills: Phaser.GameObjects.Image[] = []
@@ -66,6 +73,8 @@ export function createPitchGame(parent: HTMLElement, initial: PitchState, callba
       this.pitch = this.add.image(0, 0, 'pitch', '__BASE').setOrigin(0)
       this.keeper = this.add.sprite(0, 0, stock.idle.src, 0).setOrigin(0.5, 1)
       this.ball = this.add.sprite(0, 0, stock.ball.src, 0)
+      // Created after the ball so the taker, nearer the camera, draws over it.
+      this.striker = this.add.sprite(0, 0, strikerSheet.src, 0).setOrigin(0.5, 1)
       this.label = this.add.text(0, 0, '', {
         fontFamily: '"Press Start 2P", monospace', fontSize: `${16 * pixelRatio}px`,
         color: '#ffcf1a', stroke: '#0a0a0a', strokeThickness: 4 * pixelRatio, align: 'center',
@@ -118,8 +127,9 @@ export function createPitchGame(parent: HTMLElement, initial: PitchState, callba
       const art = resolvePitchArt(state)
       const elapsed = this.shot?.elapsed ?? 0
       const visualTime = reducedMotion && state.feedback ? FEEDBACK_MS : elapsed
-      const pose = state.feedback ? shotPose(state.feedback, visualTime, this.reaction, this.mirror) : null
-      const ball = pose?.ball ?? { x: 0.5, y: 0.8 }
+      const ballStart = state.striker ? PENALTY_SPOT : BALL_START
+      const pose = state.feedback ? shotPose(state.feedback, visualTime, this.reaction, this.mirror, ballStart) : null
+      const ball = pose?.ball ?? ballStart
       const keeper = pose?.keeper ?? { x: 0.5, y: 0.51 }
       const position = (point: { x: number; y: number }) => [
         Math.round(layout.x + point.x * layout.width), Math.round(layout.y + point.y * layout.height),
@@ -137,6 +147,12 @@ export function createPitchGame(parent: HTMLElement, initial: PitchState, callba
       const ballFrame = reducedMotion ? 0 : Math.floor(Math.min(Math.max(0, elapsed - KICK_MS), state.feedback ? impactTime(state.feedback) - KICK_MS : 0) / 50) % 4
       this.actor(this.ball, spinning ? art.spin : art.ball, spinning ? stock.spin : stock.ball, ballFrame, layout.width * 0.049 * 0.45)
       this.ball.setPosition(...position(ball)).setFlipX(pose?.flipBall ?? false)
+      if (state.striker) {
+        this.actor(this.striker, strikerSheet, strikerSheet, 0, layout.width * 0.042)
+        this.striker.setPosition(...position(STRIKER_SPOT))
+      } else {
+        this.striker.setVisible(false)
+      }
       this.label.setText(state.label ?? '').setPosition(width / 2, layout.y + layout.height * 0.61)
         .setFontSize(Math.max(10 * pixelRatio, Math.min(24 * pixelRatio, width / Math.max(26, (state.label?.length ?? 0) + 4))))
         .setVisible(!!state.feedback && visualTime >= impactTime(state.feedback))

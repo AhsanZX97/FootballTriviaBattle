@@ -18,11 +18,12 @@ type Props = PitchSkins & {
   opponentLabel?: string
   dimmed?: boolean
   reaction?: KeeperReaction
+  striker?: boolean
   onEvent?: PitchCallbacks['onEvent']
 }
 
 /** Accessible React host for a persistent Phaser scene. No DOM actors or clocks. */
-export function PitchScene({ stage, feedback, opponentLabel, ballSkin, gkSkin, opponentGkSkin, dimmed = false, reaction, onEvent }: Props) {
+export function PitchScene({ stage, feedback, opponentLabel, ballSkin, gkSkin, opponentGkSkin, dimmed = false, reaction, striker, onEvent }: Props) {
   const t = useT()
   const host = useRef<HTMLDivElement>(null)
   const game = useRef<PitchGame | null>(null)
@@ -31,7 +32,7 @@ export function PitchScene({ stage, feedback, opponentLabel, ballSkin, gkSkin, o
   const label = feedback === 'concede'
     ? t('scene.scores', { name: opponentLabel ?? t('match.opponent') })
     : feedback ? t(LABEL_KEYS[feedback]) : null
-  const state: PitchState = { stage, feedback, label, ballSkin, gkSkin, opponentGkSkin, dimmed, reaction }
+  const state: PitchState = { stage, feedback, label, ballSkin, gkSkin, opponentGkSkin, dimmed, reaction, striker }
   const latest = useRef({ state, onEvent })
   latest.current = { state, onEvent }
 
@@ -56,7 +57,7 @@ export function PitchScene({ stage, feedback, opponentLabel, ballSkin, gkSkin, o
     }
   }, [attempt])
 
-  useEffect(() => { game.current?.update(latest.current.state) }, [stage, feedback, label, ballSkin, gkSkin, opponentGkSkin, dimmed, reaction])
+  useEffect(() => { game.current?.update(latest.current.state) }, [stage, feedback, label, ballSkin, gkSkin, opponentGkSkin, dimmed, reaction, striker])
 
   return (
     <div className="scene">

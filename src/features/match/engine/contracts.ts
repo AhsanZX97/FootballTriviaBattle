@@ -9,6 +9,8 @@ export interface PitchState extends PitchSkins {
   reaction?: KeeperReaction
   /** Forces the next shot to the right-hand side; rolled at random when omitted. */
   mirror?: boolean
+  /** Stands a penalty taker behind the ball and moves the ball up to the spot. */
+  striker?: boolean
 }
 
 export interface PitchCallbacks {

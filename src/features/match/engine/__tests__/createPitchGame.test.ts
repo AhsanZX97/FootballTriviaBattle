@@ -189,6 +189,23 @@ describe('Phaser match renderer', () => {
     expect(new Set(sides).size).toBe(2)
   })
 
+  it('stands a striker beside a ball moved up to the penalty spot only when asked', () => {
+    const scene = (striker: boolean) => {
+      harness.objects.length = 0
+      createPitchGame(document.createElement('div'), { ...state, striker }, { onEvent: vi.fn(), onReady: vi.fn(), onError: vi.fn() })
+      return {
+        striker: harness.objects.find((o) => String(o.key).includes('striker-idle')),
+        ball: harness.objects.find((o) => String(o.key).includes('ball'))!,
+      }
+    }
+    const plain = scene(false)
+    const penalty = scene(true)
+    expect(plain.striker?.visible ?? false).toBe(false)
+    expect(penalty.striker?.visible).toBe(true)
+    expect(penalty.ball.y).toBeLessThan(plain.ball.y)
+    expect(penalty.striker!.x).toBeLessThan(penalty.ball.x)
+  })
+
   it('cancels callbacks and removes the canvas on destroy', () => {
     const onEvent = vi.fn()
     const game = createPitchGame(document.createElement('div'), { ...state, feedback: 'goal' }, { onEvent, onReady: vi.fn(), onError: vi.fn() })

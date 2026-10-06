@@ -128,6 +128,7 @@ export function TestModeScreen({ onExit }: Props) {
         ballSkin={auth.customization.ballSkin}
         gkSkin={auth.customization.gkSkin}
         dimmed={showQuestion}
+        striker
         onEvent={onPitchEvent}
       />
 

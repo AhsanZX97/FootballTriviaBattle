@@ -24,7 +24,11 @@ export class ShotTimeline {
 }
 
 type Point = { x: number; y: number }
-const ballStart = { x: 0.5, y: 0.8 }
+export const BALL_START: Point = { x: 0.5, y: 0.8 }
+/** Twelve yards out, between the six-yard line and the edge of the box. */
+export const PENALTY_SPOT: Point = { x: 0.5, y: 0.74 }
+/** Feet of a right-footed taker, back and to the left of the spot. */
+export const STRIKER_SPOT: Point = { x: 0.42, y: 0.9 }
 const keeperStart = { x: 0.5, y: 0.51 }
 const targets: Record<SceneFeedback, Point> = {
   goal: { x: 0.39, y: 0.38 },
@@ -47,6 +51,7 @@ export function shotPose(
   elapsed: number,
   reaction: KeeperReaction = 'wrong-way',
   mirror = false,
+  start: Point = BALL_START,
 ) {
   const progress = Math.min(1, Math.max(0, (elapsed - KICK_MS) / (impactTime(outcome) - KICK_MS)))
   const diveStart = KICK_MS + (outcome === 'goal' && reaction === 'late' ? 350 : 0)
@@ -58,13 +63,13 @@ export function shotPose(
     mirror,
   )
   return {
-    ball: interpolate(ballStart, side(targets[outcome], mirror), progress),
+    ball: interpolate(start, side(targets[outcome], mirror), progress),
     keeper: frozen ? keeperStart : interpolate(keeperStart, keeperTarget, (elapsed - diveStart) / (outcome === 'save' ? 500 : 600)),
     diving: !frozen && elapsed >= diveStart,
     diveElapsed: Math.max(0, elapsed - diveStart),
     flipKeeper: keeperTarget.x < keeperStart.x,
     /** The ball sprite's spin faces left by default; flip it for shots heading right. */
-    flipBall: side(targets[outcome], mirror).x > ballStart.x,
+    flipBall: side(targets[outcome], mirror).x > start.x,
     progress,
   }
 }

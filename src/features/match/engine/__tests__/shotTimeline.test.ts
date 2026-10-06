@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { ShotTimeline, shotPose, FEEDBACK_MS } from '../shotTimeline'
+import { ShotTimeline, shotPose, FEEDBACK_MS, PENALTY_SPOT } from '../shotTimeline'
 
 describe('engine shot timeline', () => {
   it.each(['goal', 'miss', 'save', 'concede'] as const)('%s launches, lands and completes once', (outcome) => {
@@ -23,6 +23,12 @@ describe('engine shot timeline', () => {
     expect(shotPose('goal', 999, 'wrong-way').ball).toEqual({ x: 0.5, y: 0.8 })
     expect(shotPose('goal', 1700, 'wrong-way').ball).toEqual({ x: 0.39, y: 0.38 })
     expect(shotPose('goal', 1700, 'wrong-way').keeper.x).toBe(0.6)
+  })
+
+  it('launches from a given spot instead of the default one', () => {
+    expect(shotPose('goal', 999, 'wrong-way', false, PENALTY_SPOT).ball).toEqual(PENALTY_SPOT)
+    expect(PENALTY_SPOT.y).toBeLessThan(0.8)
+    expect(shotPose('goal', 1700, 'wrong-way', false, PENALTY_SPOT).ball).toEqual({ x: 0.39, y: 0.38 })
   })
 
   it('saves at the keeper, misses outside the posts, and concedes opposite the dive', () => {
