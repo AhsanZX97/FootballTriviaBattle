@@ -5,6 +5,8 @@ import type { MatchReadySession } from '../lobby/store'
 import { questionsFromMatchPayload } from '../../services/trivia/bank/localised'
 import { i18nStore, t } from '../../services/i18n/store'
 import { authStore } from '../auth/store'
+import { analytics } from '../../services/analytics'
+import type { AnalyticsEventName, AnalyticsProps } from '../../types/analytics'
 
 /** A challenge you've sent, awaiting the friend's answer. */
 export interface OutgoingChallenge {
@@ -61,10 +63,15 @@ function failNotice(name: string, reason: ChallengeFailReason): string {
 /** Exported for tests, which inject a fake socket + auth seam; the app uses the
  * `presenceStore` singleton. */
 export function createPresenceStore(
-  deps: { connectFn?: ConnectFn; auth?: AuthSeam } = {},
+  deps: {
+    connectFn?: ConnectFn
+    auth?: AuthSeam
+    track?: <N extends AnalyticsEventName>(name: N, props: AnalyticsProps<N>) => void
+  } = {},
 ) {
   const connectFn = deps.connectFn ?? connectWithAuth
   const auth = deps.auth ?? (authStore as unknown as AuthSeam)
+  const track = deps.track ?? analytics.track
 
   let state: PresenceState = initialState()
   const listeners = new Set<Listener>()
@@ -237,6 +244,7 @@ export function createPresenceStore(
     set({ outgoing: { friendId, friendName, challengeId: null }, notice: null, incoming: null })
     await connect()
     socket?.send({ type: 'challenge', targetUserId: friendId })
+    track('friend_challenge_sent', {})
   }
 
   function cancelOutgoing(): void {
@@ -249,6 +257,7 @@ export function createPresenceStore(
   function acceptIncoming(): void {
     if (!state.incoming) return
     socket?.send({ type: 'challengeAccept', challengeId: state.incoming.challengeId })
+    track('friend_challenge_response', { accepted: true })
     // keep `incoming` until 'matched' arrives so the popup shows a pending state;
     // a 'challengeCanceled' clears it if the challenger vanished first
   }
@@ -257,6 +266,7 @@ export function createPresenceStore(
     if (!state.incoming) return
     socket?.send({ type: 'challengeDecline', challengeId: state.incoming.challengeId })
     set({ incoming: null })
+    track('friend_challenge_response', { accepted: false })
   }
 
   function clearNotice(): void {

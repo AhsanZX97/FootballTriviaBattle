@@ -100,11 +100,36 @@ describe('challenges store', () => {
     expect(progressOf(store, 'win_1v1')?.claimed).toBe(true)
   })
 
+  it('reports a claim to analytics', async () => {
+    const track = vi.fn()
+    const store = createChallengesStore({ storage, auth, api, track, now: () => dateWith('win_1v1') })
+    store.record1v1Win()
+    await store.claim('win_1v1')
+    expect(track).toHaveBeenCalledWith('daily_challenge_claimed', { id: 'win_1v1', reward: 5 })
+  })
+
+  it('reports a signed-out claim to analytics', async () => {
+    const track = vi.fn()
+    const store = createChallengesStore({
+      storage,
+      auth: fakeAuth('signedOut'),
+      api,
+      progress: { addCoins: vi.fn() },
+      track,
+      now: () => dateWith('win_1v1'),
+    })
+    store.record1v1Win()
+    await store.claim('win_1v1')
+    expect(track).toHaveBeenCalledWith('daily_challenge_claimed', { id: 'win_1v1', reward: 5 })
+  })
+
   it('refuses to claim an incomplete challenge', async () => {
-    const store = createChallengesStore({ storage, auth, api, now: () => dateWith('score_5_pens') })
+    const track = vi.fn()
+    const store = createChallengesStore({ storage, auth, api, track, now: () => dateWith('score_5_pens') })
     const ok = await store.claim('score_5_pens')
     expect(ok).toBe(false)
     expect(api.claimChallenge).not.toHaveBeenCalled()
+    expect(track).not.toHaveBeenCalled()
   })
 
   it('banks the reward on-device when signed out, without hitting the server', async () => {

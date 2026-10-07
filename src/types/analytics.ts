@@ -1,3 +1,5 @@
+import type { CustomizationSlot } from './customization'
+
 /**
  * Product analytics event vocabulary. Deliberately small: every event here
  * answers a question we currently cannot answer at all (see the funnel notes
@@ -77,6 +79,24 @@ export type AnalyticsEvent =
   | { name: 'level_completed'; props: { level: number } }
   /** A finished level's prize was paid out. */
   | { name: 'level_prize_claimed'; props: { level: number; kind: 'item' | 'coins' } }
+  /** A shop item bought with coins. `signedIn: false` is an on-device purchase
+   * the server re-charges at sign-in. */
+  | { name: 'shop_purchase'; props: { itemId: string; price: number; signedIn: boolean } }
+  /** An owned item put on — whether players actually use what they buy. */
+  | { name: 'item_equipped'; props: { slot: CustomizationSlot; itemId: string } }
+  /** A completed daily challenge cashed in. */
+  | { name: 'daily_challenge_claimed'; props: { id: string; reward: number } }
+  /** The 7-day login reward claimed. `day` is the streak position, so the
+   * spread of these is the retention curve in miniature. */
+  | { name: 'daily_reward_claimed'; props: { day: number; reward: number } }
+  /** A friend request sent successfully. */
+  | { name: 'friend_request_sent'; props: Record<string, never> }
+  /** An incoming friend request accepted. */
+  | { name: 'friend_request_accepted'; props: Record<string, never> }
+  /** A friend invited to a match. */
+  | { name: 'friend_challenge_sent'; props: Record<string, never> }
+  /** An incoming friend match invite answered. */
+  | { name: 'friend_challenge_response'; props: { accepted: boolean } }
 
 /** Event names, derived so a call site can never invent one. */
 export type AnalyticsEventName = AnalyticsEvent['name']

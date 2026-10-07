@@ -112,6 +112,34 @@ describe('friends store', () => {
     expect(store.getState().actionError).toMatch(/no player/i)
   })
 
+  it('reports a sent request to analytics, and nothing for a failed one', async () => {
+    const { seam } = createFakeAuth('signedIn')
+    const sendFriendRequest = vi
+      .fn<FriendsApi['sendFriendRequest']>()
+      .mockResolvedValueOnce('not_found')
+      .mockResolvedValueOnce('sent')
+    const track = vi.fn()
+    const store = createFriendsStore({ api: createFakeApi({ sendFriendRequest }), auth: seam, track })
+
+    await store.sendRequest('ghost')
+    expect(track).not.toHaveBeenCalled()
+
+    await store.sendRequest('bob')
+    expect(track).toHaveBeenCalledWith('friend_request_sent', {})
+  })
+
+  it('reports an accepted request to analytics, but not a declined one', async () => {
+    const { seam } = createFakeAuth('signedIn')
+    const track = vi.fn()
+    const store = createFriendsStore({ api: createFakeApi(), auth: seam, track })
+
+    await store.decline('r1')
+    expect(track).not.toHaveBeenCalled()
+
+    await store.accept('r2')
+    expect(track).toHaveBeenCalledWith('friend_request_accepted', {})
+  })
+
   it('accept calls respondToRequest with accept=true then refreshes', async () => {
     const { seam } = createFakeAuth('signedIn')
     const api = createFakeApi()

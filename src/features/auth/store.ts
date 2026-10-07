@@ -483,6 +483,9 @@ export function createAuthStore(
         dailyRewardStreak: result.streak,
         lastDailyRewardDate: dailyKey(),
       })
+      if (!result.alreadyClaimed && result.reward > 0) {
+        analytics.track('daily_reward_claimed', { day: result.streak, reward: result.reward })
+      }
       return result
     } catch {
       return null

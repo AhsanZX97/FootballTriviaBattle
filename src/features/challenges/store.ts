@@ -6,6 +6,8 @@ import {
 } from '../../services/dailyChallenges'
 import { getItem, removeItem, setItem } from '../../services/storage'
 import { supabase } from '../../services/supabase'
+import { analytics } from '../../services/analytics'
+import type { AnalyticsEventName, AnalyticsProps } from '../../types/analytics'
 import { authStore } from '../auth/store'
 import { localProgressStore } from '../progress/store'
 
@@ -82,6 +84,7 @@ export function createChallengesStore(
     progress?: ChallengesProgressSeam
     storage?: StorageLike
     now?: () => Date
+    track?: <N extends AnalyticsEventName>(name: N, props: AnalyticsProps<N>) => void
   } = {},
 ) {
   const api = deps.api ?? defaultApi
@@ -89,6 +92,7 @@ export function createChallengesStore(
   const progressStore = deps.progress ?? localProgressStore
   const storage = deps.storage ?? { getItem, setItem, removeItem }
   const now = deps.now ?? (() => new Date())
+  const track = deps.track ?? analytics.track
 
   let dayKeyValue = ''
   let progress: Record<string, number> = {}
@@ -191,6 +195,7 @@ export function createChallengesStore(
       claimed[id] = true
       persist()
       rebuild()
+      track('daily_challenge_claimed', { id, reward: view.def.reward })
       return true
     }
 
@@ -198,7 +203,10 @@ export function createChallengesStore(
     rebuild()
     const balance = await api.claimChallenge(id)
     claimed[id] = true
-    if (typeof balance === 'number') auth.applyCoinsUpdate(balance)
+    if (typeof balance === 'number') {
+      auth.applyCoinsUpdate(balance)
+      track('daily_challenge_claimed', { id, reward: view.def.reward })
+    }
     persist()
     claiming = null
     rebuild()

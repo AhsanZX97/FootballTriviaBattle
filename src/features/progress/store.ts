@@ -11,6 +11,8 @@ import { DAILY_REWARD_CYCLE } from '../../types/daily'
 import { localProgressApi, type ClaimResult, type LocalProgressApi } from '../../services/localProgress'
 import { claimableReward, dailyKey } from '../../services/dailyChallenges'
 import { getItem, removeItem, setItem } from '../../services/storage'
+import { analytics } from '../../services/analytics'
+import type { AnalyticsEventName, AnalyticsProps } from '../../types/analytics'
 
 /**
  * Coins and match history earned before the player has an account.
@@ -68,12 +70,14 @@ export function createLocalProgressStore(
     shop?: CustomizationApi
     storage?: StorageLike
     now?: () => Date
+    track?: <N extends AnalyticsEventName>(name: N, props: AnalyticsProps<N>) => void
   } = {},
 ) {
   const api = deps.api ?? localProgressApi
   const shop = deps.shop ?? customizationApi
   const storage = deps.storage ?? { getItem, setItem, removeItem }
   const now = deps.now ?? (() => new Date())
+  const track = deps.track ?? analytics.track
 
   let state: LocalProgress = load()
   // A claim in flight. Sign-in can fire more than once per launch (a token
@@ -167,6 +171,7 @@ export function createLocalProgressStore(
       dailyRewardStreak: status.day,
       lastDailyRewardDate: dailyKey(now()),
     })
+    track('daily_reward_claimed', { day: status.day, reward: status.reward })
     return { reward: status.reward, streak: status.day }
   }
 

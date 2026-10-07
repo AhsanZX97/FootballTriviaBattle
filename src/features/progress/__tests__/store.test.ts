@@ -161,6 +161,17 @@ describe('local progress store', () => {
     expect(store.getState()).toMatchObject({ coins: 5, dailyRewardStreak: 1 })
   })
 
+  it('reports a login reward to analytics once', () => {
+    const track = vi.fn()
+    const store = createLocalProgressStore({ storage, api, track, now: () => new Date(2026, 7, 21, 12) })
+
+    store.claimDailyReward()
+    store.claimDailyReward()
+
+    expect(track).toHaveBeenCalledTimes(1)
+    expect(track).toHaveBeenCalledWith('daily_reward_claimed', { day: 1, reward: 5 })
+  })
+
   it('refuses a second login reward on the same day', () => {
     const store = createLocalProgressStore({ storage, api, now: () => new Date(2026, 7, 21, 12) })
     store.claimDailyReward()

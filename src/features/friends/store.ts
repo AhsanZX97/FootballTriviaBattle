@@ -2,6 +2,8 @@ import type { Friend, FriendRequest, SendRequestResult, UserSearchResult } from 
 import { friendsApi, type FriendsApi } from '../../services/friends'
 import { authStore } from '../auth/store'
 import { t } from '../../services/i18n/store'
+import { analytics } from '../../services/analytics'
+import type { AnalyticsEventName, AnalyticsProps } from '../../types/analytics'
 import type { MessageKey } from '../../services/i18n/messages/en'
 
 export interface FriendsState {
@@ -49,10 +51,15 @@ const SEND_MESSAGE_KEYS: Partial<Record<SendRequestResult, MessageKey>> = {
 /** Exported for tests, which inject a fake api and auth seam; the app uses the
  * `friendsStore` singleton. */
 export function createFriendsStore(
-  deps: { api?: FriendsApi; auth?: AuthSeam } = {},
+  deps: {
+    api?: FriendsApi
+    auth?: AuthSeam
+    track?: <N extends AnalyticsEventName>(name: N, props: AnalyticsProps<N>) => void
+  } = {},
 ) {
   const api = deps.api ?? friendsApi
   const auth = deps.auth ?? (authStore as unknown as AuthSeam)
+  const track = deps.track ?? analytics.track
 
   let state: FriendsState = emptyState()
   const listeners = new Set<Listener>()
@@ -103,6 +110,7 @@ export function createFriendsStore(
     set({ actionError: null })
     const result = await api.sendFriendRequest(username)
     if (result === 'sent' || result === 'accepted') {
+      track('friend_request_sent', {})
       await refresh()
       // reflect the new relationship in any open search results
       if (state.searchQuery) await search(state.searchQuery)
@@ -116,7 +124,7 @@ export function createFriendsStore(
   }
 
   async function accept(requesterId: string): Promise<void> {
-    await api.respondToRequest(requesterId, true)
+    if (await api.respondToRequest(requesterId, true)) track('friend_request_accepted', {})
     await refresh()
     notify?.([requesterId]) // they're now your friend — update their list too
   }

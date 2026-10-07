@@ -4,6 +4,8 @@ import { catalogueFor } from '../../services/shopCatalogue'
 import { authStore } from '../auth/store'
 import { localProgressStore } from '../progress/store'
 import { t } from '../../services/i18n/store'
+import { analytics } from '../../services/analytics'
+import type { AnalyticsEventName, AnalyticsProps } from '../../types/analytics'
 
 export interface ShopState {
   /** The catalogue, per slot. Static (it ships with the bundle) — only `owned`
@@ -58,11 +60,17 @@ const emptyState = (): ShopState => ({
 /** Exported for tests, which inject a fake api and auth seam; the app uses the
  * `shopStore` singleton. */
 export function createShopStore(
-  deps: { api?: CustomizationApi; auth?: ShopAuthSeam; progress?: ShopProgressSeam } = {},
+  deps: {
+    api?: CustomizationApi
+    auth?: ShopAuthSeam
+    progress?: ShopProgressSeam
+    track?: <N extends AnalyticsEventName>(name: N, props: AnalyticsProps<N>) => void
+  } = {},
 ) {
   const api = deps.api ?? customizationApi
   const auth = deps.auth ?? (authStore as unknown as ShopAuthSeam)
   const progress = deps.progress ?? (localProgressStore as unknown as ShopProgressSeam)
+  const track = deps.track ?? analytics.track
 
   let state: ShopState = emptyState()
   const listeners = new Set<Listener>()
@@ -128,6 +136,7 @@ export function createShopStore(
         return 'insufficient_coins'
       }
       set({ owned: [...state.owned, itemId], error: null })
+      track('shop_purchase', { itemId, price, signedIn: false })
       return 'ok'
     }
 
@@ -137,6 +146,7 @@ export function createShopStore(
     if (status === 'ok') {
       auth.applyCoinsUpdate(coins)
       set({ owned: [...state.owned, itemId], purchasing: null })
+      track('shop_purchase', { itemId, price: priceOf(itemId) ?? 0, signedIn: true })
       return status
     }
     if (status === 'already_owned') {
@@ -159,12 +169,14 @@ export function createShopStore(
     if (!signedIn()) {
       const ok = progress.equip(slot, itemId)
       set({ error: ok ? null : EQUIP_FAILED_ERROR() })
+      if (ok) track('item_equipped', { slot, itemId })
       return ok
     }
     set({ equipping: true, error: null })
     const ok = await api.setCustomization(slot, itemId)
     if (ok) auth.applyCustomizationUpdate(slot, itemId)
     set({ equipping: false, error: ok ? null : EQUIP_FAILED_ERROR() })
+    if (ok) track('item_equipped', { slot, itemId })
     return ok
   }
 

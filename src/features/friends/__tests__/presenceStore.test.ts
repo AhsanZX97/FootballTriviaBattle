@@ -99,6 +99,42 @@ describe('presence store', () => {
     expect(store.getState().notice).toMatch(/bob is offline/i)
   })
 
+  it('reports a sent challenge to analytics', async () => {
+    const { seam } = createFakeAuth('signedOut')
+    const fake = createFakeSocket()
+    const track = vi.fn()
+    const store = createPresenceStore({ connectFn: () => fake.socket, auth: seam, track })
+    await store.challenge('f1', 'Bob')
+    expect(track).toHaveBeenCalledWith('friend_challenge_sent', {})
+  })
+
+  it('reports accepting and declining an invite to analytics', async () => {
+    const { seam } = createFakeAuth('signedOut')
+    const fake = createFakeSocket()
+    const track = vi.fn()
+    const store = createPresenceStore({ connectFn: () => fake.socket, auth: seam, track })
+    await store.connect()
+
+    fake.emit({ type: 'challengeReceived', challengeId: 'ch2', fromUserId: 'u2', fromName: 'Carol' })
+    store.acceptIncoming()
+    expect(track).toHaveBeenLastCalledWith('friend_challenge_response', { accepted: true })
+
+    fake.emit({ type: 'challengeReceived', challengeId: 'ch3', fromUserId: 'u2', fromName: 'Carol' })
+    store.declineIncoming()
+    expect(track).toHaveBeenLastCalledWith('friend_challenge_response', { accepted: false })
+  })
+
+  it('reports nothing when there is no invite to answer', async () => {
+    const { seam } = createFakeAuth('signedOut')
+    const fake = createFakeSocket()
+    const track = vi.fn()
+    const store = createPresenceStore({ connectFn: () => fake.socket, auth: seam, track })
+    await store.connect()
+    store.acceptIncoming()
+    store.declineIncoming()
+    expect(track).not.toHaveBeenCalled()
+  })
+
   it('acceptIncoming sends challengeAccept', async () => {
     const { seam } = createFakeAuth('signedOut')
     const fake = createFakeSocket()

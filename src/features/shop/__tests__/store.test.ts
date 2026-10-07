@@ -48,7 +48,8 @@ function makeDeps(overrides: ApiOverrides = {}, status = 'signedIn') {
       coins = n
     },
   }
-  return { api, auth, applied, coinUpdates, progress, bought, granted, equipped }
+  const track = vi.fn()
+  return { api, auth, applied, coinUpdates, progress, bought, granted, equipped, track }
 }
 
 describe('shop store', () => {
@@ -217,6 +218,43 @@ describe('shop store purchase', () => {
     expect(deps.api.purchaseItem).not.toHaveBeenCalled()
   })
 
+  it('reports a completed purchase to analytics', async () => {
+    const deps = makeDeps()
+    const store = createShopStore(deps)
+
+    await store.purchase('celebration_yell')
+
+    expect(deps.track).toHaveBeenCalledWith('shop_purchase', {
+      itemId: 'celebration_yell',
+      price: 100,
+      signedIn: true,
+    })
+  })
+
+  it('reports an on-device purchase to analytics as signed out', async () => {
+    const deps = makeDeps({}, 'signedOut')
+    const store = createShopStore(deps)
+
+    await store.purchase('celebration_yell')
+
+    expect(deps.track).toHaveBeenCalledWith('shop_purchase', {
+      itemId: 'celebration_yell',
+      price: 100,
+      signedIn: false,
+    })
+  })
+
+  it('reports nothing for a purchase that did not go through', async () => {
+    const deps = makeDeps({
+      purchaseItem: vi.fn(async (): Promise<PurchaseResponse> => ({ status: 'insufficient_coins', coins: 20 })),
+    })
+    const store = createShopStore(deps)
+
+    await store.purchase('celebration_yell')
+
+    expect(deps.track).not.toHaveBeenCalled()
+  })
+
   it('tracks which item is being bought', async () => {
     let resolve: ((r: PurchaseResponse) => void) | undefined
     const deps = makeDeps({
@@ -246,12 +284,25 @@ describe('shop store equip', () => {
     expect(store.getState().error).toBeNull()
   })
 
+  it('reports a successful equip to analytics', async () => {
+    const deps = makeDeps()
+    const store = createShopStore(deps)
+
+    await store.equip('goalSound', 'celebration_yell')
+
+    expect(deps.track).toHaveBeenCalledWith('item_equipped', {
+      slot: 'goalSound',
+      itemId: 'celebration_yell',
+    })
+  })
+
   it('does not touch the profile when the server rejects the equip', async () => {
     const deps = makeDeps({ setCustomization: vi.fn(async () => false) })
     const store = createShopStore(deps)
 
     await store.equip('goalSound', 'nope')
 
+    expect(deps.track).not.toHaveBeenCalled()
     expect(deps.applied).toEqual([])
     expect(store.getState().error).toBe('Could not equip that item.')
   })

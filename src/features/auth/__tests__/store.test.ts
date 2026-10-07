@@ -3,6 +3,7 @@ import type { AuthState } from '../../../types/auth'
 import { createAuthStore } from '../store'
 import { dailyKey } from '../../../services/dailyChallenges'
 import { t } from '../../../services/i18n/store'
+import { analytics } from '../../../services/analytics'
 
 type Callback = (event: string, session: FakeSession | null) => void | Promise<void>
 
@@ -679,14 +680,32 @@ describe('claimDailyReward', () => {
     expect(storage.setItem).toHaveBeenCalledWith('ftb.coins', '25')
   })
 
+  it('reports a claimed reward to analytics', async () => {
+    const { fake, store } = await signedInStore()
+    const track = vi.spyOn(analytics, 'track')
+    fake.rpc.mockResolvedValueOnce({
+      data: { already_claimed: false, coins: 25, streak: 7, reward: 20 },
+      error: null,
+    })
+
+    await store.claimDailyReward()
+
+    expect(track).toHaveBeenCalledWith('daily_reward_claimed', { day: 7, reward: 20 })
+    track.mockRestore()
+  })
+
   it('reports an already-claimed day without granting coins', async () => {
     const { fake, store } = await signedInStore()
+    const track = vi.spyOn(analytics, 'track')
     fake.rpc.mockResolvedValueOnce({
       data: { already_claimed: true, coins: 5, streak: 3, reward: 0 },
       error: null,
     })
 
     const result = await store.claimDailyReward()
+
+    expect(track).not.toHaveBeenCalledWith('daily_reward_claimed', expect.anything())
+    track.mockRestore()
 
     expect(result).toEqual({ alreadyClaimed: true, coins: 5, streak: 3, reward: 0 })
     expect(store.getState().coins).toBe(5)
