@@ -206,6 +206,17 @@ describe('Phaser match renderer', () => {
     expect(penalty.striker!.x).toBeLessThan(penalty.ball.x)
   })
 
+  it('loops the striker through his idle frames while he waits', () => {
+    createPitchGame(document.createElement('div'), { ...state, striker: true }, { onEvent: vi.fn(), onReady: vi.fn(), onError: vi.fn() })
+    const striker = harness.objects.find((o) => String(o.key).includes('striker-idle-strip'))!
+    const frames = new Set<number>()
+    for (let step = 0; step < 12; step++) {
+      harness.getScene().update(0, 100)
+      frames.add(striker.frame)
+    }
+    expect([...frames].sort()).toEqual([0, 1, 2, 3])
+  })
+
   it('cancels callbacks and removes the canvas on destroy', () => {
     const onEvent = vi.fn()
     const game = createPitchGame(document.createElement('div'), { ...state, feedback: 'goal' }, { onEvent, onReady: vi.fn(), onError: vi.fn() })

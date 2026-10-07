@@ -5,9 +5,9 @@ import {
   BALL_START, FEEDBACK_MS, KICK_MS, PENALTY_SPOT, STRIKER_SPOT, ShotTimeline, impactTime, shotPose, type KeeperReaction,
 } from './shotTimeline'
 import backgroundSrc from '../../../assets/bg.jpg'
-import strikerSrc from '../../../assets/striker-idle.png'
+import strikerSrc from '../../../assets/striker-idle-strip.png'
 
-const strikerSheet: Sheet = { src: strikerSrc, columns: 1, rows: 1 }
+const strikerSheet: Sheet = { src: strikerSrc, columns: 4, rows: 1 }
 
 /** Phaser owns the display list and clock; React supplies match snapshots only.
  * The scoring rules remain shared with the authoritative multiplayer server. */
@@ -148,7 +148,8 @@ export function createPitchGame(parent: HTMLElement, initial: PitchState, callba
       this.actor(this.ball, spinning ? art.spin : art.ball, spinning ? stock.spin : stock.ball, ballFrame, layout.width * 0.049 * 0.45)
       this.ball.setPosition(...position(ball)).setFlipX(pose?.flipBall ?? false)
       if (state.striker) {
-        this.actor(this.striker, strikerSheet, strikerSheet, 0, layout.width * 0.042)
+        const strikerFrame = reducedMotion ? 0 : Math.floor(this.idleElapsed / 250)
+        this.actor(this.striker, strikerSheet, strikerSheet, strikerFrame, layout.width * 0.043)
         this.striker.setPosition(...position(STRIKER_SPOT))
       } else {
         this.striker.setVisible(false)
