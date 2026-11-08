@@ -45,7 +45,7 @@ export const STRIKER_SPOT: Point = { x: 0.42, y: 0.9 }
 /** Where he strikes: back-left of the ball, placed so the toe of the strike
  * frame touches it (see the foot-meets-ball test). Further from the camera
  * than his idle spot, so he is drawn smaller there. */
-export const STRIKER_KICK_SPOT: Point = { x: 0.461, y: 0.797 }
+export const STRIKER_KICK_SPOT: Point = { x: 0.465, y: 0.797 }
 const KICK_SCALE = 0.88
 /** Ball scale lost per unit of pitch height travelled towards the goal. */
 const BALL_SHRINK_PER_Y = 0.5

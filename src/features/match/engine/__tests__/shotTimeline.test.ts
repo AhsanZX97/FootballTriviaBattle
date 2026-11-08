@@ -98,9 +98,9 @@ describe('engine shot timeline', () => {
       y: STRIKER_KICK_SPOT.y - (160 * pxToW) / (9 / 16),
     }
     const ballRadius = 0.049 * 0.45 / 2
-    // No visible gap: the toe reaches slightly into the ball, never short of it or through its middle.
-    expect(toe.x).toBeGreaterThanOrEqual(PENALTY_SPOT.x - ballRadius)
-    expect(toe.x).toBeLessThanOrEqual(PENALTY_SPOT.x - ballRadius * 0.4)
+    // The boot sits well into the ball (not just touching its edge), but short of its centre.
+    expect(toe.x).toBeGreaterThanOrEqual(PENALTY_SPOT.x - ballRadius * 0.6)
+    expect(toe.x).toBeLessThanOrEqual(PENALTY_SPOT.x - ballRadius * 0.2)
     expect(Math.abs(toe.y - PENALTY_SPOT.y)).toBeLessThan(0.008)
     expect(strikerKickFrame(KICK_MS)).toBe(3)
   })
