@@ -1,5 +1,9 @@
 # Football Trivia Battle — Level Mode Plan
 
+> **Status:** Complete (2026-10-05). Phases 1–3 are shipped on `main` and the
+> migrations `0019`–`0021` have been applied to the Football Trivia Battle
+> database.
+>
 > **Nature of this doc:** The build plan for a solo level mode inspired by
 > *Football Quiz! Ultimate Trivia*: a level list on the home screen, a grid of
 > question cards per level, coins per correct answer, a shop item for clearing
@@ -180,14 +184,10 @@ nt→national-teams, ru→rules, re→records, pp→picture-players,
 pt→picture-teams`. Card frames, level rows and progress bars are CSS.
 Correct/wrong answer sounds are skipped; existing sounds stand in.
 
-**The only setup left on your side** is running each phase's Supabase
-migration (see §8).
-
 ## 8. Build phases
 
-Three phases. Each one is test-first (Vitest beside the code), ends with
-`npm test` + `npm run typecheck` green, and finishes with you playing it on
-the phone.
+Three phases. Each one was test-first (Vitest beside the code) and finished
+with `npm test` + `npm run typecheck` green. All three are done.
 
 ### Phase 1: Level 1, first question (vertical slice) — DONE
 
@@ -222,11 +222,11 @@ Original scope:
   pays nothing. Do it signed out and signed in.
 - **Your setup:** run `0019_level_mode.sql`.
 
-### Phase 2: Level 1 complete, with rewards — BUILT, awaiting your check
+### Phase 2: Level 1 complete, with rewards — DONE
 
-Code, tests and `0020_level_prizes.sql` are in (uncommitted). Level 1 is the
-first 24 cards of the frozen deal and still holds `wc-1`, so Phase 1 solves
-carry over. How it was built, where the bullets below leave room:
+Shipped in `cd7fe10` (2026-10-05). Level 1 is the first 24 cards of the frozen
+deal and still holds `wc-1`, so Phase 1 solves carry over. How it was built,
+where the bullets below leave room:
 
 - The prize **auto-claims** when you land back on a finished grid, then
   `LevelCompletePopup` reveals it. A failed signed-in claim shows a
@@ -242,9 +242,8 @@ carry over. How it was built, where the bullets below leave room:
   the claim can re-equip a prize item that the import just granted.
 - Signing out wipes the local level mirror, so one account's progress can't be
   imported into the next account on the same device.
-- The Level 2 row is a grey, non-tappable card reading "SOLVE 18 TO UNLOCK",
-  or "COMING SOON" once you have 18, because its questions aren't seeded until
-  Phase 3. Level rows show the prize where the ▸ arrow was.
+- Until Phase 3, the Level 2 row was a grey, non-tappable card. Level rows show
+  the prize where the ▸ arrow was.
 - `level_question_answered` fires only on a first solve, not on every tap.
 
 Original scope:
@@ -267,12 +266,21 @@ Original scope:
   second account that already **bought** the horn, and get 100 coins instead.
 - **Your setup:** run `0020_level_prizes.sql`.
 
-### Phase 3: all levels — BUILT, awaiting your check
+### Phase 3: all levels — DONE
 
-Every frozen level is playable. Odd levels still pay the item table, even
-levels a 50-coin chest (the chest sprite sits on those rows, locked or not).
-A row stays grey with "NEEDS N SOLVED" until `unlockAt` is met, then it opens.
-`0021_level_seed.sql` seeds levels 2 onward; Level 1 stayed in 0019/0020.
+Shipped in `79206d2` (2026-10-05). Every frozen level is playable. Odd levels
+still pay the item table, even levels a 50-coin chest (the chest sprite sits
+on those rows, locked or not). A row stays grey with "NEEDS N SOLVED" until
+`unlockAt` is met, then it opens. `0021_level_seed.sql` seeds levels 2 onward;
+Level 1 stayed in 0019/0020. Both `0020` and `0021` are applied on the remote
+database.
+
+After the original scope, two home-screen fixes landed in the same commit:
+
+- The coin bar, the Shop / Sign In row, and the logo stay put. Only Play vs
+  Human and the level rows scroll, over the pitch with no solid bar behind them.
+- After a goal, Continue opens the next unsolved card in that level. On the
+  last one it returns to the grid.
 
 Original scope:
 

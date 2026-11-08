@@ -64,6 +64,14 @@ describe('TestModeScreen', () => {
     expect(pitch.feedback).toBeNull()
   })
 
+  it('shoots right: the striker scores in the right side of the net', async () => {
+    await mount()
+    fireEvent.click(button(/shoot right/i))
+    expect(pitch).toMatchObject({ stage: 'shoot', feedback: 'goal', mirror: true, striker: true })
+    complete()
+    expect(pitch.feedback).toBeNull()
+  })
+
   it('dives the keeper left for a save with my keeper in goal', async () => {
     await mount()
     fireEvent.click(button(/dive left · save/i))

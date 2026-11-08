@@ -11,7 +11,16 @@ export interface PitchSkins {
   gkSkin?: string
   opponentGkSkin?: string
 }
-export interface Sheet { src: string; columns: number; rows: number }
+export interface Sheet {
+  src: string
+  columns: number
+  rows: number
+  /** Per-frame content rects (in sheet pixels). When present, the
+   * renderer crops to these rects instead of uniform cells, so the
+   * on-screen body size matches the content, not the cell padding. */
+  frames?: Rect[]
+}
+export interface Rect { x: number; y: number; w: number; h: number }
 export function resolvePitchArt(skins: PitchSkins) {
   const keeperId = skins.stage === 'keep' ? skins.gkSkin : skins.opponentGkSkin
   const keeper = keeperId ? GK_SKIN_SOURCES[keeperId] : undefined
@@ -21,11 +30,19 @@ export function resolvePitchArt(skins: PitchSkins) {
     gk_green_wall: 1.2523, gk_gold_standard: 1.2504,
     gk_coral_guard: 1.3, gk_orange_blaze: 1.2855,
   }
+  const spinScales: Record<string, number> = {
+    ball_gold_trim: 0.973, ball_carnival_swirl: 0.978, ball_crimson_block: 0.933,
+    ball_neon_streak: 0.963, ball_prism_panel: 0.906,
+  }
   return {
     idle: { src: keeper?.idle ?? idleSrc, columns: keeper ? 4 : 16, rows: keeper ? (green ? 3 : 4) : 1 },
     dive: { src: keeper?.dive ?? diveSrc, columns: keeper && !green ? 5 : 6, rows: 1 },
     ball: { src: ball?.thumb ?? ballSrc, columns: 1, rows: 1 },
     spin: { src: ball?.spin ?? spinSrc, columns: ball ? 2 : 4, rows: ball ? 2 : 1 },
+    /** The spin frames are cropped tighter than the resting ball image, so at
+     * the same width the ball would swell at launch. Ratio of the resting
+     * ball's diameter to the spin frame's, measured per image. */
+    spinScale: ball ? (spinScales[skins.ballSkin!] ?? 0.8) : 0.8,
     diveScale: keeper ? diveScale[keeperId!] : 1.184,
   }
 }

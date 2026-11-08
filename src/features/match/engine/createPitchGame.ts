@@ -2,12 +2,21 @@ import Phaser from 'phaser'
 import type { PitchCallbacks, PitchGame, PitchState } from './contracts'
 import { PITCH_BANDS, pitchLayout, resolvePitchArt, type Sheet } from './pitchArt'
 import {
-  BALL_START, FEEDBACK_MS, KICK_MS, PENALTY_SPOT, STRIKER_SPOT, ShotTimeline, impactTime, shotPose, type KeeperReaction,
+  BALL_START, FEEDBACK_MS, KICK_MS, PENALTY_SPOT, STRIKER_SPOT, ShotTimeline, impactTime, shotPose, strikerKickFrame, strikerRunPose,
+  type KeeperReaction,
 } from './shotTimeline'
 import backgroundSrc from '../../../assets/bg.jpg'
 import strikerSrc from '../../../assets/striker-idle-strip.png'
+import strikerShootSrc from '../../../assets/striker-shoot-strip.png'
+import strikerShootFrames from '../../../assets/striker-shoot-strip.json'
 
 const strikerSheet: Sheet = { src: strikerSrc, columns: 4, rows: 1 }
+const strikerShootSheet: Sheet = { src: strikerShootSrc, columns: 6, rows: 1, frames: strikerShootFrames.frames }
+/** The kick cells leave room below the feet for the follow-through step. */
+const SHOOT_FEET = 0.9388
+/** Idle cell aspect (485 tall / 187.5 wide): passing this as the body
+ * height keeps the striker the same on-screen size as the idle pose at scale 1. */
+const IDLE_BODY_HEIGHT_SCALE = 485 / 187.5
 
 /** Phaser owns the display list and clock; React supplies match snapshots only.
  * The scoring rules remain shared with the authoritative multiplayer server. */
@@ -27,6 +36,7 @@ export function createPitchGame(parent: HTMLElement, initial: PitchState, callba
     for (const sheet of [art.idle, art.dive, art.ball, art.spin]) sheets.set(sheet.src, sheet)
   }
   sheets.set(strikerSheet.src, strikerSheet)
+  sheets.set(strikerShootSheet.src, strikerShootSheet)
 
   class MatchPitch extends Phaser.Scene {
     private pitch!: Phaser.GameObjects.Image
@@ -63,8 +73,11 @@ export function createPitchGame(parent: HTMLElement, initial: PitchState, callba
         const source = texture.getSourceImage()
         const width = source.width / sheet.columns
         const height = source.height / sheet.rows
-        for (let frame = 0; frame < sheet.columns * sheet.rows; frame++) {
-          texture.add(frame, 0, (frame % sheet.columns) * width, Math.floor(frame / sheet.columns) * height, width, height)
+        const frames = sheet.frames ?? []
+        for (let frame = 0; frame < (frames.length || sheet.columns * sheet.rows); frame++) {
+          const rect = frames[frame]
+          texture.add(frame, 0, rect ? rect.x : (frame % sheet.columns) * width,
+            rect ? rect.y : Math.floor(frame / sheet.columns) * height, rect ? rect.w : width, rect ? rect.h : height)
         }
       }
       const pitchTexture = this.textures.get('pitch')
@@ -117,8 +130,17 @@ export function createPitchGame(parent: HTMLElement, initial: PitchState, callba
       const selected = this.textures.exists(sheet.src) ? sheet : fallback
       if (!this.textures.exists(selected.src)) { sprite.setVisible(false); return }
       const source = this.textures.get(selected.src).getSourceImage()
-      sprite.setVisible(true).setTexture(selected.src, frame % (selected.columns * selected.rows))
-      sprite.setDisplaySize(width, width * (source.height / selected.rows) / (source.width / selected.columns))
+      const index = frame % (selected.frames?.length ?? selected.columns * selected.rows)
+      const rect = selected.frames?.[index]
+      sprite.setVisible(true).setTexture(selected.src, index)
+      if (rect) {
+        // Per-frame content rect: keep the body height at `width` and size
+        // the width to the content's natural aspect, so the character doesn't
+        // jump when the strip switches from idle (narrow) to kick (wide).
+        sprite.setDisplaySize(width * rect.w / rect.h, width)
+      } else {
+        sprite.setDisplaySize(width, width * (source.height / selected.rows) / (source.width / selected.columns))
+      }
     }
 
     private paint() {
@@ -145,12 +167,25 @@ export function createPitchGame(parent: HTMLElement, initial: PitchState, callba
       this.keeper.setPosition(...position(keeper)).setFlipX(diving && !!pose?.flipKeeper)
       const spinning = !!state.feedback && visualTime >= KICK_MS
       const ballFrame = reducedMotion ? 0 : Math.floor(Math.min(Math.max(0, elapsed - KICK_MS), state.feedback ? impactTime(state.feedback) - KICK_MS : 0) / 50) % 4
-      this.actor(this.ball, spinning ? art.spin : art.ball, spinning ? stock.spin : stock.ball, ballFrame, layout.width * 0.049 * 0.45)
+      this.actor(this.ball, spinning ? art.spin : art.ball, spinning ? stock.spin : stock.ball, ballFrame,
+        layout.width * 0.049 * 0.45 * (spinning ? art.spinScale : 1) * (pose?.ballScale ?? 1))
       this.ball.setPosition(...position(ball)).setFlipX(pose?.flipBall ?? false)
       if (state.striker) {
-        const strikerFrame = reducedMotion ? 0 : Math.floor(this.idleElapsed / 250)
-        this.actor(this.striker, strikerSheet, strikerSheet, strikerFrame, layout.width * 0.043)
-        this.striker.setPosition(...position(STRIKER_SPOT))
+        const kicking = !!state.feedback && this.textures.exists(strikerShootSheet.src)
+        const idleWidth = layout.width * 0.043
+        if (kicking) {
+          const bodyHeight = idleWidth * IDLE_BODY_HEIGHT_SCALE
+          const run = strikerRunPose(visualTime)
+          this.actor(this.striker, strikerShootSheet, strikerSheet, strikerKickFrame(visualTime), bodyHeight * run.scale)
+          // The kick cells leave room below the feet for the follow-through step.
+          this.striker.setOrigin(0.5, SHOOT_FEET)
+            .setPosition(...position({ x: run.x, y: run.y }))
+            .setFlipX(false)
+        } else {
+          const strikerFrame = reducedMotion ? 0 : Math.floor(this.idleElapsed / 250)
+          this.actor(this.striker, strikerSheet, strikerSheet, strikerFrame, idleWidth)
+          this.striker.setOrigin(0.5, 1).setPosition(...position(STRIKER_SPOT))
+        }
       } else {
         this.striker.setVisible(false)
       }

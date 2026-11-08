@@ -35,7 +35,41 @@ no commit hashes, no internal refactors. Short bullets with `-`. If every commit
 since the last tag is internal, write a single "Bug fixes and performance
 improvements." line.
 
-## 4. Verify
+## 4. Check the privacy policy
+
+Google rejects releases whose privacy policy doesn't match the listing or the
+app's actual data practices. The policy lives in Notion:
+<https://app.notion.com/p/privacy-policy-3aa737e1e106803b9f22c4bcd7822fbf>
+(page id `3aa737e1e106803b9f22c4bcd7822fbf`). Fetch it with the Notion MCP.
+
+**Identifiers must match exactly** — compare the policy against:
+
+- app title: [title.txt](android/app/src/main/play/listings/en-US/title.txt)
+- contact email: [contact-email.txt](android/app/src/main/play/contact-email.txt)
+- website: [contact-website.txt](android/app/src/main/play/contact-website.txt)
+- package name: `applicationId` in [android/app/build.gradle](android/app/build.gradle)
+- developer name: **DeGreat Studios** (Play Console account name)
+
+**Data practices must still be accurate** — run
+`git diff <last tag>..HEAD --stat` and look for changes that alter what the app
+collects or who it shares with:
+
+- new or removed SDK dependencies in `package.json` (ads, analytics, billing,
+  auth, crash reporting)
+- new tables/columns holding user data in `supabase/migrations/`
+- new or changed edge functions in `supabase/functions/`
+- new Android permissions in `android/app/src/main/AndroidManifest.xml`
+- new sign-in methods, purchase types, ad formats, or analytics events
+  (`src/services/analytics.ts`, `src/services/ads.ts`, `src/features/auth/`)
+
+If nothing relevant changed and every identifier matches, say so in one line
+and continue. Otherwise **stop**: show the user the mismatches / new data
+practices and the proposed policy wording, and only edit the Notion page
+(also bumping its "Last updated" date) once they approve. Remind them that a
+data-practice change usually also needs the **Data safety form** updated in
+the console.
+
+## 5. Verify
 
 ```
 npm run typecheck
@@ -44,7 +78,7 @@ npm test
 
 Both must pass. If either fails, stop and report — do not publish.
 
-## 5. Build and upload
+## 6. Build and upload
 
 ```
 npm run release:play
@@ -62,11 +96,12 @@ If it fails on credentials, check that `android/play.properties` exists (see
 [android/play.properties.example](android/play.properties.example)) and that its
 service account has release permissions — the purchase-verifier account does not.
 
-## 6. Hand back to the user
+## 7. Hand back to the user
 
 Do NOT tag, commit, or push — leave that to the user. Report:
 
 - the new versionCode / versionName
+- the privacy policy check result (unchanged, or what was updated)
 - the release notes you wrote, called out as **going to real users**
 - that a draft is waiting on the **production** track, with the reminder that
   **rollout, the Data safety form, and any policy declarations are console-only**

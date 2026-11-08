@@ -1,0 +1,31 @@
+{
+  "name": "striker_penalty_kick",
+  "category": "characters",
+  "fps": 10,
+  "files": [
+    "assets\\characters\\striker_penalty_kick_01.png",
+    "assets\\characters\\striker_penalty_kick_02.png",
+    "assets\\characters\\striker_penalty_kick_03.png",
+    "assets\\characters\\striker_penalty_kick_04.png",
+    "assets\\characters\\striker_penalty_kick_05.png",
+    "assets\\characters\\striker_penalty_kick_06.png"
+  ],
+  "rig": ".sprite-studio\\rigs\\striker_penalty_kick.json",
+  "masterHash": "d66eb41b3e0e0c4c5d09ac4e04941554ab1fa01d7d25b6267763b06319a1d20b",
+  "rigHash": "e16b8b1f320db259216b6c5c2dd176b7435d867c5ddc428a28f3d6dcb350ad97",
+  "rigVersion": 3,
+  "quality": {
+    "uniqueRenderedFrames": 6,
+    "renderedFrameHashes": [
+      "e9e3792404f6705ab8772f3f4e0e38546e33d26cfda1309d87a5f1d41e2b005c",
+      "72d13695f7d3cfe15b752675d58e92a19d811959333f2b918d39944c902c38d6",
+      "f63fa31f665cc8cbeb5062be89c503771772dee685ba51334f85aa2e0aea8ee7",
+      "018a2feef9f77308c27e80a930ee095963564bfbc582bcfff435fb5ea97115e6",
+      "34f8bf3d47d5c8f0ee72c093dfb2af60d3728f7e1a99ce19160705af1682c676",
+      "53a9ffed9ce6efeb4913d4a36403679c8c7965b2a061bd1cf01e3527628143fc"
+    ],
+    "mechanics": "passed"
+  },
+  "planningMode": "ai-rig-deterministic-render",
+  "generatedAt": "2026-10-09T16:56:39.219040+00:00"
+}

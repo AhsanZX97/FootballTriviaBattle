@@ -22,9 +22,10 @@ type Props = { onExit: () => void }
 const PICTURE_ENTRIES = pictures
 const CREST_ENTRIES = teamPictures
 
-type Shot = { label: string; stage: Stage; feedback: SceneFeedback; reaction?: KeeperReaction }
+type Shot = { label: string; stage: Stage; feedback: SceneFeedback; reaction?: KeeperReaction; mirror?: boolean }
 
 const SHOTS: Shot[] = [
+  { label: 'Shoot right', stage: 'shoot', feedback: 'goal', reaction: 'wrong-way', mirror: true },
   { label: 'Dive right · goal', stage: 'shoot', feedback: 'goal', reaction: 'wrong-way' },
   { label: 'Dive left · late goal', stage: 'shoot', feedback: 'goal', reaction: 'late' },
   { label: 'Keeper stays · goal', stage: 'shoot', feedback: 'goal', reaction: 'frozen' },
@@ -45,6 +46,7 @@ export function TestModeScreen({ onExit }: Props) {
   const [stage, setStage] = useState<Stage>('shoot')
   const [feedback, setFeedback] = useState<SceneFeedback | null>(null)
   const [reaction, setReaction] = useState<KeeperReaction | undefined>()
+  const [mirror, setMirror] = useState<boolean | undefined>()
   const [question, setQuestion] = useState<Question | null>(null)
   const [timeLeft, setTimeLeft] = useState(QUESTION_TIME_SECONDS)
   const [panelOpen, setPanelOpen] = useState(true)
@@ -52,10 +54,11 @@ export function TestModeScreen({ onExit }: Props) {
   const [crestIndex, setCrestIndex] = useState(0)
   const busy = feedback !== null
 
-  function shoot(nextStage: Stage, outcome: SceneFeedback, nextReaction?: KeeperReaction) {
+  function shoot(nextStage: Stage, outcome: SceneFeedback, nextReaction?: KeeperReaction, nextMirror?: boolean) {
     setQuestion(null)
     setStage(nextStage)
     setReaction(nextReaction)
+    setMirror(nextMirror)
     setFeedback(outcome)
   }
 
@@ -124,6 +127,7 @@ export function TestModeScreen({ onExit }: Props) {
         stage={stage}
         feedback={feedback}
         reaction={reaction}
+        mirror={mirror}
         opponentLabel="Test Bot"
         ballSkin={auth.customization.ballSkin}
         gkSkin={auth.customization.gkSkin}
@@ -175,7 +179,7 @@ export function TestModeScreen({ onExit }: Props) {
                 type="button"
                 className="testmode__btn"
                 disabled={busy}
-                onClick={() => shoot(shot.stage, shot.feedback, shot.reaction)}
+                onClick={() => shoot(shot.stage, shot.feedback, shot.reaction, shot.mirror)}
               >
                 {shot.label}
               </button>

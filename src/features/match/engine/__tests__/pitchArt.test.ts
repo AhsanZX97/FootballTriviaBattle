@@ -29,6 +29,17 @@ describe('Phaser pitch art', () => {
     expect(resolvePitchArt({ stage: 'shoot', ballSkin: 'missing' }).spin.columns).toBe(4)
   })
 
+  it('sizes the spinning ball to match the resting ball, so it does not jump at launch', () => {
+    // Measured: the stock resting ball fills ~80% of its image, the spin frames fill 100%.
+    expect(resolvePitchArt({ stage: 'shoot' }).spinScale).toBeCloseTo(0.8, 1)
+    for (const ballSkin of Object.keys(BALL_SKIN_SOURCES)) {
+      const { spinScale } = resolvePitchArt({ stage: 'shoot', ballSkin })
+      expect(spinScale).toBeGreaterThan(0.85)
+      expect(spinScale).toBeLessThan(1)
+    }
+    expect(resolvePitchArt({ stage: 'shoot', ballSkin: 'missing' }).spinScale).toBeCloseTo(0.8, 1)
+  })
+
   it.each([[390, 844], [844, 390], [360, 640], [360, 800], [800, 1280]])('covers the width without stretching at %s x %s', (width, height) => {
     const layout = pitchLayout(width, height)
     expect(layout.x).toBeLessThanOrEqual(0)

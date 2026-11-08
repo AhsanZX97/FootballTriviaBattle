@@ -217,6 +217,22 @@ describe('Phaser match renderer', () => {
     expect([...frames].sort()).toEqual([0, 1, 2, 3])
   })
 
+  it('plays the striker kick strip during a shot, striking as the ball leaves', () => {
+    const game = createPitchGame(document.createElement('div'), { ...state, striker: true }, { onEvent: vi.fn(), onReady: vi.fn(), onError: vi.fn() })
+    const striker = harness.objects.find((o) => String(o.key).includes('striker-idle-strip'))!
+    game.update({ ...state, striker: true, feedback: 'goal', label: 'GOAL!', mirror: true })
+    harness.getScene().update(0, 0)
+    expect(String(striker.key)).toContain('striker-shoot-strip')
+    const startHeight = striker.displayHeight
+    harness.getScene().update(0, 1000)
+    expect(striker.frame).toBe(3)
+    expect(striker.displayHeight).toBeLessThan(startHeight)
+    expect(striker.flipX).toBeFalsy()
+    harness.getScene().update(0, 1600)
+    game.update({ ...state, striker: true, feedback: null, mirror: true })
+    expect(String(striker.key)).toContain('striker-idle-strip')
+  })
+
   it('cancels callbacks and removes the canvas on destroy', () => {
     const onEvent = vi.fn()
     const game = createPitchGame(document.createElement('div'), { ...state, feedback: 'goal' }, { onEvent, onReady: vi.fn(), onError: vi.fn() })
