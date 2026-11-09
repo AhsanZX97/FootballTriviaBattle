@@ -255,6 +255,7 @@ export function MatchScreen({ onExit, onMainMenu }: Props) {
         gkSkin={auth.customization.gkSkin}
         opponentGkSkin={opponentGkSkin}
         dimmed={!showScene}
+        striker
         onEvent={onPitchEvent}
       />
       <section className="match__scoreboard" aria-label={t('match.scoreboardAria')}>

@@ -9,9 +9,14 @@ import backgroundSrc from '../../../assets/bg.jpg'
 import strikerSrc from '../../../assets/striker-idle-strip.png'
 import strikerShootSrc from '../../../assets/striker-shoot-strip.png'
 import strikerShootFrames from '../../../assets/striker-shoot-strip.json'
+import opponentSrc from '../../../assets/opponent-idle-strip.png'
+import opponentShootSrc from '../../../assets/opponent-shoot-strip.png'
 
 const strikerSheet: Sheet = { src: strikerSrc, columns: 4, rows: 1 }
 const strikerShootSheet: Sheet = { src: strikerShootSrc, columns: 6, rows: 1, frames: strikerShootFrames.frames }
+// The opponent's kit is a recolour on the identical grid, so it shares the frame data.
+const opponentSheet: Sheet = { src: opponentSrc, columns: 4, rows: 1 }
+const opponentShootSheet: Sheet = { src: opponentShootSrc, columns: 6, rows: 1, frames: strikerShootFrames.frames }
 /** The kick cells leave room below the feet for the follow-through step. */
 const SHOOT_FEET = 0.9388
 /** Idle cell aspect (485 tall / 187.5 wide): passing this as the body
@@ -35,8 +40,7 @@ export function createPitchGame(parent: HTMLElement, initial: PitchState, callba
   for (const art of [stock, resolvePitchArt({ ...initial, stage: 'shoot' }), resolvePitchArt({ ...initial, stage: 'keep' })]) {
     for (const sheet of [art.idle, art.dive, art.ball, art.spin]) sheets.set(sheet.src, sheet)
   }
-  sheets.set(strikerSheet.src, strikerSheet)
-  sheets.set(strikerShootSheet.src, strikerShootSheet)
+  for (const sheet of [strikerSheet, strikerShootSheet, opponentSheet, opponentShootSheet]) sheets.set(sheet.src, sheet)
 
   class MatchPitch extends Phaser.Scene {
     private pitch!: Phaser.GameObjects.Image
@@ -171,19 +175,22 @@ export function createPitchGame(parent: HTMLElement, initial: PitchState, callba
         layout.width * 0.049 * 0.45 * (spinning ? art.spinScale : 1) * (pose?.ballScale ?? 1))
       this.ball.setPosition(...position(ball)).setFlipX(pose?.flipBall ?? false)
       if (state.striker) {
-        const kicking = !!state.feedback && this.textures.exists(strikerShootSheet.src)
+        // When we are defending, the opponent is the one taking the kick: his kit, same moves.
+        const [idleSheet, shootSheet] = state.stage === 'keep'
+          ? [opponentSheet, opponentShootSheet] : [strikerSheet, strikerShootSheet]
+        const kicking = !!state.feedback && this.textures.exists(shootSheet.src)
         const idleWidth = layout.width * 0.043
         if (kicking) {
           const bodyHeight = idleWidth * IDLE_BODY_HEIGHT_SCALE
           const run = strikerRunPose(visualTime)
-          this.actor(this.striker, strikerShootSheet, strikerSheet, strikerKickFrame(visualTime), bodyHeight * run.scale)
+          this.actor(this.striker, shootSheet, idleSheet, strikerKickFrame(visualTime), bodyHeight * run.scale)
           // The kick cells leave room below the feet for the follow-through step.
           this.striker.setOrigin(0.5, SHOOT_FEET)
             .setPosition(...position({ x: run.x, y: run.y }))
             .setFlipX(false)
         } else {
           const strikerFrame = reducedMotion ? 0 : Math.floor(this.idleElapsed / 250)
-          this.actor(this.striker, strikerSheet, strikerSheet, strikerFrame, idleWidth)
+          this.actor(this.striker, idleSheet, idleSheet, strikerFrame, idleWidth)
           this.striker.setOrigin(0.5, 1).setPosition(...position(STRIKER_SPOT))
         }
       } else {

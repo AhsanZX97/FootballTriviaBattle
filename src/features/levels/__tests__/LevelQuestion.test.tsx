@@ -98,6 +98,7 @@ describe('LevelQuestion', () => {
     expect(screen.getByLabelText('Worth 3 coins')).toBeDefined()
     expect(pitch.dimmed).toBe(true)
     expect(pitch.feedback).toBeNull()
+    expect(pitch.striker).toBe(true)
   })
 
   it('plays a saved penalty on a wrong answer when the roll lands low', async () => {

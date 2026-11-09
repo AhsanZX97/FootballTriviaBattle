@@ -233,6 +233,21 @@ describe('MatchScreen', () => {
     authStore.applyCustomizationUpdate('gkSkin', 'default')
   })
 
+  it('puts a striker on the pitch for my kicks and for the opponent\'s', async () => {
+    startMatch()
+    const mine = await mount()
+    expect(pitch.striker).toBe(true)
+    fireEvent.click(screen.getByRole('button', { name: 'Right' }))
+    expect(pitch).toMatchObject({ stage: 'shoot', striker: true })
+    mine.unmount()
+
+    // the opponent kicks first while I defend: his kick animates as the 'keep' stage
+    const match = startMatch({ youGoFirst: false })
+    await mount()
+    match.emit({ type: 'kickResolved', by: 'opponent', scored: false })
+    expect(pitch).toMatchObject({ stage: 'keep', striker: true })
+  })
+
   it('lifts the dark overlay while spectating the opponent', async () => {
     startMatch({ youGoFirst: false })
     await mount()

@@ -115,6 +115,7 @@ export function LevelQuestion({ questionId, onBack, onNext, store = levelStore }
         ballSkin={auth.customization.ballSkin}
         gkSkin={auth.customization.gkSkin}
         dimmed={!shot}
+        striker
         onEvent={onPitchEvent}
       />
       {!shot && <div className="intro__overlay levels__dim" aria-hidden />}

@@ -233,6 +233,27 @@ describe('Phaser match renderer', () => {
     expect(String(striker.key)).toContain('striker-idle-strip')
   })
 
+  it("draws the opponent's striker, in his own kit, when the opponent is the one shooting", () => {
+    const game = createPitchGame(document.createElement('div'), { ...state, striker: true }, { onEvent: vi.fn(), onReady: vi.fn(), onError: vi.fn() })
+    const striker = harness.objects.find((o) => String(o.key).includes('striker-idle-strip'))!
+    // we are defending: the opponent takes the kick
+    game.update({ ...state, stage: 'keep', striker: true })
+    harness.getScene().update(0, 0)
+    expect(String(striker.key)).toContain('opponent-idle-strip')
+    game.update({ ...state, stage: 'keep', striker: true, feedback: 'goal', label: 'GOAL!' })
+    harness.getScene().update(0, 0)
+    expect(String(striker.key)).toContain('opponent-shoot-strip')
+    harness.getScene().update(0, 1000)
+    expect(striker.frame).toBe(3)
+    // we are shooting: our own kit again
+    game.update({ ...state, stage: 'shoot', striker: true, feedback: null })
+    harness.getScene().update(0, 0)
+    expect(String(striker.key)).toContain('striker-idle-strip')
+    game.update({ ...state, stage: 'shoot', striker: true, feedback: 'goal', label: 'GOAL!' })
+    harness.getScene().update(0, 0)
+    expect(String(striker.key)).toContain('striker-shoot-strip')
+  })
+
   it('cancels callbacks and removes the canvas on destroy', () => {
     const onEvent = vi.fn()
     const game = createPitchGame(document.createElement('div'), { ...state, feedback: 'goal' }, { onEvent, onReady: vi.fn(), onError: vi.fn() })
