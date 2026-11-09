@@ -1,1 +1,2 @@
+- Smoother striker and opponent kick animations
 - Bug fixes and performance improvements
