@@ -2,6 +2,7 @@ import { useEffect, useState, useSyncExternalStore } from 'react'
 import type { Stage } from '../../types/match'
 import type { Question } from '../../types/trivia'
 import { PitchScene, type SceneFeedback } from '../match/components/PitchScene'
+import type { StrikerSkin } from '../match/engine/contracts'
 import type { KeeperReaction, ShotEvent } from '../match/engine/shotTimeline'
 import { QUESTION_TIME_SECONDS } from '../match/store'
 import { authStore } from '../auth/store'
@@ -52,6 +53,7 @@ export function TestModeScreen({ onExit }: Props) {
   const [panelOpen, setPanelOpen] = useState(true)
   const [pictureIndex, setPictureIndex] = useState(0)
   const [crestIndex, setCrestIndex] = useState(0)
+  const [strikerSkin, setStrikerSkin] = useState<StrikerSkin>('default')
   const busy = feedback !== null
 
   function shoot(nextStage: Stage, outcome: SceneFeedback, nextReaction?: KeeperReaction, nextMirror?: boolean) {
@@ -133,6 +135,7 @@ export function TestModeScreen({ onExit }: Props) {
         gkSkin={auth.customization.gkSkin}
         dimmed={showQuestion}
         striker
+        strikerSkin={strikerSkin}
         onEvent={onPitchEvent}
       />
 
@@ -200,6 +203,13 @@ export function TestModeScreen({ onExit }: Props) {
               onClick={() => setStage((s) => (s === 'shoot' ? 'keep' : 'shoot'))}
             >
               Stage: {stage}
+            </button>
+            <button
+              type="button"
+              className="testmode__btn"
+              onClick={() => setStrikerSkin((s) => (s === 'default' ? 'ronaldo' : 'default'))}
+            >
+              Striker: {strikerSkin}
             </button>
             <button type="button" className="testmode__btn testmode__btn--exit" onClick={onExit}>
               Exit

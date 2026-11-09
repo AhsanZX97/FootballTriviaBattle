@@ -9,6 +9,8 @@ import backgroundSrc from '../../../assets/bg.jpg'
 import strikerSrc from '../../../assets/striker-idle-strip.png'
 import strikerShootSrc from '../../../assets/striker-shoot-strip.png'
 import strikerShootFrames from '../../../assets/striker-shoot-strip.json'
+import ronaldoSrc from '../../../assets/ronaldo-idle-strip.png'
+import ronaldoShootSrc from '../../../assets/ronaldo-shoot-strip.png'
 import opponentSrc from '../../../assets/opponent-idle-strip.png'
 import opponentShootSrc from '../../../assets/opponent-shoot-strip.png'
 
@@ -17,6 +19,11 @@ const strikerShootSheet: Sheet = { src: strikerShootSrc, columns: 6, rows: 1, fr
 // The opponent's kit is a recolour on the identical grid, so it shares the frame data.
 const opponentSheet: Sheet = { src: opponentSrc, columns: 4, rows: 1 }
 const opponentShootSheet: Sheet = { src: opponentShootSrc, columns: 6, rows: 1, frames: strikerShootFrames.frames }
+/** Nine cells of 188px, played at the source GIF's 180ms per frame. */
+const ronaldoSheet: Sheet = { src: ronaldoSrc, columns: 9, rows: 1 }
+const RONALDO_IDLE_MS = 180
+// His kick strip is laid out cell-for-cell like the default striker's, so it shares the frame data.
+const ronaldoShootSheet: Sheet = { src: ronaldoShootSrc, columns: 6, rows: 1, frames: strikerShootFrames.frames }
 /** The kick cells leave room below the feet for the follow-through step. */
 const SHOOT_FEET = 0.9388
 /** Idle cell aspect (485 tall / 187.5 wide): passing this as the body
@@ -40,7 +47,7 @@ export function createPitchGame(parent: HTMLElement, initial: PitchState, callba
   for (const art of [stock, resolvePitchArt({ ...initial, stage: 'shoot' }), resolvePitchArt({ ...initial, stage: 'keep' })]) {
     for (const sheet of [art.idle, art.dive, art.ball, art.spin]) sheets.set(sheet.src, sheet)
   }
-  for (const sheet of [strikerSheet, strikerShootSheet, opponentSheet, opponentShootSheet]) sheets.set(sheet.src, sheet)
+  for (const sheet of [strikerSheet, strikerShootSheet, opponentSheet, opponentShootSheet, ronaldoSheet, ronaldoShootSheet]) sheets.set(sheet.src, sheet)
 
   class MatchPitch extends Phaser.Scene {
     private pitch!: Phaser.GameObjects.Image
@@ -176,8 +183,10 @@ export function createPitchGame(parent: HTMLElement, initial: PitchState, callba
       this.ball.setPosition(...position(ball)).setFlipX(pose?.flipBall ?? false)
       if (state.striker) {
         // When we are defending, the opponent is the one taking the kick: his kit, same moves.
+        const ronaldo = state.strikerSkin === 'ronaldo' && state.stage !== 'keep'
         const [idleSheet, shootSheet] = state.stage === 'keep'
-          ? [opponentSheet, opponentShootSheet] : [strikerSheet, strikerShootSheet]
+          ? [opponentSheet, opponentShootSheet]
+          : ronaldo ? [ronaldoSheet, ronaldoShootSheet] : [strikerSheet, strikerShootSheet]
         const kicking = !!state.feedback && this.textures.exists(shootSheet.src)
         const idleWidth = layout.width * 0.043
         if (kicking) {
@@ -189,7 +198,7 @@ export function createPitchGame(parent: HTMLElement, initial: PitchState, callba
             .setPosition(...position({ x: run.x, y: run.y }))
             .setFlipX(false)
         } else {
-          const strikerFrame = reducedMotion ? 0 : Math.floor(this.idleElapsed / 250)
+          const strikerFrame = reducedMotion ? 0 : Math.floor(this.idleElapsed / (ronaldo ? RONALDO_IDLE_MS : 250))
           this.actor(this.striker, idleSheet, idleSheet, strikerFrame, idleWidth)
           this.striker.setOrigin(0.5, 1).setPosition(...position(STRIKER_SPOT))
         }

@@ -7,6 +7,7 @@ import { BALL_SKIN_SOURCES, GK_SKIN_SOURCES } from '../../../services/shopCatalo
 import { analytics } from '../../../services/analytics'
 import { ShopItemList } from './ShopItemList'
 import { ShopConfirm } from './ShopConfirm'
+import { StrikerShelf } from './StrikerShelf'
 import './ShopPopup.css'
 import { useT } from '../../../services/i18n/store'
 
@@ -20,11 +21,17 @@ type Props = {
  * slot on the profile, so picking a tab is picking the slot to equip. */
 const TAB_SLOTS: CustomizationSlot[] = ['gkSkin', 'ballSkin', 'goalSound']
 
+/** Striker is a display-only shelf for now, so it sits beside the slot tabs
+ * rather than being a real customization slot. */
+const STRIKER_TAB = 'striker'
+
 /** Modal shell for the shop. Shares the FriendsPopup layout/skin so the two
  * read as one system. Tapping an item opens a buy (or equip) confirmation. */
 export function ShopPopup({ onClose, store = shopStore }: Props) {
   const t = useT()
-  const [slot, setSlot] = useState<CustomizationSlot>('gkSkin')
+  const [tab, setTab] = useState<CustomizationSlot | typeof STRIKER_TAB>('gkSkin')
+  // The striker tab has no slot behind it; fall back to gkSkin for the lookups below.
+  const slot: CustomizationSlot = tab === STRIKER_TAB ? 'gkSkin' : tab
   const [selected, setSelected] = useState<ShopItem | null>(null)
   const shop = useSyncExternalStore(store.subscribe, store.getState)
   const auth = useSyncExternalStore(authStore.subscribe, authStore.getState)
@@ -100,22 +107,36 @@ export function ShopPopup({ onClose, store = shopStore }: Props) {
                 key={tabSlot}
                 type="button"
                 role="tab"
-                aria-selected={slot === tabSlot}
-                className={`shop-popup__tab${slot === tabSlot ? ' is-active' : ''}`}
+                aria-selected={tab === tabSlot}
+                className={`shop-popup__tab${tab === tabSlot ? ' is-active' : ''}`}
                 onClick={() => {
                   stopPreview()
-                  setSlot(tabSlot)
+                  setTab(tabSlot)
                 }}
               >
                 {t(`shop.tab.${tabSlot}`)}
               </button>
             ))}
+            <button
+              type="button"
+              role="tab"
+              aria-selected={tab === STRIKER_TAB}
+              className={`shop-popup__tab${tab === STRIKER_TAB ? ' is-active' : ''}`}
+              onClick={() => {
+                stopPreview()
+                setTab(STRIKER_TAB)
+              }}
+            >
+              Striker
+            </button>
           </div>
 
           <div className="shop-popup__body">
             {/* The store's error shows inside the confirm popup while one is open. */}
-            {shop.error && !selected && <p className="shop-popup__error">{shop.error}</p>}
-            {items.length === 0 ? (
+            {shop.error && !selected && tab !== STRIKER_TAB && <p className="shop-popup__error">{shop.error}</p>}
+            {tab === STRIKER_TAB ? (
+              <StrikerShelf />
+            ) : items.length === 0 ? (
               <p className="shop-popup__empty">{t(`shop.empty.${slot}`)}</p>
             ) : (
               <ShopItemList

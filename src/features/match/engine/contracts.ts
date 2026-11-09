@@ -11,7 +11,11 @@ export interface PitchState extends PitchSkins {
   mirror?: boolean
   /** Stands a penalty taker behind the ball and moves the ball up to the spot. */
   striker?: boolean
+  /** Which striker takes the kick. Stock striker when omitted. */
+  strikerSkin?: StrikerSkin
 }
+
+export type StrikerSkin = 'default' | 'ronaldo'
 
 export interface PitchCallbacks {
   onEvent: (event: ShotEvent, outcome: SceneFeedback) => void

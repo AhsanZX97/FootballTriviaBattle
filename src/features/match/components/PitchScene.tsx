@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from 'react'
 import { useT } from '../../../services/i18n/store'
 import type { MessageKey } from '../../../services/i18n/messages/en'
 import { loadPitchGame } from '../engine/loadPitchGame'
-import type { PitchCallbacks, PitchGame, PitchState } from '../engine/contracts'
+import type { PitchCallbacks, PitchGame, PitchState, StrikerSkin } from '../engine/contracts'
 import type { PitchSkins } from '../engine/pitchArt'
 import type { KeeperReaction, SceneFeedback } from '../engine/shotTimeline'
 import './PitchScene.css'
@@ -21,11 +21,12 @@ type Props = PitchSkins & {
   /** Forces the shot to the right-hand side; rolled at random when omitted. */
   mirror?: boolean
   striker?: boolean
+  strikerSkin?: StrikerSkin
   onEvent?: PitchCallbacks['onEvent']
 }
 
 /** Accessible React host for a persistent Phaser scene. No DOM actors or clocks. */
-export function PitchScene({ stage, feedback, opponentLabel, ballSkin, gkSkin, opponentGkSkin, dimmed = false, reaction, mirror, striker, onEvent }: Props) {
+export function PitchScene({ stage, feedback, opponentLabel, ballSkin, gkSkin, opponentGkSkin, dimmed = false, reaction, mirror, striker, strikerSkin, onEvent }: Props) {
   const t = useT()
   const host = useRef<HTMLDivElement>(null)
   const game = useRef<PitchGame | null>(null)
@@ -34,7 +35,7 @@ export function PitchScene({ stage, feedback, opponentLabel, ballSkin, gkSkin, o
   const label = feedback === 'concede'
     ? t('scene.scores', { name: opponentLabel ?? t('match.opponent') })
     : feedback ? t(LABEL_KEYS[feedback]) : null
-  const state: PitchState = { stage, feedback, label, ballSkin, gkSkin, opponentGkSkin, dimmed, reaction, mirror, striker }
+  const state: PitchState = { stage, feedback, label, ballSkin, gkSkin, opponentGkSkin, dimmed, reaction, mirror, striker, strikerSkin }
   const latest = useRef({ state, onEvent })
   latest.current = { state, onEvent }
 
@@ -59,7 +60,7 @@ export function PitchScene({ stage, feedback, opponentLabel, ballSkin, gkSkin, o
     }
   }, [attempt])
 
-  useEffect(() => { game.current?.update(latest.current.state) }, [stage, feedback, label, ballSkin, gkSkin, opponentGkSkin, dimmed, reaction, mirror, striker])
+  useEffect(() => { game.current?.update(latest.current.state) }, [stage, feedback, label, ballSkin, gkSkin, opponentGkSkin, dimmed, reaction, mirror, striker, strikerSkin])
 
   return (
     <div className="scene">
