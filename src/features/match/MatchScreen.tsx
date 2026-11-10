@@ -1,4 +1,6 @@
 import { useEffect, useLayoutEffect, useRef, useState, useSyncExternalStore } from 'react'
+import { useEquipped } from '../shop/useEquipped'
+import { strikerSkinFor } from '../../services/shopCatalogue'
 import type { Kick, Stage } from '../../types/match'
 import { getResult, KICKS_PER_SIDE } from '../../game/shootout'
 import { matchStore, QUESTION_TIME_SECONDS } from './store'
@@ -8,7 +10,6 @@ import type { ShotEvent } from './engine/shotTimeline'
 import { CoinReward } from './components/CoinReward'
 import { PreMatchCountdown } from '../lobby/components/PreMatchCountdown'
 import { fadeOutCrowd, play, playGoalCelebration } from '../../services/sound'
-import { authStore } from '../auth/store'
 import { useBottomBanner } from '../../services/ads'
 import { Sprite } from '../../components/Sprite'
 import './MatchScreen.css'
@@ -50,7 +51,7 @@ function KickDots({ kicks, side }: { kicks: Kick[]; side: 'user' | 'cpu' }) {
 export function MatchScreen({ onExit, onMainMenu }: Props) {
   const t = useT()
   const state = useSyncExternalStore(matchStore.subscribe, matchStore.getState)
-  const auth = useSyncExternalStore(authStore.subscribe, authStore.getState)
+  const equipped = useEquipped()
   const [feedback, setFeedback] = useState<SceneFeedback | null>(null)
   const [feedbackIsMine, setFeedbackIsMine] = useState(false)
   // stage the animating kick happened in — the store's shootout.stage has
@@ -63,7 +64,7 @@ export function MatchScreen({ onExit, onMainMenu }: Props) {
   const result = getResult(state.shootout)
   const myTurn = state.shootout.stage === 'shoot'
   const opponentLabel = state.opponentName ?? t('match.opponent')
-  const goalSound = auth.customization.goalSound
+  const goalSound = equipped.goalSound
   // the keeper we shoot against wears the opponent's equipped skin
   const opponentGkSkin = state.opponentGkSkin ?? undefined
 
@@ -251,11 +252,12 @@ export function MatchScreen({ onExit, onMainMenu }: Props) {
         stage={feedback ? feedbackStage : shootout.stage}
         feedback={feedback}
         opponentLabel={opponentLabel}
-        ballSkin={auth.customization.ballSkin}
-        gkSkin={auth.customization.gkSkin}
+        ballSkin={equipped.ballSkin}
+        gkSkin={equipped.gkSkin}
         opponentGkSkin={opponentGkSkin}
         dimmed={!showScene}
         striker
+        strikerSkin={strikerSkinFor(equipped.striker)}
         onEvent={onPitchEvent}
       />
       <section className="match__scoreboard" aria-label={t('match.scoreboardAria')}>

@@ -4,6 +4,7 @@ import type { AuthStore } from '../../auth/store'
 import { localProgressStore, type LocalProgressStore } from '../../progress/store'
 import coinSprite from '../../../assets/sprites/coin.png'
 import { useT } from '../../../services/i18n/store'
+import { useDevMode } from '../../../services/devMode'
 
 type Props = {
   /** Defaults to the real singleton; tests inject a fake. */
@@ -26,7 +27,14 @@ export function CoinCounter({ store = authStore, progress = localProgressStore, 
   const t = useT()
   const state = useSyncExternalStore(store.subscribe, store.getState)
   const local = useSyncExternalStore(progress.subscribe, progress.getState)
-  const coins = state.status === 'signedIn' ? state.coins : state.status === 'signedOut' ? local.coins : 0
+  const dev = useDevMode()
+  const coins = dev
+    ? '∞'
+    : state.status === 'signedIn'
+      ? state.coins
+      : state.status === 'signedOut'
+        ? local.coins
+        : 0
 
   const inner = (
     <>

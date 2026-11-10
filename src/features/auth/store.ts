@@ -25,6 +25,9 @@ export interface AuthStore {
    * granted reward and resulting streak (or `alreadyClaimed`), or null on
    * failure / when signed out. Updates coins + streak state on success. */
   claimDailyReward(): Promise<DailyRewardResult | null>
+  /** Dev account only (see services/devMode.ts). Optional so test fakes needn't implement them. */
+  devSetDailyReward?(streak: number, lastDate: string | null): void
+  devShowWelcome?(): void
   /** Reflects a slot the shop has already equipped server-side, so the change
    * shows without a full profile refetch. */
   applyCustomizationUpdate(slot: CustomizationSlot, itemId: string): void
@@ -81,6 +84,8 @@ interface ProfileRow {
   gk_skin: string
   ball_skin: string
   goal_sound: string
+  /** Absent on a profile predating the striker migration; reads as stock. */
+  striker_skin?: string
   daily_reward_streak: number
   last_daily_reward_date: string | null
   /** False only on an account that has not yet been shown its signup bonus.
@@ -184,6 +189,7 @@ function readCustomization(profile: ProfileRow | null): Customization {
     gkSkin: profile?.gk_skin ?? stock.gkSkin,
     ballSkin: profile?.ball_skin ?? stock.ballSkin,
     goalSound: profile?.goal_sound ?? stock.goalSound,
+    striker: profile?.striker_skin ?? stock.striker,
   }
 }
 
@@ -303,7 +309,7 @@ export function createAuthStore(
     const { data: profile } = await supabaseClient
       .from('profiles')
       .select(
-        'username, coins, gk_skin, ball_skin, goal_sound, daily_reward_streak, last_daily_reward_date, pgs_player_id, welcome_bonus_seen',
+        'username, coins, gk_skin, ball_skin, goal_sound, striker_skin, daily_reward_streak, last_daily_reward_date, pgs_player_id, welcome_bonus_seen',
       )
       .eq('id', session.user.id)
       .single()
@@ -464,6 +470,17 @@ export function createAuthStore(
     storage.setItem(COINS_CACHE_KEY, String(balance))
   }
 
+  /** Dev account only: overwrite the streak shown for the signed-in account.
+   * Local state, never sent to the server. */
+  function devSetDailyReward(streak: number, lastDate: string | null): void {
+    set({ dailyRewardStreak: streak, lastDailyRewardDate: lastDate })
+  }
+
+  /** Dev account only: replay the welcome-coins notice. */
+  function devShowWelcome(): void {
+    set({ welcomeCoins: SIGNUP_BONUS_COINS })
+  }
+
   async function claimDailyReward(): Promise<DailyRewardResult | null> {
     if (state.status !== 'signedIn') return null
     try {
@@ -578,6 +595,8 @@ export function createAuthStore(
     addSignInTask,
     applyCoinsUpdate,
     claimDailyReward,
+    devSetDailyReward,
+    devShowWelcome,
     applyCustomizationUpdate,
     renameUsername,
     requestPasswordReset,

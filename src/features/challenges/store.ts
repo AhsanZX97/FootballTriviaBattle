@@ -7,6 +7,7 @@ import {
 import { getItem, removeItem, setItem } from '../../services/storage'
 import { supabase } from '../../services/supabase'
 import { analytics } from '../../services/analytics'
+import { devMode } from '../../services/devMode'
 import type { AnalyticsEventName, AnalyticsProps } from '../../types/analytics'
 import { authStore } from '../auth/store'
 import { localProgressStore } from '../progress/store'
@@ -189,9 +190,12 @@ export function createChallengesStore(
     const view = state.challenges.find((c) => c.def.id === id)
     if (!view || !view.complete || view.claimed || claiming) return false
 
-    if (auth.getState().status !== 'signedIn') {
+    // Dev account: never hits the server, so a reset day can be claimed again.
+    // Signed in there is nothing to bank — the balance is infinite.
+    const dev = devMode.isOn()
+    if (dev || auth.getState().status !== 'signedIn') {
       // No round trip, so no `claiming` spinner — this lands instantly.
-      progressStore.addCoins(view.def.reward)
+      if (!(dev && auth.getState().status === 'signedIn')) progressStore.addCoins(view.def.reward)
       claimed[id] = true
       persist()
       rebuild()
@@ -213,6 +217,23 @@ export function createChallengesStore(
     return true
   }
 
+  /** Dev account only: fill every active challenge to its goal. */
+  function devCompleteAll(): void {
+    ensureToday()
+    for (const c of state.challenges) progress[c.def.id] = c.def.goal
+    persist()
+    rebuild()
+  }
+
+  /** Dev account only: wipe today's progress and claims so they can run again. */
+  function devReset(): void {
+    ensureToday()
+    progress = {}
+    claimed = {}
+    persist()
+    rebuild()
+  }
+
   /** Recompute for the current day — call on mount so a day rollover shows. */
   function refresh(): void {
     ensureToday()
@@ -228,6 +249,8 @@ export function createChallengesStore(
     recordAnswer,
     record1v1Win,
     claim,
+    devCompleteAll,
+    devReset,
   }
 }
 

@@ -5,6 +5,7 @@ import { footballBank } from '../../services/trivia/bank'
 import { levelsApi, type LevelProgressResponse, type LevelsApi } from '../../services/levels'
 import { findItem } from '../../services/shopCatalogue'
 import { analytics } from '../../services/analytics'
+import { devMode } from '../../services/devMode'
 import { getItem, removeItem, setItem } from '../../services/storage'
 import type { AnalyticsEventName, AnalyticsProps } from '../../types/analytics'
 import { authStore } from '../auth/store'
@@ -225,6 +226,16 @@ export function createLevelStore(
   /** Pay a finished level's prize, once. */
   async function claimPrize(level: number): Promise<PrizeResult> {
     const def = levels.find((l) => l.level === level)
+    // Dev account: any level's prize, any time, as often as asked. Nothing is
+    // recorded as claimed, and signed in nothing is sent to the server.
+    if (def && devMode.isOn()) {
+      if (signedIn()) {
+        return def.prize.kind === 'item'
+          ? { kind: 'item', itemId: def.prize.itemId }
+          : { kind: 'coins', coins: def.prize.coins }
+      }
+      return claimPrizeLocally(def)
+    }
     if (!def || !isComplete(def, state.solved) || claimingPrize) return { kind: 'error' }
     if (state.prizes.includes(level)) return { kind: 'already' }
 

@@ -57,7 +57,7 @@ function readCustomization(value: unknown): Customization {
   if (typeof value !== 'object' || value === null) return stock
   const c = value as Record<string, unknown>
   const slot = (key: keyof Customization) => (typeof c[key] === 'string' ? (c[key] as string) : stock[key])
-  return { gkSkin: slot('gkSkin'), ballSkin: slot('ballSkin'), goalSound: slot('goalSound') }
+  return { gkSkin: slot('gkSkin'), ballSkin: slot('ballSkin'), goalSound: slot('goalSound'), striker: slot('striker') }
 }
 
 /** Exported for tests, which inject a fake api/storage; the app uses the
@@ -173,6 +173,11 @@ export function createLocalProgressStore(
     })
     track('daily_reward_claimed', { day: status.day, reward: status.reward })
     return { reward: status.reward, streak: status.day }
+  }
+
+  /** Dev account only: overwrite the login-reward streak and last-claim date. */
+  function devSetDailyReward(streak: number, lastDate: string | null): void {
+    commit({ ...state, dailyRewardStreak: streak, lastDailyRewardDate: lastDate })
   }
 
   /** Cosmetics bought on this device. `default` is never bought — every player
@@ -342,6 +347,7 @@ export function createLocalProgressStore(
     addCoins,
     recordMatch,
     claimDailyReward,
+    devSetDailyReward,
     owns,
     grantItem,
     purchaseItem,

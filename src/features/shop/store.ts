@@ -5,6 +5,7 @@ import { authStore } from '../auth/store'
 import { localProgressStore } from '../progress/store'
 import { t } from '../../services/i18n/store'
 import { analytics } from '../../services/analytics'
+import { devMode } from '../../services/devMode'
 import type { AnalyticsEventName, AnalyticsProps } from '../../types/analytics'
 
 export interface ShopState {
@@ -36,6 +37,8 @@ export interface ShopProgressSeam {
   owns(itemId: string): boolean
   purchaseItem(itemId: string, price: number): boolean
   equip(slot: CustomizationSlot, itemId: string): boolean
+  /** Dev account only. Optional so test fakes needn't implement it. */
+  grantItem?(itemId: string): boolean
 }
 
 type Listener = () => void
@@ -49,6 +52,7 @@ const emptyState = (): ShopState => ({
     gkSkin: catalogueFor('gkSkin'),
     ballSkin: catalogueFor('ballSkin'),
     goalSound: catalogueFor('goalSound'),
+    striker: catalogueFor('striker'),
   },
   owned: [],
   status: 'idle',
@@ -101,6 +105,11 @@ export function createShopStore(
   /** Load what the player already owns. Fire-and-forget on shop open, so a
    * network failure leaves the catalogue browsable rather than crashing. */
   async function refresh(): Promise<void> {
+    // Dev account: the whole catalogue is owned.
+    if (devMode.isOn()) {
+      set({ owned: Object.values(state.items).flatMap((items) => items.map((i) => i.id)), status: 'loaded' })
+      return
+    }
     if (!signedIn()) {
       // Signed out the "owned" list is whatever was bought or won on-device,
       // so the Customize tab has something real to show before an account exists.
@@ -124,6 +133,13 @@ export function createShopStore(
    */
   async function purchase(itemId: string): Promise<PurchaseResult> {
     if (isOwned(itemId)) return 'already_owned'
+
+    // Dev account: free, and never touches the server's ledger.
+    if (devMode.isOn()) {
+      if (priceOf(itemId) === null) return 'not_found'
+      set({ owned: [...state.owned, itemId], error: null })
+      return 'ok'
+    }
 
     // Signed out: buy with on-device coins. The purchase is provisional — the
     // server re-charges it at sign-in (see localProgressStore.syncPurchases) —
@@ -164,6 +180,18 @@ export function createShopStore(
   /** Equip `itemId` in `slot`. The server is the source of truth: the profile
    * only reflects the change once the RPC confirms it. */
   async function equip(slot: CustomizationSlot, itemId: string): Promise<boolean> {
+    // Dev account: the server doesn't know about the free items, so it would
+    // refuse. Signed out, grant on-device so the look persists; signed in, show
+    // it for this session only.
+    if (devMode.isOn()) {
+      // On-device either way: a profile refresh would wipe a session-only change.
+      if (itemId !== 'default') progress.grantItem?.(itemId)
+      progress.equip(slot, itemId)
+      if (signedIn()) auth.applyCustomizationUpdate(slot, itemId)
+      set({ error: null })
+      return true
+    }
+
     // Signed out this is purely local and instant; the chosen look is applied
     // to the profile at sign-in for whichever slots survived the re-charge.
     if (!signedIn()) {

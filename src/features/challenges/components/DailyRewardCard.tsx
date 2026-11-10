@@ -2,7 +2,8 @@ import { useState, useSyncExternalStore } from 'react'
 import { authStore } from '../../auth/store'
 import { localProgressStore } from '../../progress/store'
 import { CoinReward } from '../../match/components/CoinReward'
-import { claimableReward } from '../../../services/dailyChallenges'
+import { claimableReward, dailyKey } from '../../../services/dailyChallenges'
+import { devMode } from '../../../services/devMode'
 import { DAILY_REWARD_CYCLE, dailyRewardFor } from '../../../types/daily'
 import coinSprite from '../../../assets/sprites/coin.png'
 import trophySprite from '../../../assets/sprites/trophy.png'
@@ -44,6 +45,15 @@ export function DailyRewardCard({ onClaimed }: Props) {
 
   async function handleClaim() {
     if (busy || !status.claimable) return
+
+    // Dev account, signed in: the server would refuse a second claim today, so
+    // advance the streak on-screen only. The balance is infinite regardless.
+    if (devMode.isOn() && signedIn) {
+      authStore.devSetDailyReward?.(status.day, dailyKey())
+      setBurst(status.reward)
+      onClaimed?.(status.reward)
+      return
+    }
 
     if (useLocal) {
       // Purely local: no round trip, so no busy state to show.

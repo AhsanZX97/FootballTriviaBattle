@@ -4,6 +4,7 @@ import { authStore } from '../../auth/store'
 import { Sprite } from '../../../components/Sprite'
 import './GetCoinsPopup.css'
 import { useT } from '../../../services/i18n/store'
+import { useDevMode } from '../../../services/devMode'
 
 type Props = {
   onClose: () => void
@@ -24,7 +25,8 @@ export function GetCoinsPopup({ onClose, store = coinsStore }: Props) {
   const t = useT()
   const coins = useSyncExternalStore(store.subscribe, store.getState)
   const auth = useSyncExternalStore(authStore.subscribe, authStore.getState)
-  const signedIn = auth.status === 'signedIn'
+  const dev = useDevMode()
+  const signedIn = auth.status === 'signedIn' || dev
 
   // How many rewards are left today, so the button can disable at zero rather
   // than playing an ad the server will refuse to pay for.
@@ -41,7 +43,7 @@ export function GetCoinsPopup({ onClose, store = coinsStore }: Props) {
     return () => document.removeEventListener('keydown', onKey)
   }, [onClose])
 
-  const exhausted = coins.remaining === 0
+  const exhausted = coins.remaining === 0 && !dev
   const disabled = coins.watching || !signedIn || exhausted
   // A pack Play couldn't price is not offered at all: a buy button whose cost
   // we can't state is not something to put in front of a player.

@@ -1,4 +1,6 @@
 import { useEffect, useState, useSyncExternalStore } from 'react'
+import { useEquipped } from '../shop/useEquipped'
+import { strikerSkinFor } from '../../services/shopCatalogue'
 import coinSprite from '../../assets/sprites/coin.png'
 import { LEVELS } from '../../game/levels/manifest'
 import { coinsForTries } from '../../game/levels/rewards'
@@ -6,7 +8,6 @@ import { isSolved, nextLevelQuestion } from '../../game/levels/progress'
 import { footballBank } from '../../services/trivia/bank'
 import { useT } from '../../services/i18n/store'
 import { fadeOutCrowd, play, playGoalCelebration } from '../../services/sound'
-import { authStore } from '../auth/store'
 import { playerPortrait } from '../match/playerPortrait'
 import { CoinReward } from '../match/components/CoinReward'
 import { PitchScene, type SceneFeedback } from '../match/components/PitchScene'
@@ -47,7 +48,7 @@ function shuffle<T>(items: readonly T[]): T[] {
 export function LevelQuestion({ questionId, onBack, onNext, store = levelStore }: Props) {
   const t = useT()
   const state = useSyncExternalStore(store.subscribe, store.getState)
-  const auth = useSyncExternalStore(authStore.subscribe, authStore.getState)
+  const equipped = useEquipped()
   const question = footballBank.find((q) => q.id === questionId)
   // Shuffled once per opening, so a retry can't be won by remembering a slot.
   const [answers] = useState(() =>
@@ -93,7 +94,7 @@ export function LevelQuestion({ questionId, onBack, onNext, store = levelStore }
     if (event === 'impact') {
       if (kicked === 'goal') {
         play('netRipple')
-        playGoalCelebration(auth.customization.goalSound)
+        playGoalCelebration(equipped.goalSound)
       } else {
         play('shock')
       }
@@ -112,10 +113,11 @@ export function LevelQuestion({ questionId, onBack, onNext, store = levelStore }
       <PitchScene
         stage="shoot"
         feedback={shot}
-        ballSkin={auth.customization.ballSkin}
-        gkSkin={auth.customization.gkSkin}
+        ballSkin={equipped.ballSkin}
+        gkSkin={equipped.gkSkin}
         dimmed={!shot}
         striker
+        strikerSkin={strikerSkinFor(equipped.striker)}
         onEvent={onPitchEvent}
       />
       {!shot && <div className="intro__overlay levels__dim" aria-hidden />}

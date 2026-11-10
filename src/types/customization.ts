@@ -1,10 +1,11 @@
-/** The three cosmetic slots bound to a player's profile. Each maps to one tab
+/** The four cosmetic slots bound to a player's profile. Each maps to one tab
  * in the shop popup:
  *   gkSkin    -> the goalkeeper's appearance
  *   ballSkin  -> the football's appearance
  *   goalSound -> the sting played when a goal is scored
+ *   striker   -> the penalty taker's appearance
  */
-export type CustomizationSlot = 'gkSkin' | 'ballSkin' | 'goalSound'
+export type CustomizationSlot = 'gkSkin' | 'ballSkin' | 'goalSound' | 'striker'
 
 /** A player's equipped cosmetics (from `profiles`). `DEFAULT_ITEM_ID` means the
  * stock look/sound — every profile starts there and no catalogue item is
@@ -13,6 +14,7 @@ export interface Customization {
   gkSkin: string
   ballSkin: string
   goalSound: string
+  striker: string
 }
 
 /** The stock item every slot defaults to, matching the DB column default. */
@@ -22,6 +24,7 @@ export const defaultCustomization = (): Customization => ({
   gkSkin: DEFAULT_ITEM_ID,
   ballSkin: DEFAULT_ITEM_ID,
   goalSound: DEFAULT_ITEM_ID,
+  striker: DEFAULT_ITEM_ID,
 })
 
 /** A purchasable/equippable cosmetic in one slot. */

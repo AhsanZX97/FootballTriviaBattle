@@ -14,6 +14,7 @@ import { prizeArt } from '../levels/prizeArt'
 import './IntroScreen.css'
 import '../levels/LevelScreen.css'
 import { useT } from '../../services/i18n/store'
+import { useDevMode } from '../../services/devMode'
 
 type Props = {
   /** Called when the player picks Play vs Human, taking them to the multiplayer lobby. */
@@ -34,6 +35,7 @@ export function IntroScreen({ onPlayNow, onOpenLevel, onSignIn, onShop, onTestMo
   const auth = useSyncExternalStore(authStore.subscribe, authStore.getState)
   const levels = useSyncExternalStore(levelStore.subscribe, levelStore.getState)
   const signedIn = auth.status === 'signedIn'
+  const dev = useDevMode()
 
   return (
     <main className="intro home">
@@ -103,7 +105,7 @@ export function IntroScreen({ onPlayNow, onOpenLevel, onSignIn, onShop, onTestMo
           {LEVELS.map((def) => {
             const { solved, total } = levelProgress(def, levels.solved)
             const claimed = levels.prizes.includes(def.level)
-            const open = isUnlocked(def.level, levels.solved)
+            const open = dev || isUnlocked(def.level, levels.solved)
             if (!open) {
               return (
                 <div

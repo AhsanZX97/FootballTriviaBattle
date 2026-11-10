@@ -14,6 +14,7 @@ import type { BuyPackResult, CoinPackOffer } from '../../types/coins'
 import { authStore } from '../auth/store'
 import { localProgressStore } from '../progress/store'
 import { t } from '../../services/i18n/store'
+import { devMode } from '../../services/devMode'
 
 /**
  * How a "watch an ad for coins" attempt ended, from the UI's point of view.
@@ -181,6 +182,8 @@ export function createCoinsStore(
    */
   async function watchAdForCoins(): Promise<WatchAdResult> {
     if (state.watching) return 'busy'
+    // Dev account: no ad, no cap — the balance is infinite anyway.
+    if (devMode.isOn()) return 'ok'
     // Signed out, the reward is banked on-device. The ad impression is real
     // either way, and refusing to pay a player without an account is exactly
     // the friction this whole local-first path exists to remove.
@@ -240,6 +243,8 @@ export function createCoinsStore(
    */
   async function buyPack(productId: string): Promise<BuyPackResult> {
     if (state.purchasing !== null) return 'busy'
+    // Dev account: packs are free and skip Play Billing entirely.
+    if (devMode.isOn()) return 'ok'
     if (!signedIn()) {
       set({ error: SIGNED_OUT_BUY_ERROR() })
       return 'signed_out'

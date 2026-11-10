@@ -24,7 +24,7 @@ const sample: Question[] = Array.from({ length: 4 }, (_, i) => ({
 import { matchStore, QUESTION_TIME_SECONDS } from '../store'
 import { MatchScreen } from '../MatchScreen'
 import { FEEDBACK_MS } from '../engine/shotTimeline'
-import { authStore } from '../../auth/store'
+import { localProgressStore } from '../../progress/store'
 import { play, playGoalCelebration } from '../../../services/sound'
 
 let pitch: PitchState
@@ -222,7 +222,9 @@ describe('MatchScreen', () => {
   })
 
   it('keeps the equipped GK skin during the opponent-kick feedback while defending', async () => {
-    authStore.applyCustomizationUpdate('gkSkin', 'gk_green_wall')
+    // Signed out, the equipped look is the on-device one.
+    localProgressStore.grantItem('gk_green_wall')
+    localProgressStore.equip('gkSkin', 'gk_green_wall')
     const match = startMatch({ youGoFirst: false })
     await mount()
     // opponent kicks while we defend: the store flips stage to 'shoot' at once,
@@ -230,7 +232,7 @@ describe('MatchScreen', () => {
     match.emit({ type: 'kickResolved', by: 'opponent', scored: false })
     expect(screen.getByText(/saved!/i)).toBeDefined()
     expect(resolvePitchArt(pitch).idle.src).toContain('green-wall.png')
-    authStore.applyCustomizationUpdate('gkSkin', 'default')
+    localProgressStore.equip('gkSkin', 'default')
   })
 
   it('puts a striker on the pitch for my kicks and for the opponent\'s', async () => {

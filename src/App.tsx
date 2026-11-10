@@ -24,12 +24,19 @@ import { claimableReward } from './services/dailyChallenges'
 import type { MatchReadySession } from './features/lobby/store'
 import { playTheme, stopTheme } from './services/sound'
 import { isNative } from './services/platform'
+import { devMode } from './services/devMode'
 
 type Screen = 'intro' | 'lobby' | 'match' | 'auth' | 'test' | 'level' | 'levelQuestion'
 
 // `null` in release builds, so the import and its chunk are dropped entirely.
 const TestModeScreen = __TEST_MODE__
   ? lazy(() => import('./features/testMode/TestModeScreen').then((m) => ({ default: m.TestModeScreen })))
+  : null
+
+// Dev-account controls. `import.meta.env.DEV` is a build-time constant, so this
+// is `null` in every production build and the chunk is never emitted.
+const DevPanel = import.meta.env.DEV
+  ? lazy(() => import('./features/dev/DevPanel').then((m) => ({ default: m.DevPanel })))
   : null
 
 function App() {
@@ -272,6 +279,11 @@ function App() {
       {shopOpen && screen === 'intro' && <ShopPopup onClose={() => setShopOpen(false)} />}
       {getCoinsOpen && screen !== 'match' && (
         <GetCoinsPopup onClose={() => setGetCoinsOpen(false)} />
+      )}
+      {DevPanel && devMode.isAvailable() && (
+        <Suspense fallback={null}>
+          <DevPanel />
+        </Suspense>
       )}
       {showDailyReward && <DailyRewardPopup onClose={() => setDailyDismissed(true)} />}
       {challengeMatch && screen !== 'match' && (

@@ -1,11 +1,12 @@
-import { useEffect, useState, useSyncExternalStore } from 'react'
+import { useEffect, useState } from 'react'
+import { useEquipped } from '../shop/useEquipped'
+import { strikerSkinFor } from '../../services/shopCatalogue'
 import type { Stage } from '../../types/match'
 import type { Question } from '../../types/trivia'
 import { PitchScene, type SceneFeedback } from '../match/components/PitchScene'
 import type { StrikerSkin } from '../match/engine/contracts'
 import type { KeeperReaction, ShotEvent } from '../match/engine/shotTimeline'
 import { QUESTION_TIME_SECONDS } from '../match/store'
-import { authStore } from '../auth/store'
 import { fadeOutCrowd, play, playGoalCelebration } from '../../services/sound'
 import { i18nStore } from '../../services/i18n/store'
 import { localisedBank } from '../../services/trivia/bank/localised'
@@ -43,7 +44,7 @@ function feedbackOf(stage: Stage, correct: boolean): SceneFeedback {
 /** Dev-only sandbox: the real pitch and question card, driven by buttons
  * instead of a server. Never touches matchStore, coins, history or challenges. */
 export function TestModeScreen({ onExit }: Props) {
-  const auth = useSyncExternalStore(authStore.subscribe, authStore.getState)
+  const equipped = useEquipped()
   const [stage, setStage] = useState<Stage>('shoot')
   const [feedback, setFeedback] = useState<SceneFeedback | null>(null)
   const [reaction, setReaction] = useState<KeeperReaction | undefined>()
@@ -53,7 +54,7 @@ export function TestModeScreen({ onExit }: Props) {
   const [panelOpen, setPanelOpen] = useState(true)
   const [pictureIndex, setPictureIndex] = useState(0)
   const [crestIndex, setCrestIndex] = useState(0)
-  const [strikerSkin, setStrikerSkin] = useState<StrikerSkin>('default')
+  const [strikerSkin, setStrikerSkin] = useState<StrikerSkin>(() => strikerSkinFor(equipped.striker))
   const busy = feedback !== null
 
   function shoot(nextStage: Stage, outcome: SceneFeedback, nextReaction?: KeeperReaction, nextMirror?: boolean) {
@@ -115,7 +116,7 @@ export function TestModeScreen({ onExit }: Props) {
     if (event === 'kick') play('kick')
     if (event === 'impact') {
       if (outcome === 'goal' || outcome === 'concede') play('netRipple')
-      if (outcome === 'goal') playGoalCelebration(auth.customization.goalSound)
+      if (outcome === 'goal') playGoalCelebration(equipped.goalSound)
       else play(outcome === 'save' ? 'cheer' : 'shock')
     }
     if (event === 'complete') setFeedback(null)
@@ -131,8 +132,8 @@ export function TestModeScreen({ onExit }: Props) {
         reaction={reaction}
         mirror={mirror}
         opponentLabel="Test Bot"
-        ballSkin={auth.customization.ballSkin}
-        gkSkin={auth.customization.gkSkin}
+        ballSkin={equipped.ballSkin}
+        gkSkin={equipped.gkSkin}
         dimmed={showQuestion}
         striker
         strikerSkin={strikerSkin}

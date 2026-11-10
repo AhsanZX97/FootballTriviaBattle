@@ -1,14 +1,13 @@
 import { useEffect, useState, useSyncExternalStore } from 'react'
+import { useEquipped } from '../useEquipped'
 import { shopStore, type ShopStore } from '../store'
-import { authStore } from '../../auth/store'
-import { localProgressStore } from '../../progress/store'
 import {
   DEFAULT_ITEM_ID,
   type CustomizationSlot,
   type ShopItem,
 } from '../../../types/customization'
 import { previewGoalSound, stopPreview } from '../../../services/sound'
-import { BALL_SKIN_SOURCES, GK_SKIN_SOURCES } from '../../../services/shopCatalogue'
+import { BALL_SKIN_SOURCES, GK_SKIN_SOURCES, STRIKER_SKIN_SOURCES } from '../../../services/shopCatalogue'
 import { ShopItemList } from './ShopItemList'
 import './CustomizePanel.css'
 import { t, useT } from '../../../services/i18n/store'
@@ -18,7 +17,7 @@ type Props = {
   store?: ShopStore
 }
 
-const TAB_SLOTS: CustomizationSlot[] = ['gkSkin', 'ballSkin', 'goalSound']
+const TAB_SLOTS: CustomizationSlot[] = ['gkSkin', 'ballSkin', 'goalSound', 'striker']
 
 /** The stock look/sound for a slot, shown as a row so it can be equipped back.
  * It isn't a catalogue item — every profile starts on it and the DB exempts it
@@ -36,8 +35,7 @@ export function CustomizePanel({ store = shopStore }: Props) {
   const t = useT()
   const [slot, setSlot] = useState<CustomizationSlot>('gkSkin')
   const shop = useSyncExternalStore(store.subscribe, store.getState)
-  const auth = useSyncExternalStore(authStore.subscribe, authStore.getState)
-  const local = useSyncExternalStore(localProgressStore.subscribe, localProgressStore.getState)
+  const equipped = useEquipped()
 
   useEffect(() => {
     void store.refresh()
@@ -49,7 +47,7 @@ export function CustomizePanel({ store = shopStore }: Props) {
   // Signed out the equipped look lives on-device; it is applied to the profile
   // at sign-in for whichever slots survive the server's re-charge.
   const equippedId =
-    auth.status === 'signedIn' ? auth.customization[slot] : local.customization[slot]
+    equipped[slot]
   const owned = shop.items[slot].filter((item) => shop.owned.includes(item.id))
   // DEFAULT always leads the list — it's the way back to the stock look.
   const rows = [defaultRow(slot), ...owned]
@@ -69,7 +67,7 @@ export function CustomizePanel({ store = shopStore }: Props) {
               setSlot(tabSlot)
             }}
           >
-            {t(`shop.tab.${tabSlot}`)}
+            {tabSlot === 'striker' ? 'STRIKER' : t(`shop.tab.${tabSlot}`)}
           </button>
         ))}
       </div>
@@ -86,13 +84,15 @@ export function CustomizePanel({ store = shopStore }: Props) {
             ? (item) => BALL_SKIN_SOURCES[item.id]?.thumb
             : slot === 'gkSkin'
               ? (item) => GK_SKIN_SOURCES[item.id]?.thumb
-              : undefined
+              : slot === 'striker'
+                ? (item) => STRIKER_SKIN_SOURCES[item.id]?.thumb
+                : undefined
         }
         onEquip={(item) => void store.equip(slot, item.id)}
         busy={shop.equipping}
       />
 
-      {owned.length === 0 && <p className="customize__empty">{t(`customize.empty.${slot}`)}</p>}
+      {owned.length === 0 && <p className="customize__empty">{slot === 'striker' ? 'No strikers owned yet.' : t(`customize.empty.${slot}`)}</p>}
     </div>
   )
 }

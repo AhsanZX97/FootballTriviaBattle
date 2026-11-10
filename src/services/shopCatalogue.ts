@@ -16,6 +16,7 @@ import gkCoralGuardDiveSrc from '../assets/gk/coral-guard_dive.png'
 import gkOrangeBlazeThumbSrc from '../assets/gk/orange-blaze_thumb.png'
 import gkOrangeBlazeIdleSrc from '../assets/gk/orange-blaze.png'
 import gkOrangeBlazeDiveSrc from '../assets/gk/orange-blaze_dive.png'
+import ronaldoThumbSrc from '../assets/ronaldo-thumb.png'
 import ballGoldTrimSrc from '../assets/sprites/ball/gold-trim.png'
 import ballGoldTrimSpinSrc from '../assets/sprites/ball/gold-trim_spin.png'
 import ballCarnivalSwirlSrc from '../assets/sprites/ball/carnival-swirl.png'
@@ -33,6 +34,8 @@ const GOAL_SOUND_PRICE = 100
 const BALL_SKIN_PRICE = 150
 /** Every keeper skin costs the same for now. */
 const GK_SKIN_PRICE = 200
+/** Strikers are the premium cosmetic. */
+const STRIKER_PRICE = 1000
 
 /**
  * The shop catalogue. Client-side because each item id has to map to a bundled
@@ -59,7 +62,14 @@ export const CATALOGUE: ShopItem[] = [
   { id: 'gk_gold_standard', name: 'Gold Standard Keeper', slot: 'gkSkin', price: GK_SKIN_PRICE },
   { id: 'gk_coral_guard', name: 'Coral Guard Keeper', slot: 'gkSkin', price: GK_SKIN_PRICE },
   { id: 'gk_orange_blaze', name: 'Orange Blaze Keeper', slot: 'gkSkin', price: GK_SKIN_PRICE },
+  { id: 'striker_ronaldo', name: 'Portugal Striker', slot: 'striker', price: STRIKER_PRICE },
 ]
+
+/** Striker items map to the pitch's `StrikerSkin`; an id with no entry here
+ * (including 'default') plays as the stock striker. */
+export const STRIKER_SKIN_SOURCES: Record<string, { thumb: string; skin: 'ronaldo' }> = {
+  striker_ronaldo: { thumb: ronaldoThumbSrc, skin: 'ronaldo' },
+}
 
 /** Audio for each goal-sound item. Keyed by the catalogue id above; an id with
  * no entry here falls back to the stock cheer. */
@@ -120,6 +130,11 @@ export const GK_SKIN_SOURCES: Record<string, { thumb: string; idle: string; dive
     dive: gkOrangeBlazeDiveSrc,
     cssId: 'orangeblaze',
   },
+}
+
+/** The pitch skin for an equipped striker item id. */
+export function strikerSkinFor(itemId: string): 'default' | 'ronaldo' {
+  return STRIKER_SKIN_SOURCES[itemId]?.skin ?? 'default'
 }
 
 export function catalogueFor(slot: ShopItem['slot']): ShopItem[] {
